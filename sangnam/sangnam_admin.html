@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>상남도서관 설문 분석 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #0a0a0a;
+  --surface: #141414;
+  --surface2: #1e1e1e;
+  --surface3: #282828;
+  --border: #2a2a2a;
+  --accent: #c8102e;
+  --accent2: #ff4d4d;
+  --accent3: #ff8080;
+  --green: #22c55e;
+  --blue: #3b82f6;
+  --yellow: #f59e0b;
+  --text: #f0f0f0;
+  --text2: #888;
+  --text3: #555;
+  --white: #fff;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Noto Sans KR', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+/* AUTH */
+#auth-screen {
+  min-height: 100vh; display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 30% 40%, #1a0008 0%, #0a0a0a 60%);
+}
+.auth-box {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 20px; padding: 48px 40px; width: 100%; max-width: 400px; text-align: center;
+}
+.auth-logo { background: var(--accent); color: white; font-size: 11px; font-weight: 900;
+  padding: 4px 10px; border-radius: 4px; letter-spacing: 2px; display: inline-block; margin-bottom: 24px; }
+.auth-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--white); }
+.auth-sub { font-size: 13px; color: var(--text2); margin-bottom: 32px; }
+.auth-input {
+  width: 100%; background: var(--surface2); border: 2px solid var(--border);
+  border-radius: 10px; padding: 14px 16px; color: var(--white);
+  font-family: inherit; font-size: 15px; margin-bottom: 16px; text-align: center; letter-spacing: 4px;
+}
+.auth-input:focus { outline: none; border-color: var(--accent); }
+.auth-btn {
+  width: 100%; background: var(--accent); color: white; border: none;
+  border-radius: 10px; padding: 14px; font-family: inherit; font-size: 15px;
+  font-weight: 700; cursor: pointer; transition: background 0.2s;
+}
+.auth-btn:hover { background: #e5112e; }
+.auth-error { color: var(--accent2); font-size: 13px; margin-top: 12px; min-height: 20px; }
+
+/* MAIN */
+#dashboard { display: none; }
+
+/* HEADER */
+header {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+  position: sticky; top: 0; z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo-badge { background: var(--accent); color: white; font-size: 11px; font-weight: 900;
+  padding: 4px 10px; border-radius: 4px; letter-spacing: 2px; }
+.header-title { font-size: 14px; color: var(--text2); }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.last-updated { font-size: 12px; color: var(--text3); }
+.refresh-btn {
+  background: var(--surface2); border: 1px solid var(--border); color: var(--text2);
+  padding: 8px 16px; border-radius: 8px; font-size: 13px; cursor: pointer;
+  font-family: inherit; transition: all 0.2s;
+}
+.refresh-btn:hover { border-color: var(--accent); color: var(--text); }
+.export-btn {
+  background: var(--accent); border: none; color: white;
+  padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit; transition: background 0.2s;
+}
+.export-btn:hover { background: #e5112e; }
+
+/* LAYOUT */
+main { max-width: 1200px; margin: 0 auto; padding: 32px 24px; }
+
+/* STAT CARDS */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;
+}
+@media(max-width:800px){ .stats-grid { grid-template-columns: repeat(2,1fr); } }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px 20px;
+}
+.stat-label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+  color: var(--text2); margin-bottom: 12px; }
+.stat-value { font-size: 36px; font-weight: 900; color: var(--white); line-height: 1; margin-bottom: 6px; }
+.stat-sub { font-size: 12px; color: var(--text3); }
+.stat-card.accent .stat-value { color: var(--accent2); }
+.stat-card.green .stat-value { color: var(--green); }
+.stat-card.blue .stat-value { color: var(--blue); }
+
+/* TABS */
+.tab-bar {
+  display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 12px; padding: 4px; margin-bottom: 28px; width: fit-content;
+}
+.tab-btn {
+  padding: 10px 20px; border: none; background: transparent; color: var(--text2);
+  font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer;
+  border-radius: 9px; transition: all 0.2s;
+}
+.tab-btn.active { background: var(--accent); color: white; font-weight: 700; }
+.tab-btn:hover:not(.active) { background: var(--surface2); color: var(--text); }
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* SECTION HEADERS */
+.section-label {
+  font-size: 11px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase;
+  color: var(--accent2); margin-bottom: 20px; margin-top: 36px;
+}
+.section-label:first-child { margin-top: 0; }
+
+/* CHARTS GRID */
+.charts-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 28px; }
+.charts-grid.single { grid-template-columns: 1fr; }
+@media(max-width:700px){ .charts-grid { grid-template-columns: 1fr; } }
+
+.chart-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 24px;
+}
+.chart-title { font-size: 14px; font-weight: 700; color: var(--white); margin-bottom: 6px; }
+.chart-sub { font-size: 12px; color: var(--text2); margin-bottom: 20px; }
+.chart-wrap { position: relative; height: 220px; }
+
+/* SCALE SUMMARY */
+.scale-summary {
+  display: flex; align-items: center; gap: 24px; margin-bottom: 20px;
+}
+.scale-avg { text-align: center; }
+.scale-avg-num { font-size: 48px; font-weight: 900; color: var(--white); line-height: 1; }
+.scale-avg-label { font-size: 12px; color: var(--text2); }
+.scale-bars { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.scale-bar-row { display: flex; align-items: center; gap: 10px; }
+.scale-bar-label { font-size: 12px; color: var(--text2); width: 20px; text-align: right; }
+.scale-bar-track { flex: 1; background: var(--surface3); border-radius: 4px; height: 8px; overflow: hidden; }
+.scale-bar-fill { height: 100%; background: var(--accent); border-radius: 4px; transition: width 0.6s ease; }
+.scale-bar-count { font-size: 12px; color: var(--text2); width: 24px; }
+
+/* TEXT RESPONSES */
+.text-responses { display: flex; flex-direction: column; gap: 12px; }
+.text-card {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px 18px;
+}
+.text-card-meta { font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+.text-card-content { font-size: 14px; color: var(--text); line-height: 1.7; }
+.text-card-content.empty { color: var(--text3); font-style: italic; }
+.text-q-label {
+  font-size: 11px; font-weight: 700; color: var(--accent2); letter-spacing: 1px;
+  text-transform: uppercase; margin-bottom: 12px; margin-top: 24px;
+}
+.text-q-label:first-child { margin-top: 0; }
+
+/* RESPONSE LIST */
+.response-filters { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+.filter-btn {
+  padding: 6px 16px; border: 1px solid var(--border); border-radius: 100px;
+  background: transparent; color: var(--text2); font-family: inherit; font-size: 13px;
+  cursor: pointer; transition: all 0.2s;
+}
+.filter-btn.active { background: var(--accent); border-color: var(--accent); color: white; font-weight: 700; }
+.filter-btn:hover:not(.active) { border-color: var(--text2); color: var(--text); }
+
+.response-list { display: flex; flex-direction: column; gap: 10px; }
+.response-item {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); overflow: hidden; cursor: pointer;
+  transition: border-color 0.2s;
+}
+.response-item:hover { border-color: var(--accent); }
+.response-item-header {
+  padding: 16px 20px; display: flex; align-items: center; gap: 12px;
+}
+.response-type-badge {
+  padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 700;
+}
+.badge-user { background: rgba(59,130,246,0.2); color: var(--blue); }
+.badge-operator { background: rgba(245,158,11,0.2); color: var(--yellow); }
+.response-time { font-size: 12px; color: var(--text3); flex: 1; }
+.response-toggle { font-size: 12px; color: var(--text3); }
+.response-item-body {
+  display: none; padding: 0 20px 16px; border-top: 1px solid var(--border);
+}
+.response-item-body.open { display: block; padding-top: 16px; }
+.resp-row { display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); }
+.resp-row:last-child { border-bottom: none; }
+.resp-key { font-size: 12px; color: var(--text2); min-width: 160px; flex-shrink: 0; }
+.resp-val { font-size: 13px; color: var(--white); }
+
+/* EMPTY STATE */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  background: var(--surface); border: 1px dashed var(--border); border-radius: var(--radius);
+}
+.empty-icon { font-size: 40px; margin-bottom: 16px; }
+.empty-title { font-size: 16px; font-weight: 700; color: var(--white); margin-bottom: 8px; }
+.empty-desc { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+/* LOADING */
+.loading { text-align: center; padding: 60px; color: var(--text2); font-size: 14px; }
+.loading-dot { animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<!-- AUTH SCREEN -->
+<div id="auth-screen">
+  <div class="auth-box">
+    <div class="auth-logo">LG</div>
+    <h1 class="auth-title">관리자 대시보드</h1>
+    <p class="auth-sub">상남도서관 AI 공간 설문 분석</p>
+    <input type="password" class="auth-input" id="pw-input" placeholder="••••••••"
+      onkeydown="if(event.key==='Enter')checkAuth()" autocomplete="current-password">
+    <button class="auth-btn" onclick="checkAuth()">로그인</button>
+    <p class="auth-error" id="auth-error"></p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header>
+    <div class="header-left">
+      <span class="logo-badge">LG</span>
+      <span class="header-title">상남도서관 설문 분석 대시보드</span>
+    </div>
+    <div class="header-right">
+      <span class="last-updated" id="last-updated"></span>
+      <button class="refresh-btn" onclick="loadAll()">↺ 새로고침</button>
+      <button class="export-btn" onclick="exportCSV()">CSV 다운로드</button>
+    </div>
+  </header>
+
+  <main>
+    <div id="loading-state" class="loading">
+      데이터를 불러오는 중<span class="loading-dot">...</span>
+    </div>
+
+    <div id="content" style="display:none">
+
+      <!-- STAT CARDS -->
+      <div class="stats-grid">
+        <div class="stat-card accent">
+          <div class="stat-label">총 응답 수</div>
+          <div class="stat-value" id="stat-total">0</div>
+          <div class="stat-sub">전체 설문 응답</div>
+        </div>
+        <div class="stat-card blue">
+          <div class="stat-label">이용자 응답</div>
+          <div class="stat-value" id="stat-user">0</div>
+          <div class="stat-sub">시각장애인 이용자</div>
+        </div>
+        <div class="stat-card green" style="--green:#f59e0b">
+          <div class="stat-label">운영자 응답</div>
+          <div class="stat-value" id="stat-op">0</div>
+          <div class="stat-sub">도서관 담당자</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">최근 응답</div>
+          <div class="stat-value" id="stat-recent" style="font-size:20px;padding-top:8px">—</div>
+          <div class="stat-sub" id="stat-recent-sub"></div>
+        </div>
+      </div>
+
+      <!-- TABS -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn active" role="tab" onclick="switchTab('user')">🦯 이용자 분석</button>
+        <button class="tab-btn" role="tab" onclick="switchTab('operator')">🏛️ 운영자 분석</button>
+        <button class="tab-btn" role="tab" onclick="switchTab('all')">📋 전체 응답 목록</button>
+      </div>
+
+      <!-- USER TAB -->
+      <div class="tab-panel active" id="tab-user">
+        <div id="user-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">🦯</div>
+          <div class="empty-title">아직 이용자 응답이 없습니다</div>
+          <div class="empty-desc">설문 링크를 이용자에게 공유하면<br>응답이 여기에 집계됩니다.</div>
+        </div>
+        <div id="user-content">
+          <div class="section-label">정량 분석</div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-title">도서관까지 오는 방법</div>
+              <div class="chart-sub">Q1 · 단일 선택</div>
+              <div class="chart-wrap"><canvas id="chart-travel"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">AI 음성 기기 사용 경험</div>
+              <div class="chart-sub">Q6 · 단일 선택</div>
+              <div class="chart-wrap"><canvas id="chart-ai-exp"></canvas></div>
+            </div>
+          </div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-title">혼자 할 수 있는 활동</div>
+              <div class="chart-sub">Q3 · 복수 선택 (응답자당 중복 가능)</div>
+              <div class="chart-wrap" style="height:260px"><canvas id="chart-independent"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">사용 중인 보조 기술</div>
+              <div class="chart-sub">Q5 · 복수 선택</div>
+              <div class="chart-wrap" style="height:260px"><canvas id="chart-assistive"></canvas></div>
+            </div>
+          </div>
+          <div class="charts-grid single">
+            <div class="chart-card">
+              <div class="chart-title">환경 자동 알림의 도움 정도</div>
+              <div class="chart-sub">Q8 · 1(전혀 도움 안 됨) ~ 5(매우 도움이 됨)</div>
+              <div class="scale-summary" id="user-scale-summary"></div>
+            </div>
+          </div>
+
+          <div class="section-label">주관식 응답</div>
+          <div class="charts-grid single">
+            <div class="chart-card">
+              <div id="user-text-responses"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- OPERATOR TAB -->
+      <div class="tab-panel" id="tab-operator">
+        <div id="op-empty" class="empty-state" style="display:none">
+          <div class="empty-icon">🏛️</div>
+          <div class="empty-title">아직 운영자 응답이 없습니다</div>
+          <div class="empty-desc">담당자에게 설문 링크를 공유해 주세요.</div>
+        </div>
+        <div id="op-content">
+          <div class="section-label">정량 분석</div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-title">기술 도입 경험</div>
+              <div class="chart-sub">Q5 · 단일 선택</div>
+              <div class="chart-wrap"><canvas id="chart-tech-exp"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">공간 운영 방식 계획</div>
+              <div class="chart-sub">Q9 · 단일 선택</div>
+              <div class="chart-wrap"><canvas id="chart-operation"></canvas></div>
+            </div>
+          </div>
+          <div class="charts-grid">
+            <div class="chart-card">
+              <div class="chart-title">인테리어 공사 가능 범위</div>
+              <div class="chart-sub">Q11 · 단일 선택</div>
+              <div class="chart-wrap"><canvas id="chart-renovation"></canvas></div>
+            </div>
+            <div class="chart-card">
+              <div class="chart-title">주 이용 대상 기대</div>
+              <div class="chart-sub">Q10 · 복수 선택</div>
+              <div class="chart-wrap"><canvas id="chart-target"></canvas></div>
+            </div>
+          </div>
+          <div class="charts-grid single">
+            <div class="chart-card">
+              <div class="chart-title">이용자 기술 수용도 예상</div>
+              <div class="chart-sub">Q8 · 1(매우 거부감) ~ 5(매우 잘 수용)</div>
+              <div class="scale-summary" id="op-scale-summary"></div>
+            </div>
+          </div>
+
+          <div class="section-label">주관식 응답</div>
+          <div class="charts-grid single">
+            <div class="chart-card">
+              <div id="op-text-responses"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ALL RESPONSES TAB -->
+      <div class="tab-panel" id="tab-all">
+        <div class="response-filters">
+          <button class="filter-btn active" onclick="filterResponses('all', this)">전체</button>
+          <button class="filter-btn" onclick="filterResponses('user', this)">🦯 이용자만</button>
+          <button class="filter-btn" onclick="filterResponses('operator', this)">🏛️ 운영자만</button>
+        </div>
+        <div class="response-list" id="response-list"></div>
+      </div>
+
+    </div><!-- /content -->
+  </main>
+</div><!-- /dashboard -->
+
+<script>
+// ─── AUTH ───────────────────────────────────────────────
+const ADMIN_PW = 'lgadmin2025';
+
+function checkAuth() {
+  const val = document.getElementById('pw-input').value;
+  if (val === ADMIN_PW) {
+    document.getElementById('auth-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadAll();
+  } else {
+    const err = document.getElementById('auth-error');
+    err.textContent = '비밀번호가 올바르지 않습니다.';
+    setTimeout(() => err.textContent = '', 2000);
+    document.getElementById('pw-input').value = '';
+    document.getElementById('pw-input').focus();
+  }
+}
+
+// ── Airtable 설정값 (setup_guide.md 참고) ───────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyTzhnfta6JUmbnukx1AvgVw9tgCYrhWbzonXRz4mmhwacePP7iLpn5Jxi5cwW5TVg-Kw/exec';
+
+// ─── DATA ────────────────────────────────────────────────
+let allData = { user: [], operator: [] };
+const charts = {};
+
+async function loadAll() {
+  document.getElementById('loading-state').style.display = 'block';
+  document.getElementById('content').style.display = 'none';
+
+  const userResponses = [];
+  const opResponses   = [];
+
+  try {
+    const resp = await fetch(SCRIPT_URL);
+    const json = await resp.json();
+    (json.records || []).forEach(d => {
+      if (d.type === 'user') userResponses.push(d);
+      else if (d.type === 'operator') opResponses.push(d);
+    });
+  } catch(e) {
+    console.warn('데이터 로드 오류:', e);
+  }
+
+  allData = { user: userResponses, operator: opResponses };
+  renderAll();
+}
+
+// ─── RENDER ──────────────────────────────────────────────
+function renderAll() {
+  const u = allData.user;
+  const o = allData.operator;
+  const total = u.length + o.length;
+
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('stat-user').textContent = u.length;
+  document.getElementById('stat-op').textContent = o.length;
+
+  const allSorted = [...u, ...o].sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp));
+  if (allSorted.length > 0) {
+    const d = new Date(allSorted[0].timestamp);
+    document.getElementById('stat-recent').textContent = `${d.getMonth()+1}/${d.getDate()}`;
+    document.getElementById('stat-recent-sub').textContent = `${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')} 기준`;
+    document.getElementById('last-updated').textContent = `마지막 갱신: ${new Date().toLocaleTimeString('ko-KR')}`;
+  }
+
+  // User charts
+  if (u.length === 0) {
+    document.getElementById('user-empty').style.display = 'block';
+    document.getElementById('user-content').style.display = 'none';
+  } else {
+    document.getElementById('user-empty').style.display = 'none';
+    document.getElementById('user-content').style.display = 'block';
+    renderUserCharts(u);
+    renderUserText(u);
+  }
+
+  // Operator charts
+  if (o.length === 0) {
+    document.getElementById('op-empty').style.display = 'block';
+    document.getElementById('op-content').style.display = 'none';
+  } else {
+    document.getElementById('op-empty').style.display = 'none';
+    document.getElementById('op-content').style.display = 'block';
+    renderOpCharts(o);
+    renderOpText(o);
+  }
+
+  // All responses list
+  renderResponseList(allSorted);
+
+  document.getElementById('loading-state').style.display = 'none';
+  document.getElementById('content').style.display = 'block';
+}
+
+// ─── CHART HELPERS ───────────────────────────────────────
+const COLORS = ['#c8102e','#3b82f6','#22c55e','#f59e0b','#a855f7','#ec4899','#14b8a6'];
+
+function countValues(responses, field) {
+  const counts = {};
+  responses.forEach(r => {
+    const val = r[field];
+    if (Array.isArray(val)) {
+      val.forEach(v => { counts[v] = (counts[v]||0) + 1; });
+    } else if (val) {
+      counts[val] = (counts[val]||0) + 1;
+    }
+  });
+  return counts;
+}
+
+function makeChart(id, type, labels, data, colors) {
+  if (charts[id]) { charts[id].destroy(); }
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, {
+    type,
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: colors || COLORS, borderWidth: 0, borderRadius: type === 'bar' ? 6 : 0, barThickness: 'flex' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: type !== 'bar', labels: { color: '#888', font: { family: 'Noto Sans KR', size: 12 }, padding: 16 } }
+      },
+      scales: type === 'bar' ? {
+        x: { ticks: { color: '#888', font: { family: 'Noto Sans KR', size: 11 } }, grid: { color: '#1e1e1e' } },
+        y: { ticks: { color: '#888', stepSize: 1 }, grid: { color: '#2a2a2a' }, beginAtZero: true }
+      } : {}
+    }
+  });
+}
+
+function makeHBar(id, labels, data) {
+  if (charts[id]) charts[id].destroy();
+  const ctx = document.getElementById(id);
+  if (!ctx) return;
+  charts[id] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ data, backgroundColor: COLORS, borderWidth: 0, borderRadius: 6 }]
+    },
+    options: {
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#888', stepSize: 1 }, grid: { color: '#2a2a2a' }, beginAtZero: true },
+        y: { ticks: { color: '#888', font: { family: 'Noto Sans KR', size: 11 } }, grid: { display: false } }
+      }
+    }
+  });
+}
+
+function renderScaleSummary(containerId, responses, field) {
+  const counts = [0,0,0,0,0];
+  let total = 0;
+  responses.forEach(r => {
+    const v = parseInt(r[field]);
+    if (v >= 1 && v <= 5) { counts[v-1]++; total++; }
+  });
+  const avg = total > 0 ? (counts.reduce((s,c,i) => s + c*(i+1), 0) / total).toFixed(1) : '—';
+  const max = Math.max(...counts, 1);
+  const el = document.getElementById(containerId);
+  el.innerHTML = `
+    <div class="scale-avg">
+      <div class="scale-avg-num">${avg}</div>
+      <div class="scale-avg-label">/ 5.0 평균</div>
+    </div>
+    <div class="scale-bars">
+      ${counts.map((c,i) => `
+        <div class="scale-bar-row">
+          <span class="scale-bar-label">${i+1}</span>
+          <div class="scale-bar-track"><div class="scale-bar-fill" style="width:${max>0?Math.round(c/max*100):0}%"></div></div>
+          <span class="scale-bar-count">${c}</span>
+        </div>`).join('')}
+    </div>`;
+}
+
+// ─── USER CHARTS ─────────────────────────────────────────
+const travelLabels = { alone_transit:'혼자 대중교통', with_person:'보조인과 함께', taxi:'택시/장콜', other_travel:'기타' };
+const aiExpLabels  = { yes_good:'편리하게 사용', yes_hard:'어려웠음', tried:'잘 안 써요', no:'경험 없음' };
+const indepLabels  = { move:'혼자 이동', info:'안내 확인', seat:'착석', device:'기기 이용', restroom:'화장실', program:'프로그램 참여', nothing:'거의 모두 도움 필요' };
+const assistiveLabels = { voiceover:'VoiceOver', talkback:'TalkBack', nvda:'NVDA/JAWS', ai_speaker:'AI 스피커', siri:'시리/빅스비', braille:'점자 디스플레이', none_assistive:'보조기술 없음' };
+
+function renderUserCharts(u) {
+  // Travel
+  const travel = countValues(u, 'u_travel');
+  const tKeys = Object.keys(travel);
+  makeChart('chart-travel', 'doughnut', tKeys.map(k=>travelLabels[k]||k), tKeys.map(k=>travel[k]));
+
+  // AI Exp
+  const aiExp = countValues(u, 'u_ai_exp');
+  const aKeys = Object.keys(aiExp);
+  makeChart('chart-ai-exp', 'doughnut', aKeys.map(k=>aiExpLabels[k]||k), aKeys.map(k=>aiExp[k]));
+
+  // Independent
+  const indep = countValues(u, 'u_independent');
+  const iKeys = Object.keys(indepLabels);
+  makeHBar('chart-independent', iKeys.map(k=>indepLabels[k]), iKeys.map(k=>indep[k]||0));
+
+  // Assistive
+  const asst = countValues(u, 'u_assistive');
+  const asKeys = Object.keys(assistiveLabels);
+  makeHBar('chart-assistive', asKeys.map(k=>assistiveLabels[k]), asKeys.map(k=>asst[k]||0));
+
+  // Scale
+  renderScaleSummary('user-scale-summary', u, 'u_env_scale');
+}
+
+// ─── USER TEXT ────────────────────────────────────────────
+const userTextFields = [
+  { key:'u_navigate',  label:'공간까지 이동 방법 (Q2)' },
+  { key:'u_hardest',   label:'가장 불편한 순간 (Q4)' },
+  { key:'u_tech_hard', label:'새 기기 사용 시 어려운 점 (Q7)' },
+  { key:'u_want',      label:'이 공간에서 해보고 싶은 것 (Q9)' },
+  { key:'u_worry',     label:'걱정되거나 불편할 것 같은 점 (Q10)' },
+  { key:'u_human',     label:'사람 도움이 꼭 필요한 상황 (Q11)' },
+  { key:'u_free',      label:'자유 의견 (Q12)' },
+];
+
+function renderUserText(u) {
+  const el = document.getElementById('user-text-responses');
+  let html = '';
+  userTextFields.forEach(f => {
+    const answers = u.map((r,i) => ({ idx: i+1, val: r[f.key] })).filter(a => a.val && a.val.trim());
+    html += `<div class="text-q-label">${f.label} — ${answers.length}명 응답</div>`;
+    html += '<div class="text-responses">';
+    if (answers.length === 0) {
+      html += '<div class="text-card"><div class="text-card-content empty">응답 없음</div></div>';
+    } else {
+      answers.forEach(a => {
+        html += `<div class="text-card">
+          <div class="text-card-meta">응답자 #${a.idx}</div>
+          <div class="text-card-content">${escHtml(a.val)}</div>
+        </div>`;
+      });
+    }
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+// ─── OPERATOR CHARTS ─────────────────────────────────────
+const techExpLabels = { yes_good:'있음 - 반응 좋음', yes_mixed:'있음 - 적응 시간', yes_hard:'있음 - 운영 어려움', no:'경험 없음' };
+const operationLabels = { always_open:'상시 개방', program:'프로그램 기반', mixed:'상시+프로그램', undecided:'미정' };
+const renovationLabels = { full:'전면 리모델링', interior:'내부 인테리어', device_only:'기기만 가능', unknown:'모름' };
+const targetLabels = { existing:'기존 참여자', new_blind:'새 시각장애인', caregiver:'보호자/동행', general:'일반 시민' };
+
+function renderOpCharts(o) {
+  const te = countValues(o, 'op_tech_exp');
+  const teKeys = Object.keys(te);
+  makeChart('chart-tech-exp', 'doughnut', teKeys.map(k=>techExpLabels[k]||k), teKeys.map(k=>te[k]));
+
+  const op = countValues(o, 'op_operation');
+  const opKeys = Object.keys(op);
+  makeChart('chart-operation', 'doughnut', opKeys.map(k=>operationLabels[k]||k), opKeys.map(k=>op[k]));
+
+  const rv = countValues(o, 'op_renovation');
+  const rvKeys = Object.keys(renovationLabels);
+  makeChart('chart-renovation', 'bar', rvKeys.map(k=>renovationLabels[k]), rvKeys.map(k=>rv[k]||0));
+
+  const tg = countValues(o, 'op_target');
+  const tgKeys = Object.keys(targetLabels);
+  makeHBar('chart-target', tgKeys.map(k=>targetLabels[k]), tgKeys.map(k=>tg[k]||0));
+
+  renderScaleSummary('op-scale-summary', o, 'op_acceptance');
+}
+
+// ─── OPERATOR TEXT ────────────────────────────────────────
+const opTextFields = [
+  { key:'op_difficulty',        label:'자주 도움 요청 상황 (Q2)' },
+  { key:'op_alone',             label:'혼자 처리 어려운 것 (Q3)' },
+  { key:'op_program_feedback',  label:'프로그램 참여자 불편 사항 (Q4)' },
+  { key:'op_expect',            label:'기술 도입 기대 (Q6)' },
+  { key:'op_concern',           label:'기술 도입 우려 (Q7)' },
+  { key:'op_must',              label:'반드시 포함되어야 할 요소 (Q12)' },
+  { key:'op_free',              label:'자유 의견 (Q13)' },
+];
+
+function renderOpText(o) {
+  const el = document.getElementById('op-text-responses');
+  let html = '';
+  opTextFields.forEach(f => {
+    const answers = o.map((r,i) => ({ idx: i+1, val: r[f.key] })).filter(a => a.val && a.val.trim());
+    html += `<div class="text-q-label">${f.label} — ${answers.length}명 응답</div>`;
+    html += '<div class="text-responses">';
+    if (answers.length === 0) {
+      html += '<div class="text-card"><div class="text-card-content empty">응답 없음</div></div>';
+    } else {
+      answers.forEach(a => {
+        html += `<div class="text-card">
+          <div class="text-card-meta">응답자 #${a.idx}</div>
+          <div class="text-card-content">${escHtml(a.val)}</div>
+        </div>`;
+      });
+    }
+    html += '</div>';
+  });
+  el.innerHTML = html;
+}
+
+// ─── RESPONSE LIST ────────────────────────────────────────
+let currentFilter = 'all';
+let allSortedCache = [];
+
+function renderResponseList(sorted) {
+  allSortedCache = sorted;
+  applyFilter(currentFilter);
+}
+
+function filterResponses(type, btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  currentFilter = type;
+  applyFilter(type);
+}
+
+function applyFilter(type) {
+  const list = allSortedCache.filter(r => type === 'all' || r.type === type);
+  const el = document.getElementById('response-list');
+
+  if (list.length === 0) {
+    el.innerHTML = `<div class="empty-state"><div class="empty-icon">📋</div><div class="empty-title">응답이 없습니다</div></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map((r, i) => {
+    const d = new Date(r.timestamp);
+    const dateStr = `${d.getFullYear()}.${d.getMonth()+1}.${d.getDate()} ${d.getHours()}:${String(d.getMinutes()).padStart(2,'0')}`;
+    const isUser = r.type === 'user';
+    const fields = isUser ? [
+      ['이동 방법', travelLabels[r.u_travel] || r.u_travel || '—'],
+      ['혼자 할 수 있는 것', (r.u_independent||[]).map(v=>indepLabels[v]||v).join(', ') || '—'],
+      ['AI 기기 경험', aiExpLabels[r.u_ai_exp] || r.u_ai_exp || '—'],
+      ['환경 알림 도움 점수', r.u_env_scale || '—'],
+      ['가장 불편한 순간', r.u_hardest || '—'],
+      ['해보고 싶은 것', r.u_want || '—'],
+      ['우려 사항', r.u_worry || '—'],
+    ] : [
+      ['기술 도입 경험', techExpLabels[r.op_tech_exp] || r.op_tech_exp || '—'],
+      ['운영 방식', operationLabels[r.op_operation] || r.op_operation || '—'],
+      ['공사 범위', renovationLabels[r.op_renovation] || r.op_renovation || '—'],
+      ['수용도 예상 점수', r.op_acceptance || '—'],
+      ['기술 도입 기대', r.op_expect || '—'],
+      ['기술 도입 우려', r.op_concern || '—'],
+      ['필수 요소', r.op_must || '—'],
+    ];
+
+    return `<div class="response-item">
+      <div class="response-item-header" onclick="toggleResponse(${i})">
+        <span class="response-type-badge ${isUser ? 'badge-user' : 'badge-operator'}">
+          ${isUser ? '🦯 이용자' : '🏛️ 운영자'}
+        </span>
+        <span class="response-time">${dateStr}</span>
+        <span class="response-toggle" id="toggle-${i}">▼ 펼치기</span>
+      </div>
+      <div class="response-item-body" id="body-${i}">
+        ${fields.map(([k,v]) => `<div class="resp-row"><span class="resp-key">${k}</span><span class="resp-val">${escHtml(String(v))}</span></div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleResponse(i) {
+  const body = document.getElementById(`body-${i}`);
+  const toggle = document.getElementById(`toggle-${i}`);
+  if (body.classList.contains('open')) {
+    body.classList.remove('open');
+    toggle.textContent = '▼ 펼치기';
+  } else {
+    body.classList.add('open');
+    toggle.textContent = '▲ 접기';
+  }
+}
+
+// ─── TABS ─────────────────────────────────────────────────
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach((b,i) => {
+    b.classList.toggle('active', ['user','operator','all'][i] === tab);
+  });
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById(`tab-${tab}`).classList.add('active');
+}
+
+// ─── EXPORT CSV ───────────────────────────────────────────
+function exportCSV() {
+  const all = [...allData.user, ...allData.operator];
+  if (all.length === 0) { alert('다운로드할 응답이 없습니다.'); return; }
+
+  const userFields = ['type','timestamp','u_travel','u_navigate','u_independent','u_hardest','u_assistive','u_ai_exp','u_tech_hard','u_env_scale','u_want','u_worry','u_human','u_free'];
+  const opFields   = ['type','timestamp','op_age','op_difficulty','op_alone','op_program_feedback','op_tech_exp','op_expect','op_concern','op_acceptance','op_operation','op_target','op_renovation','op_must','op_free'];
+  const headers    = [...new Set([...userFields, ...opFields])];
+
+  const rows = [headers.join(',')];
+  all.forEach(r => {
+    rows.push(headers.map(h => {
+      const v = r[h];
+      if (!v) return '';
+      const str = Array.isArray(v) ? v.join('|') : String(v);
+      return `"${str.replace(/"/g, '""')}"`;
+    }).join(','));
+  });
+
+  const blob = new Blob(['\uFEFF' + rows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `sangnam_survey_${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── UTILS ────────────────────────────────────────────────
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
