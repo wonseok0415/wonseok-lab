@@ -1,0 +1,1552 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ThinQ Real — 관리자</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c-label:        #1d1d1f;
+  --c-label-2:      #6e6e73;
+  --c-label-3:      #aeaeb2;
+  --c-fill:         #f5f5f7;
+  --c-fill-2:       #e8e8ed;
+  --c-bg:           #ffffff;
+  --c-bg-2:         #f5f5f7;
+  --c-separator:    rgba(0,0,0,0.08);
+  --c-accent:       #3a5035;
+  --c-accent-hover: #2d3e2a;
+  --c-accent-light: #eef2ec;
+  --c-accent-mid:   #8fa889;
+  --c-red:          #ff3b30;
+  --c-red-light:    #fff1f0;
+  --c-orange:       #ff9500;
+  --c-orange-light: #fff8ee;
+  --t-title-1: 28px; --t-title-2: 22px; --t-title-3: 20px;
+  --t-headline: 17px; --t-body: 17px; --t-callout: 16px;
+  --t-subhead: 15px; --t-footnote: 13px; --t-caption: 12px;
+  --sp-4:4px; --sp-8:8px; --sp-12:12px; --sp-16:16px;
+  --sp-20:20px; --sp-24:24px; --sp-32:32px; --sp-40:40px; --sp-48:48px;
+  --radius-sm:8px; --radius-md:12px; --radius-lg:18px;
+  --ease: cubic-bezier(0.25,0.1,0.25,1);
+  --ease-spring: cubic-bezier(0.34,1.56,0.64,1);
+}
+*,*::before,*::after { margin:0; padding:0; box-sizing:border-box; }
+html { -webkit-font-smoothing:antialiased; }
+body {
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Helvetica Neue',sans-serif;
+  font-size:var(--t-body); color:var(--c-label); background:var(--c-bg-2);
+}
+
+/* ── Login ── */
+.login-screen {
+  min-height:100svh; display:flex; align-items:center; justify-content:center;
+  background:var(--c-accent);
+  background-image:radial-gradient(ellipse at 65% 25%, #4e6b49 0%, var(--c-accent) 65%);
+}
+.login-card {
+  background:var(--c-bg); border-radius:var(--radius-lg);
+  padding:var(--sp-40); width:min(380px,calc(100vw - 48px));
+  box-shadow:0 24px 80px rgba(0,0,0,0.25);
+}
+.login-logo { font-size:var(--t-title-2); font-weight:600; color:var(--c-accent); letter-spacing:-0.025em; margin-bottom:var(--sp-4); }
+.login-subtitle { font-size:var(--t-caption); color:var(--c-label-3); letter-spacing:0.06em; text-transform:uppercase; margin-bottom:var(--sp-32); }
+.login-label { display:block; font-size:var(--t-caption); font-weight:500; color:var(--c-label-2); letter-spacing:0.02em; margin-bottom:var(--sp-8); }
+.login-input {
+  width:100%; min-height:44px; padding:0 var(--sp-12);
+  background:var(--c-fill); border:1.5px solid transparent; border-radius:var(--radius-sm);
+  font-size:var(--t-subhead); color:var(--c-label); outline:none; font-family:inherit;
+  transition:border-color .15s var(--ease),background .15s var(--ease); margin-bottom:var(--sp-16);
+}
+.login-input:focus { border-color:var(--c-accent); background:var(--c-bg); }
+.login-btn {
+  width:100%; min-height:50px; background:var(--c-accent); color:#fff; border:none;
+  border-radius:var(--radius-md); cursor:pointer; font-size:var(--t-subhead); font-weight:600;
+  font-family:inherit; letter-spacing:-0.016em;
+  transition:background .2s var(--ease),transform .15s var(--ease);
+}
+.login-btn:hover { background:var(--c-accent-hover); transform:scale(1.01); }
+.login-err { font-size:var(--t-caption); color:var(--c-red); text-align:center; margin-top:var(--sp-12); min-height:16px; }
+
+/* ── Shell ── */
+.shell { display:none; }
+.sidebar {
+  width:240px; background:var(--c-bg); border-right:1px solid var(--c-separator);
+  position:fixed; top:0; left:0; bottom:0;
+  display:flex; flex-direction:column; padding:var(--sp-24) 0; overflow-y:auto;
+}
+.sidebar-brand { padding:0 var(--sp-20) var(--sp-24); border-bottom:1px solid var(--c-separator); margin-bottom:var(--sp-12); }
+.sidebar-brand-name { font-size:var(--t-headline); font-weight:600; color:var(--c-accent); letter-spacing:-0.022em; }
+.sidebar-brand-sub { font-size:var(--t-caption); color:var(--c-label-3); margin-top:var(--sp-4); letter-spacing:0.02em; text-transform:uppercase; }
+.nav-section-label { font-size:11px; font-weight:600; color:var(--c-label-3); letter-spacing:0.08em; text-transform:uppercase; padding:var(--sp-12) var(--sp-20) var(--sp-8); display:block; }
+.nav-item {
+  display:flex; align-items:center; gap:var(--sp-12); min-height:44px;
+  padding:0 var(--sp-12); margin:1px var(--sp-8);
+  font-size:var(--t-subhead); color:var(--c-label-2); cursor:pointer;
+  border-radius:var(--radius-sm); text-decoration:none;
+  transition:background .15s var(--ease),color .15s var(--ease); letter-spacing:-0.016em;
+}
+.nav-item:hover { background:var(--c-fill); color:var(--c-label); }
+.nav-item.active { background:var(--c-accent-light); color:var(--c-accent); font-weight:500; }
+.nav-item-icon { font-size:15px; flex-shrink:0; }
+.nav-badge {
+  background:var(--c-red); color:#fff; font-size:11px; font-weight:600;
+  padding:1px 7px; border-radius:980px; margin-left:auto; min-width:20px; text-align:center;
+}
+.sidebar-footer { margin-top:auto; padding:var(--sp-20); border-top:1px solid var(--c-separator); }
+.sidebar-footer-text { font-size:var(--t-caption); color:var(--c-label-3); line-height:1.6; letter-spacing:-0.008em; }
+.logout-btn {
+  display:flex; align-items:center; justify-content:center; gap:var(--sp-8);
+  min-height:36px; padding:0 var(--sp-12); width:100%; margin-top:var(--sp-12);
+  background:none; border:1px solid var(--c-separator); border-radius:var(--radius-sm);
+  cursor:pointer; font-size:var(--t-caption); color:var(--c-label-2); font-family:inherit;
+  transition:all .15s var(--ease);
+}
+.logout-btn:hover { background:var(--c-fill); color:var(--c-label); }
+
+.main { margin-left:240px; padding:var(--sp-40); min-height:100svh; }
+.tab-panel { display:none; }
+.tab-panel.active { display:block; }
+
+.page-header { margin-bottom:var(--sp-32); }
+.page-header h1 { font-size:clamp(28px,4vw,40px); font-weight:600; letter-spacing:-0.03em; line-height:1.1; }
+.page-header p { font-size:var(--t-subhead); color:var(--c-label-2); margin-top:var(--sp-4); letter-spacing:-0.016em; }
+
+/* ── KPIs ── */
+.kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:var(--sp-16); margin-bottom:var(--sp-32); }
+.kpi-card { background:var(--c-bg); border-radius:var(--radius-md); padding:var(--sp-20) var(--sp-24); border:1px solid var(--c-separator); }
+.kpi-card-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--sp-12); }
+.kpi-card-label { font-size:var(--t-caption); font-weight:500; color:var(--c-label-2); letter-spacing:0.02em; text-transform:uppercase; }
+.kpi-icon { width:32px; height:32px; border-radius:var(--radius-sm); display:flex; align-items:center; justify-content:center; font-size:15px; }
+.kpi-num { font-size:36px; font-weight:600; letter-spacing:-0.04em; line-height:1; }
+.kpi-num.accent { color:var(--c-accent); }
+.kpi-num.orange { color:var(--c-orange); }
+.kpi-num.red    { color:var(--c-red); }
+.kpi-card-sub { font-size:var(--t-caption); color:var(--c-label-3); margin-top:var(--sp-4); letter-spacing:-0.008em; }
+
+/* ── Toolbar ── */
+.toolbar { display:flex; gap:var(--sp-12); align-items:center; margin-bottom:var(--sp-16); flex-wrap:wrap; }
+.toolbar-select,.toolbar-input {
+  min-height:36px; padding:0 var(--sp-12); background:var(--c-bg);
+  border:1px solid var(--c-separator); border-radius:var(--radius-sm); font-family:inherit;
+  font-size:var(--t-subhead); color:var(--c-label); outline:none;
+  transition:border-color .15s var(--ease); letter-spacing:-0.016em;
+}
+.toolbar-select:focus,.toolbar-input:focus { border-color:var(--c-accent); }
+.toolbar-spacer { flex:1; }
+.toolbar-btn {
+  min-height:36px; padding:0 var(--sp-16); background:var(--c-fill);
+  border:1px solid var(--c-separator); border-radius:var(--radius-sm);
+  cursor:pointer; font-family:inherit; font-size:var(--t-footnote); font-weight:500;
+  color:var(--c-label); letter-spacing:-0.008em;
+  display:flex; align-items:center; gap:var(--sp-8);
+  transition:background .15s var(--ease);
+}
+.toolbar-btn:hover { background:var(--c-fill-2); }
+
+/* ── Table ── */
+.table-card { background:var(--c-bg); border:1px solid var(--c-separator); border-radius:var(--radius-lg); overflow:hidden; }
+.booking-table { width:100%; border-collapse:collapse; }
+.booking-table thead tr { background:var(--c-bg-2); border-bottom:1px solid var(--c-separator); }
+.booking-table th { padding:var(--sp-12) var(--sp-16); text-align:left; font-size:var(--t-caption); font-weight:600; color:var(--c-label-2); letter-spacing:0.04em; text-transform:uppercase; white-space:nowrap; }
+.booking-table td { padding:var(--sp-12) var(--sp-16); font-size:var(--t-subhead); border-bottom:1px solid var(--c-separator); letter-spacing:-0.016em; vertical-align:middle; }
+.booking-table tbody tr:last-child td { border-bottom:none; }
+.booking-table tbody tr { cursor:pointer; transition:background .12s var(--ease); }
+.booking-table tbody tr:hover td { background:var(--c-fill); }
+
+.badge { display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:980px; font-size:11px; font-weight:600; white-space:nowrap; }
+.badge::before { content:''; width:5px; height:5px; border-radius:50%; flex-shrink:0; }
+.badge-pending   { background:var(--c-orange-light); color:var(--c-orange); }
+.badge-pending::before   { background:var(--c-orange); }
+.badge-confirmed { background:var(--c-accent-light); color:var(--c-accent); }
+.badge-confirmed::before { background:var(--c-accent); }
+.badge-rejected  { background:var(--c-red-light);    color:var(--c-red); }
+.badge-rejected::before  { background:var(--c-red); }
+
+.row-actions { display:flex; gap:var(--sp-8); }
+.btn-confirm-sm {
+  min-height:32px; padding:0 var(--sp-12); background:var(--c-accent); color:#fff; border:none;
+  border-radius:var(--radius-sm); font-size:var(--t-caption); font-weight:500; cursor:pointer; font-family:inherit;
+  transition:background .15s var(--ease);
+}
+.btn-confirm-sm:hover { background:var(--c-accent-hover); }
+.btn-reject-sm {
+  min-height:32px; padding:0 var(--sp-12); background:var(--c-bg); color:var(--c-red);
+  border:1px solid rgba(255,59,48,.3); border-radius:var(--radius-sm);
+  font-size:var(--t-caption); font-weight:500; cursor:pointer; font-family:inherit;
+  transition:all .15s var(--ease);
+}
+.btn-reject-sm:hover { background:var(--c-red); color:#fff; border-color:var(--c-red); }
+.btn-detail-sm {
+  min-height:32px; padding:0 var(--sp-12); background:var(--c-fill); color:var(--c-label-2);
+  border:1px solid var(--c-separator); border-radius:var(--radius-sm);
+  font-size:var(--t-caption); font-weight:500; cursor:pointer; font-family:inherit;
+  transition:all .15s var(--ease);
+}
+.btn-detail-sm:hover { background:var(--c-fill-2); color:var(--c-label); }
+
+.empty-state { padding:64px var(--sp-24); text-align:center; }
+.empty-state-icon { font-size:40px; margin-bottom:var(--sp-12); }
+.empty-state-text { font-size:var(--t-subhead); color:var(--c-label-3); letter-spacing:-0.016em; }
+
+/* ── Stats ── */
+.stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--sp-16); }
+.stats-card { background:var(--c-bg); border:1px solid var(--c-separator); border-radius:var(--radius-md); padding:var(--sp-24); }
+.stats-card.wide { grid-column:span 2; }
+.stats-card-title { font-size:var(--t-headline); font-weight:600; letter-spacing:-0.022em; margin-bottom:var(--sp-20); }
+.bar-item { margin-bottom:var(--sp-16); }
+.bar-item:last-child { margin-bottom:0; }
+.bar-meta { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:var(--sp-8); }
+.bar-name { font-size:var(--t-subhead); letter-spacing:-0.016em; }
+.bar-count { font-size:var(--t-caption); color:var(--c-label-3); font-weight:500; }
+.bar-track { height:6px; background:var(--c-fill-2); border-radius:3px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:3px; background:var(--c-accent); transition:width .7s var(--ease); }
+.bar-fill.orange { background:var(--c-orange); }
+.bar-fill.mid    { background:var(--c-accent-mid); }
+
+.month-chart { display:flex; align-items:flex-end; gap:var(--sp-12); height:140px; padding-top:var(--sp-8); }
+.month-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:var(--sp-4); }
+.month-bar-wrap { flex:1; width:100%; display:flex; align-items:flex-end; }
+.month-bar { width:100%; background:var(--c-accent-light); border-radius:4px 4px 0 0; transition:height .7s var(--ease); }
+.month-bar:hover { background:var(--c-accent-mid); }
+.month-label { font-size:11px; color:var(--c-label-3); }
+.month-val { font-size:11px; font-weight:600; color:var(--c-accent); }
+
+/* ── Modal ── */
+.modal-backdrop {
+  display:none; position:fixed; inset:0; background:rgba(0,0,0,0.4);
+  backdrop-filter:blur(4px); z-index:500; align-items:center; justify-content:center;
+}
+.modal-backdrop.open { display:flex; }
+.modal {
+  background:var(--c-bg); border-radius:var(--radius-lg); padding:var(--sp-32);
+  width:min(520px,calc(100vw - 48px)); box-shadow:0 24px 80px rgba(0,0,0,0.2);
+  animation:modalIn .25s var(--ease-spring) both;
+}
+@keyframes modalIn { from{opacity:0;transform:scale(.95) translateY(8px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.modal-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:var(--sp-20); padding-bottom:var(--sp-16); border-bottom:1px solid var(--c-separator); }
+.modal-title { font-size:var(--t-title-3); font-weight:600; letter-spacing:-0.022em; }
+.modal-close {
+  width:28px; height:28px; border-radius:50%; background:var(--c-fill); border:none;
+  cursor:pointer; font-size:14px; color:var(--c-label-2);
+  display:flex; align-items:center; justify-content:center; flex-shrink:0;
+  transition:background .15s var(--ease);
+}
+.modal-close:hover { background:var(--c-fill-2); }
+.detail-grid { display:grid; grid-template-columns:120px 1fr; gap:var(--sp-12) var(--sp-16); }
+.detail-label { font-size:var(--t-footnote); color:var(--c-label-3); font-weight:500; letter-spacing:0.02em; padding-top:2px; }
+.detail-value { font-size:var(--t-subhead); color:var(--c-label); letter-spacing:-0.016em; line-height:1.4; }
+.modal-actions { display:flex; gap:var(--sp-12); justify-content:flex-end; margin-top:var(--sp-24); }
+.modal-btn-close {
+  min-height:44px; padding:0 var(--sp-20); background:var(--c-fill); border:none;
+  border-radius:var(--radius-md); font-size:var(--t-subhead); font-weight:500; cursor:pointer;
+  font-family:inherit; color:var(--c-label); transition:background .15s var(--ease);
+}
+.modal-btn-close:hover { background:var(--c-fill-2); }
+.modal-btn-reject {
+  min-height:44px; padding:0 var(--sp-20); background:var(--c-red-light); color:var(--c-red);
+  border:none; border-radius:var(--radius-md); font-size:var(--t-subhead); font-weight:500;
+  cursor:pointer; font-family:inherit; transition:all .15s var(--ease);
+}
+.modal-btn-reject:hover { background:var(--c-red); color:#fff; }
+.modal-btn-confirm {
+  min-height:44px; padding:0 var(--sp-24); background:var(--c-accent); color:#fff; border:none;
+  border-radius:var(--radius-md); font-size:var(--t-subhead); font-weight:600; cursor:pointer;
+  font-family:inherit; transition:background .15s var(--ease);
+}
+.modal-btn-confirm:hover { background:var(--c-accent-hover); }
+
+/* ── Accounts tab ── */
+.accounts-section { margin-bottom: var(--sp-32); }
+.accounts-section-title {
+  font-size: var(--t-headline); font-weight: 600;
+  letter-spacing: -0.022em; margin-bottom: var(--sp-16);
+  padding-bottom: var(--sp-12); border-bottom: 1px solid var(--c-separator);
+  display: flex; align-items: center; gap: var(--sp-8);
+}
+.accounts-section-icon {
+  width: 28px; height: 28px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+}
+.accounts-table { width: 100%; border-collapse: collapse; }
+.accounts-table thead tr { background: var(--c-bg-2); border-bottom: 1px solid var(--c-separator); }
+.accounts-table th {
+  padding: var(--sp-12) var(--sp-16); text-align: left;
+  font-size: var(--t-caption); font-weight: 600; color: var(--c-label-2);
+  letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap;
+}
+.accounts-table td {
+  padding: var(--sp-12) var(--sp-16); font-size: var(--t-subhead);
+  border-bottom: 1px solid var(--c-separator); letter-spacing: -0.016em;
+  vertical-align: middle;
+}
+.accounts-table tbody tr:last-child td { border-bottom: none; }
+.accounts-table tbody tr:hover td { background: var(--c-fill); }
+.credential-cell { display: flex; align-items: center; gap: var(--sp-8); }
+.credential-value {
+  font-family: monospace; font-size: var(--t-footnote);
+  color: var(--c-label); letter-spacing: 0.02em;
+  display: none;
+}
+.copy-btn {
+  min-height: 28px; padding: 0 var(--sp-8);
+  background: none; border: none; cursor: pointer;
+  font-size: 13px; color: var(--c-label-3); transition: color .15s var(--ease);
+  flex-shrink: 0;
+}
+.copy-btn:hover { color: var(--c-accent); }
+.type-badge {
+  display: inline-flex; padding: 2px 8px; border-radius: 980px;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.04em; white-space: nowrap;
+}
+.type-password { background: var(--c-accent-light); color: var(--c-accent); }
+.type-pat      { background: #fff8ee; color: #b25000; }
+.type-apikey   { background: #f0f4ff; color: #3a52b0; }
+.region-badge {
+  display: inline-flex; padding: 2px 8px; border-radius: 980px;
+  font-size: 10px; font-weight: 600; background: var(--c-fill-2); color: var(--c-label-2);
+}
+.env-op  { background: var(--c-accent-light); color: var(--c-accent); }
+.env-qa  { background: #fff8ee; color: #b25000; }
+.note-text {
+  font-size: 11px; color: var(--c-label-3); letter-spacing: -0.008em;
+}
+.note-text a { color: var(--c-accent); text-decoration: none; }
+.note-text a:hover { text-decoration: underline; }
+.accounts-notice {
+  background: var(--c-orange-light); border: 1px solid rgba(255,149,0,0.2);
+  border-radius: var(--radius-md); padding: var(--sp-16) var(--sp-20);
+  margin-bottom: var(--sp-24); display: flex; gap: var(--sp-12); align-items: flex-start;
+}
+.accounts-notice-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.accounts-notice-text { font-size: var(--t-subhead); color: #7a4500; line-height: 1.6; letter-spacing: -0.016em; }
+
+/* ── Scenarios tab ── */
+.scenario-intro {
+  background: var(--c-accent); color: #fff;
+  border-radius: var(--radius-lg); padding: var(--sp-24) var(--sp-32);
+  margin-bottom: var(--sp-32);
+}
+.scenario-intro-label {
+  font-size: var(--t-caption); font-weight: 600;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  opacity: 0.6; margin-bottom: var(--sp-8); display: block;
+}
+.scenario-intro-text {
+  font-size: var(--t-subhead); line-height: 1.7;
+  letter-spacing: -0.016em; opacity: 0.92;
+}
+.scenario-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-16);
+}
+.scenario-card {
+  background: var(--c-bg); border: 1px solid var(--c-separator);
+  border-radius: var(--radius-md); overflow: hidden;
+  transition: box-shadow .2s var(--ease), transform .2s var(--ease);
+}
+.scenario-card:hover {
+  box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+}
+.scenario-card-header {
+  padding: var(--sp-16) var(--sp-20) var(--sp-12);
+  border-bottom: 1px solid var(--c-separator);
+  display: flex; align-items: flex-start; gap: var(--sp-12);
+}
+.scenario-num {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--c-accent); color: #fff;
+  font-size: var(--t-caption); font-weight: 600;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+.scenario-title-ko {
+  font-size: var(--t-subhead); font-weight: 600;
+  letter-spacing: -0.016em; line-height: 1.3;
+  margin-bottom: 3px;
+}
+.scenario-title-en {
+  font-size: var(--t-caption); color: var(--c-label-3);
+  letter-spacing: -0.008em;
+}
+.scenario-card-body {
+  padding: var(--sp-16) var(--sp-20);
+  display: flex; flex-direction: column; gap: var(--sp-10);
+}
+.scenario-bullet {
+  display: flex; gap: var(--sp-8); align-items: flex-start;
+}
+.scenario-bullet-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--c-accent-mid); flex-shrink: 0; margin-top: 7px;
+}
+.scenario-bullet-text {
+  font-size: var(--t-footnote); color: var(--c-label-2);
+  line-height: 1.6; letter-spacing: -0.008em;
+}
+
+/* ── Lighting tab ── */
+.lighting-notice {
+  background: #fffbea; border: 1px solid #f0d060;
+  border-radius: var(--radius-md); padding: var(--sp-16) var(--sp-20);
+  margin-bottom: var(--sp-24); display: flex; gap: var(--sp-12); align-items: flex-start;
+}
+.lighting-notice-icon { font-size: 18px; flex-shrink: 0; }
+.lighting-notice-text { font-size: var(--t-subhead); color: #7a5c00; letter-spacing: -0.016em; line-height: 1.6; }
+.lighting-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--sp-16);
+  margin-bottom: var(--sp-16);
+}
+.lighting-card {
+  background: var(--c-bg); border: 1px solid var(--c-separator);
+  border-radius: var(--radius-md); overflow: hidden;
+}
+.lighting-card-header {
+  padding: var(--sp-14) var(--sp-20);
+  background: var(--c-accent); color: #fff;
+  display: flex; align-items: center; gap: var(--sp-10);
+}
+.lighting-room-icon { font-size: 16px; }
+.lighting-room-name { font-size: var(--t-subhead); font-weight: 600; letter-spacing: -0.016em; }
+.lighting-func-list { padding: var(--sp-16) var(--sp-20); display: flex; flex-direction: column; gap: var(--sp-10); }
+.lighting-func-item { display: flex; align-items: flex-start; gap: var(--sp-10); }
+.lighting-func-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--c-accent-mid); flex-shrink: 0; margin-top: 6px;
+}
+.lighting-func-text { font-size: var(--t-subhead); color: var(--c-label); letter-spacing: -0.016em; line-height: 1.5; }
+.lighting-func-text.muted { color: var(--c-label-3); font-style: italic; }
+.lighting-footnote {
+  font-size: var(--t-caption); color: var(--c-label-3);
+  letter-spacing: -0.008em; padding: var(--sp-4) 0;
+}
+
+/* ── System tab ── */
+.system-intro {
+  background: var(--c-fill); border-radius: var(--radius-md);
+  padding: var(--sp-20) var(--sp-24); margin-bottom: var(--sp-24);
+  font-size: var(--t-subhead); color: var(--c-label-2);
+  line-height: 1.7; letter-spacing: -0.016em;
+}
+.system-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--sp-16);
+  margin-bottom: var(--sp-16);
+}
+.system-card {
+  background: var(--c-bg); border: 1px solid var(--c-separator);
+  border-radius: var(--radius-md); overflow: hidden;
+}
+.system-card-header {
+  padding: var(--sp-14) var(--sp-20);
+  border-bottom: 1px solid var(--c-separator);
+  display: flex; align-items: center; gap: var(--sp-10);
+}
+.system-card-icon {
+  width: 30px; height: 30px; border-radius: var(--radius-sm);
+  display: flex; align-items: center; justify-content: center; font-size: 14px;
+  flex-shrink: 0;
+}
+.system-card-title { font-size: var(--t-subhead); font-weight: 600; letter-spacing: -0.016em; }
+.system-card-body { padding: var(--sp-16) var(--sp-20); display: flex; flex-direction: column; gap: var(--sp-10); }
+.system-item { display: flex; align-items: flex-start; gap: var(--sp-10); }
+.system-item-dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: var(--c-accent-mid); flex-shrink: 0; margin-top: 7px;
+}
+.system-item-text { font-size: var(--t-subhead); color: var(--c-label-2); letter-spacing: -0.016em; line-height: 1.5; }
+.system-item-text strong { color: var(--c-label); font-weight: 500; }
+.system-tag-row { display: flex; flex-wrap: wrap; gap: var(--sp-8); padding: var(--sp-4) 0; }
+.system-tag {
+  background: var(--c-accent-light); color: var(--c-accent);
+  padding: 3px 10px; border-radius: 980px;
+  font-size: 11px; font-weight: 500; letter-spacing: -0.008em;
+}
+.system-tag.orange { background: #fff8ee; color: #b25000; }
+.system-tag.blue   { background: #f0f4ff; color: #3a52b0; }
+
+/* ── Toast ── */
+.toast {
+  position:fixed; bottom:var(--sp-32); left:50%;
+  transform:translateX(-50%) translateY(80px);
+  z-index:999; background:rgba(29,29,31,.88); backdrop-filter:blur(12px); color:#fff;
+  padding:var(--sp-12) var(--sp-24); border-radius:980px;
+  font-size:var(--t-subhead); letter-spacing:-0.016em;
+  opacity:0; transition:all .4s var(--ease-spring); white-space:nowrap; pointer-events:none;
+}
+.toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- Login -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">ThinQ Real</div>
+    <div class="login-subtitle">Admin Dashboard</div>
+    <label class="login-label">비밀번호</label>
+    <input type="password" class="login-input" id="pwInput"
+      placeholder="비밀번호를 입력하세요"
+      onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">로그인</button>
+    <div class="login-err" id="loginErr"></div>
+  </div>
+</div>
+
+<!-- Shell -->
+<div class="shell" id="shell">
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <div class="sidebar-brand-name">ThinQ Real</div>
+      <div class="sidebar-brand-sub">Admin Dashboard</div>
+    </div>
+    <span class="nav-section-label">관리</span>
+    <div class="nav-item active" id="nav-bookings" onclick="switchTab('bookings')">
+      <span class="nav-item-icon">📋</span>예약 관리
+      <span class="nav-badge" id="pendingBadge" style="display:none;">0</span>
+    </div>
+    <div class="nav-item" id="nav-stats" onclick="switchTab('stats')">
+      <span class="nav-item-icon">📊</span>통계
+    </div>
+    <div class="nav-item" id="nav-accounts" onclick="switchTab('accounts')">
+      <span class="nav-item-icon">🔐</span>연동 계정 정보
+    </div>
+    <div class="nav-item" id="nav-scenarios" onclick="switchTab('scenarios')">
+      <span class="nav-item-icon">🎬</span>시연 시나리오
+    </div>
+    <div class="nav-item" id="nav-lighting" onclick="switchTab('lighting')">
+      <span class="nav-item-icon">💡</span>조명 스위치 안내
+    </div>
+    <div class="nav-item" id="nav-system" onclick="switchTab('system')">
+      <span class="nav-item-icon">⚙️</span>시스템 구성
+    </div>
+    <span class="nav-section-label" style="margin-top:var(--sp-8);">도구</span>
+    <div class="nav-item" onclick="loadData()">
+      <span class="nav-item-icon">↺</span>새로고침
+    </div>
+    <div class="nav-item" onclick="exportCSV()">
+      <span class="nav-item-icon">⬇︎</span>CSV 내보내기
+    </div>
+    <a class="nav-item" href="thinqreal.html" target="_blank">
+      <span class="nav-item-icon">↗</span>메인 사이트
+    </a>
+    <div class="sidebar-footer">
+      <div class="sidebar-footer-text">HS플랫폼사업센터<br>AI홈솔루션엔지니어링팀</div>
+      <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+    </div>
+  </aside>
+
+  <main class="main">
+
+    <!-- Bookings -->
+    <div class="tab-panel active" id="tab-bookings">
+      <div class="page-header">
+        <h1>예약 관리</h1>
+        <p>신청된 예약을 검토하고 승인 또는 거절합니다.</p>
+      </div>
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">전체 예약</span>
+            <div class="kpi-icon" style="background:var(--c-accent-light);">📋</div>
+          </div>
+          <div class="kpi-num accent" id="kpiTotal">0</div>
+          <div class="kpi-card-sub">누적 신청 건수</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">검토 대기</span>
+            <div class="kpi-icon" style="background:var(--c-orange-light);">⏳</div>
+          </div>
+          <div class="kpi-num orange" id="kpiPending">0</div>
+          <div class="kpi-card-sub">승인 대기 중</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">확정</span>
+            <div class="kpi-icon" style="background:var(--c-accent-light);">✓</div>
+          </div>
+          <div class="kpi-num accent" id="kpiConfirmed">0</div>
+          <div class="kpi-card-sub">승인 완료</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-card-label">거절</span>
+            <div class="kpi-icon" style="background:var(--c-red-light);">✕</div>
+          </div>
+          <div class="kpi-num red" id="kpiRejected">0</div>
+          <div class="kpi-card-sub">거절 처리됨</div>
+        </div>
+      </div>
+      <div class="toolbar">
+        <select class="toolbar-select" id="filterStatus" onchange="renderTable()">
+          <option value="">전체 상태</option>
+          <option value="대기중">대기중</option>
+          <option value="확정">확정</option>
+          <option value="거절">거절</option>
+        </select>
+        <select class="toolbar-select" id="filterSlot" onchange="renderTable()">
+          <option value="">전체 회차</option>
+          <option value="1">1회차 (09:00)</option>
+          <option value="2">2회차 (13:00)</option>
+          <option value="3">3회차 (15:00)</option>
+        </select>
+        <input type="month" class="toolbar-input" id="filterMonth" onchange="renderTable()">
+        <span class="toolbar-spacer"></span>
+        <button class="toolbar-btn" onclick="exportCSV()">⬇︎ CSV 내보내기</button>
+      </div>
+      <div class="table-card">
+        <table class="booking-table">
+          <thead>
+            <tr>
+              <th>날짜</th><th>회차</th><th>신청자</th><th>소속</th>
+              <th>방문 목적</th><th>인원</th><th>신청일</th><th>상태</th><th>처리</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">데이터를 불러오는 중...</div></div></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="tab-panel" id="tab-stats">
+      <div class="page-header">
+        <h1>통계</h1>
+        <p>예약 데이터 기반 운영 현황입니다.</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stats-card">
+          <div class="stats-card-title">방문 목적별</div>
+          <div id="purposeChart"></div>
+        </div>
+        <div class="stats-card">
+          <div class="stats-card-title">회차별 예약</div>
+          <div id="slotChart"></div>
+        </div>
+        <div class="stats-card wide">
+          <div class="stats-card-title">월별 방문 건수</div>
+          <div class="month-chart" id="monthChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lighting tab -->
+    <div class="tab-panel" id="tab-lighting">
+      <div class="page-header">
+        <h1>조명 스위치 안내</h1>
+        <p>공간별 벽면 스위치 기능 안내입니다.</p>
+      </div>
+
+      <div class="lighting-notice">
+        <div class="lighting-notice-icon">⚠️</div>
+        <div class="lighting-notice-text">
+          <strong>퇴실 시 현관의 퇴실 모드를 반드시 누르고 나가주세요.</strong><br>
+          전체 조명, 가전, 커튼이 자동으로 OFF / CLOSE 됩니다.
+        </div>
+      </div>
+
+      <div style="margin-bottom:var(--sp-24);">
+        <img src="https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/thinqreal_admin_e418b954.png"
+             alt="조명 스위치 안내 슬라이드"
+             style="width:100%;border-radius:var(--radius-lg);
+                    border:1px solid var(--c-separator);
+                    box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+      </div>
+
+      <div class="lighting-grid">
+        <div class="lighting-card">
+          <div class="lighting-card-header">
+            <span class="lighting-room-icon">🚪</span>
+            <span class="lighting-room-name">현관</span>
+          </div>
+          <div class="lighting-func-list">
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">웰컴 Light ON / OFF</span></div>
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">전체 조명 ON / OFF</span></div>
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">퇴실 모드 <span style="font-size:11px;color:var(--c-label-3);">(전체 조명·가전 OFF, 커튼 CLOSE)</span></span></div>
+          </div>
+        </div>
+        <div class="lighting-card">
+          <div class="lighting-card-header">
+            <span class="lighting-room-icon">🛁</span>
+            <span class="lighting-room-name">욕실 (내부)</span>
+          </div>
+          <div class="lighting-func-list">
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text muted">기능 없음</span></div>
+          </div>
+        </div>
+        <div class="lighting-card">
+          <div class="lighting-card-header">
+            <span class="lighting-room-icon">🛋️</span>
+            <span class="lighting-room-name">거실</span>
+          </div>
+          <div class="lighting-func-list">
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">주 조명 ON / OFF</span></div>
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">간접조명 ON / OFF</span></div>
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">커튼 OPEN / CLOSE</span></div>
+          </div>
+        </div>
+        <div class="lighting-card">
+          <div class="lighting-card-header">
+            <span class="lighting-room-icon">🛏️</span>
+            <span class="lighting-room-name">침실</span>
+          </div>
+          <div class="lighting-func-list">
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">주 조명 ON / OFF</span></div>
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">간접조명 ON / OFF</span></div>
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">커튼 OPEN / CLOSE</span></div>
+          </div>
+        </div>
+        <div class="lighting-card">
+          <div class="lighting-card-header">
+            <span class="lighting-room-icon">🍳</span>
+            <span class="lighting-room-name">키친</span>
+          </div>
+          <div class="lighting-func-list">
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">주 조명 ON / OFF</span></div>
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">간접조명 ON / OFF</span></div>
+            <div class="lighting-func-item"><div class="lighting-func-dot"></div><span class="lighting-func-text">커튼 OPEN / CLOSE</span></div>
+          </div>
+        </div>
+      </div>
+      <p class="lighting-footnote">* 외부 조명은 22:00에 자동 OFF, 07:00에 자동 ON 스케쥴링</p>
+    </div>
+
+    <!-- System tab -->
+    <div class="tab-panel" id="tab-system">
+      <div class="page-header">
+        <h1>시스템 구성</h1>
+        <p>ThinQ Real 공간의 조명·IoT·난방·오디오 시스템 구성입니다.</p>
+      </div>
+
+      <div class="system-intro">
+        북미나 BMS 대응이 가능한 듀얼 조명 배선 시스템과 효과적인 연출을 위한 DMX Light, Sound 시스템을 구성했습니다.<br>
+        <strong style="color:var(--c-label);">Homey Pro</strong>에서 자동화를 구성하고 <strong style="color:var(--c-accent);">ThinQ ON</strong>에서 다양하게 활용하는 방식으로 운영합니다.
+      </div>
+
+      <div style="margin-bottom:var(--sp-24);">
+        <img src="https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/thinqreal_admin_b2cf6b2c.png"
+             alt="시스템 구성 슬라이드"
+             style="width:100%;border-radius:var(--radius-lg);
+                    border:1px solid var(--c-separator);
+                    box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+      </div>
+
+      <div class="system-grid">
+
+        <div class="system-card">
+          <div class="system-card-header">
+            <div class="system-card-icon" style="background:var(--c-accent-light);">💡</div>
+            <span class="system-card-title">조명 시스템</span>
+          </div>
+          <div class="system-card-body">
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text"><strong>유선 DALI 기반</strong> Sub-System 구성</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text"><strong>DMX</strong> 제어를 통한 무빙/시퀀스 시나리오 연출</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text"><strong>DMX to DALI Convertor</strong> 및 Addressable LED 지원</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">스위치 자동화: 색온도, 밝기 제어</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">유선 LAN 연결 / 유선 스마트 배선·스위치 교체 가능 (북미 등 대응)</span></div>
+            <div class="system-tag-row">
+              <span class="system-tag">DALI</span>
+              <span class="system-tag orange">DMX</span>
+              <span class="system-tag blue">Addressable LED</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="system-card">
+          <div class="system-card-header">
+            <div class="system-card-icon" style="background:#f0f4ff;">🏠</div>
+            <span class="system-card-title">Homey Pro 자동화</span>
+          </div>
+          <div class="system-card-body">
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">모드용 Smart Switch를 활용한 자동화 구성</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">안정성 고려해 HA 또는 Homekit으로 호출</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">스위치 트리거 기반 시나리오 실행</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">Audio Effect Sync 지원</span></div>
+            <div class="system-tag-row">
+              <span class="system-tag">Home</span>
+              <span class="system-tag">Away</span>
+              <span class="system-tag orange">Cinema</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="system-card">
+          <div class="system-card-header">
+            <div class="system-card-icon" style="background:var(--c-accent-light);">📱</div>
+            <span class="system-card-title">ThinQ 연동</span>
+          </div>
+          <div class="system-card-body">
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text"><strong>가전 연결</strong> (전동창호 포함)</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text"><strong>가상 가전 연결</strong> (우리단지 서비스)</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">영어 음성 시연 (가전, 필요시)</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">DALI to MATTER Bridge 지원</span></div>
+            <div class="system-tag-row">
+              <span class="system-tag">한국 OP</span>
+              <span class="system-tag orange">한국 QA</span>
+              <span class="system-tag blue">미국 OP</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="system-card">
+          <div class="system-card-header">
+            <div class="system-card-icon" style="background:#fff8ee;">🌡️</div>
+            <span class="system-card-title">난방 시스템</span>
+          </div>
+          <div class="system-card-body">
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text"><strong>HVM-300</strong> — 각방 밸브제어기</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text"><strong>HCM-300WC</strong> — 통신형 온도조절기 (거실)</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text"><strong>HCM-300S</strong> — 통신형 온도조절기 (안방, 선택)</span></div>
+            <div class="system-item"><div class="system-item-dot"></div><span class="system-item-text">DC 12V / 2Wire 통신 / Multi-Admin 지원</span></div>
+            <div class="system-tag-row">
+              <span class="system-tag">HVM-300</span>
+              <span class="system-tag orange">HCM-300WC</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- Scenarios tab -->
+    <div class="tab-panel" id="tab-scenarios">
+      <div class="page-header">
+        <h1>시연 시나리오</h1>
+        <p>ThinQ Real 방문객 대상 LG AI Home 시연 흐름입니다.</p>
+      </div>
+
+      <div class="scenario-intro">
+        <span class="scenario-intro-label">Overview</span>
+        <p class="scenario-intro-text">고객의 일상적인 언어와 감정까지 소통하는 ThinQ ON을 통해, LG전자가 단순한 '가사 해방'을 넘어 '맞춤형 상황 제어와 선제적 케어'까지 제공하는 AI Home Solution 선도자임을 입증합니다.</p>
+      </div>
+
+      <div class="scenario-grid">
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">1</div>
+              <div>
+                <div class="scenario-title-ko">귀가 및 공간 개인화</div>
+                <div class="scenario-title-en">Welcome & Personalization</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">고객이 집에 들어서면 부재중이었던 집안의 보안 상태를 체크하여 안심 메시지 전달</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">사용자의 취향에 맞춰 실내 온도, 조명, 음악을 자동으로 세팅하여 완벽한 맞춤형 웰컴 공간 제공</span>
+              </div>
+            </div>
+          </div>
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">2</div>
+              <div>
+                <div class="scenario-title-ko">감성 대화 및 일정 브리핑</div>
+                <div class="scenario-title-en">Empathy & Scheduling</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">ThinQ ON이 사용자의 감정 상태를 헤아리며 사람과 대화하듯 자연스러운 공감 대화</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">대화의 흐름 속에서 캘린더와 연동하여 다가오는 일정을 스마트하게 브리핑</span>
+              </div>
+            </div>
+          </div>
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">3</div>
+              <div>
+                <div class="scenario-title-ko">맞춤형 의류 케어</div>
+                <div class="scenario-title-en">Styler Integration</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">앞서 확인한 일정과 당일 날씨 데이터를 종합 분석하여 최적의 외출복을 추천</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">추천된 옷에 맞춰 스타일러의 케어 코스를 연동하여 완벽한 외출 준비</span>
+              </div>
+            </div>
+          </div>
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">4</div>
+              <div>
+                <div class="scenario-title-ko">주방 어시스턴트</div>
+                <div class="scenario-title-en">Recipe Recommendation</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">주방으로 이동한 사용자가 원하는 요리를 만들기 위해 ThinQ ON과 일상적인 언어로 대화</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">대화의 맥락과 사용자의 의도를 파악하여 최적의 레시피를 찾아 제안</span>
+              </div>
+            </div>
+          </div>
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">5</div>
+              <div>
+                <div class="scenario-title-ko">스마트 쿠킹 및 자동 환기</div>
+                <div class="scenario-title-en">Smart Cooking & Air Care</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">추천 받은 레시피에 따라 오븐 상태 확인 및 요리 완료 알림을 통해 진행</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">요리 완료 후 실내 공기질 저하를 스스로 감지하고, 환기 및 자동 창문을 열어 실내를 쾌적하게 환기</span>
+              </div>
+            </div>
+          </div>
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">6</div>
+              <div>
+                <div class="scenario-title-ko">휴식 환경 구성 및 선제적 홈 케어</div>
+                <div class="scenario-title-en">Ambiance & Proactive Care</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">완벽한 휴식을 위한 '영화관 모드'를 실행하여 TV와 조명 등 공간을 통합 제어</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">영화 감상 중 주방 누수 센서가 이상을 감지하면 즉각적으로 알림을 주어 피해를 예방하는 선제적 케어</span>
+              </div>
+            </div>
+          </div>
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">7</div>
+              <div>
+                <div class="scenario-title-ko">상황 인지 기반 부분 청소</div>
+                <div class="scenario-title-en">Context-Aware Cleaning</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">맥락 기반으로 음식을 흘린 상황을 이해하고 로봇청소기를 호출</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">전체 공간이 아닌 오염된 해당 구역만 신속하게 집중 청소하여 실질적인 가사 불편을 해결</span>
+              </div>
+            </div>
+          </div>
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">8</div>
+              <div>
+                <div class="scenario-title-ko">세탁 코스 제안 및 케어 경험</div>
+                <div class="scenario-title-en">Personalized Wash & Comprehensive Care</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">의류 재질 기반의 최적 세탁 코스 추천으로 스마트한 맞춤형 의류 케어 시연</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">세탁 완료 후 통세척 코치 및 프레시 키퍼 기능으로 연계하여, 단순 세탁을 넘어선 종합적인 솔루션 제안</span>
+              </div>
+            </div>
+          </div>
+          <div class="scenario-card">
+            <div class="scenario-card-header">
+              <div class="scenario-num">9</div>
+              <div>
+                <div class="scenario-title-ko">외출 모드 전환 및 에너지 세이빙</div>
+                <div class="scenario-title-en">Away Mode & Energy Saving</div>
+              </div>
+            </div>
+            <div class="scenario-card-body">
+              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">집을 나서는 상황을 인식하여 조명과 불필요한 가전의 전원을 차단하고, 공조 기기를 외출 모드로 자동 전환</span>
+              </div>              <div class="scenario-bullet">
+                <div class="scenario-bullet-dot"></div>
+                <span class="scenario-bullet-text">로봇청소기가 청소를 시작하고 시큐리티 기능을 활성화하여 빈집을 안전하고 효율적으로 관리</span>
+              </div>
+            </div>
+          </div>
+      </div>
+    </div>
+
+    <!-- Accounts tab -->
+    <div class="tab-panel" id="tab-accounts">
+      <div class="page-header">
+        <h1>연동 계정 정보</h1>
+        <p>ThinQ Real 공간에 연동된 서비스 및 기기의 계정 정보입니다.</p>
+      </div>
+
+      <div class="accounts-notice">
+        <div class="accounts-notice-icon">⚠️</div>
+        <div class="accounts-notice-text">
+          본 페이지의 정보는 <strong>관리자 전용</strong>입니다. 외부 공유 및 무단 유출을 금지합니다.<br>
+          복사 후에는 클립보드를 비워주세요.
+        </div>
+      </div>
+
+      <!-- ThinQ 계정 -->
+      <div class="accounts-section">
+        <div class="accounts-section-title">
+          <div class="accounts-section-icon" style="background:var(--c-accent-light);">🏠</div>
+          ThinQ 계정
+        </div>
+        <div class="table-card">
+          <table class="accounts-table">
+            <thead>
+              <tr><th>서비스</th><th>지역</th><th>환경</th><th>ID / 계정</th><th>자격증명</th><th>비고</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:500;">ThinQ</td>
+                <td><span class="region-badge">KR</span></td>
+                <td><span class="type-badge env-op">OP</span></td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">design0275.lge@gmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-thinq-kr-op" style="display:inline;">K1552134lch!</span>
+                  <button class="copy-btn" onclick="copyVal('v-thinq-kr-op')" title="복사">⎘</button>
+                </div></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">ThinQ</td>
+                <td><span class="region-badge">US</span></td>
+                <td><span class="type-badge env-op">OP</span></td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">thinq_real_op_us@yopmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-thinq-us-op" style="display:inline;">thinqrealopus1!</span>
+                  <button class="copy-btn" onclick="copyVal('v-thinq-us-op')" title="복사">⎘</button>
+                </div></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">ThinQ</td>
+                <td><span class="region-badge">KR</span></td>
+                <td><span class="type-badge env-qa">QA</span></td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">thinq_real_qa2@yopmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-thinq-kr-qa" style="display:inline;">AIhomeb2bse1!</span>
+                  <button class="copy-btn" onclick="copyVal('v-thinq-kr-qa')" title="복사">⎘</button>
+                </div></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">ThinQ</td>
+                <td><span class="region-badge">US</span></td>
+                <td><span class="type-badge env-qa">QA</span></td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">thinq_real_qa_us@yopmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-thinq-us-qa" style="display:inline;">thinqrealqaus1!</span>
+                  <button class="copy-btn" onclick="copyVal('v-thinq-us-qa')" title="복사">⎘</button>
+                </div></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">ThinQ Real Calendar</td>
+                <td>—</td>
+                <td>—</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">thinq_real_calendar@gmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-calendar" style="display:inline;">Qwert12345!</span>
+                  <button class="copy-btn" onclick="copyVal('v-calendar')" title="복사">⎘</button>
+                </div></td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 토큰/키 -->
+      <div class="accounts-section">
+        <div class="accounts-section-title">
+          <div class="accounts-section-icon" style="background:#fff8ee;">🔑</div>
+          토큰 / API 키
+        </div>
+        <div class="table-card">
+          <table class="accounts-table">
+            <thead>
+              <tr><th>서비스</th><th>환경</th><th>유형</th><th>자격증명</th><th>비고</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:500;">QA 계정용 PAT</td>
+                <td><span class="type-badge env-qa">QA</span></td>
+                <td><span class="type-badge type-pat">PAT</span></td>
+                <td><div class="credential-cell">
+                  
+                  <span class="credential-value" id="v-pat" style="display:inline;">thinqpat_c272e02831a4467748c6f58ee5345a0d69ba942aa4cca959037f</span>
+                  <button class="copy-btn" onclick="copyVal('v-pat')" title="복사">⎘</button>
+                </div></td>
+                <td><span class="note-text"><a href="http://jira.lge.com/issue/browse/CCCOL-5271" target="_blank">CCCOL-5271</a></span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">QA 계정용 API Key</td>
+                <td><span class="type-badge env-qa">QA</span></td>
+                <td><span class="type-badge type-apikey">API Key</span></td>
+                <td><div class="credential-cell">
+                  
+                  <span class="credential-value" id="v-apikey" style="display:inline;">FpAn7leUCD2DTwkI1GtuJ3z1Zwvtep9f49QowW4E</span>
+                  <button class="copy-btn" onclick="copyVal('v-apikey')" title="복사">⎘</button>
+                </div></td>
+                <td><span class="note-text"><a href="http://jira.lge.com/issue/browse/CCCOL-5271" target="_blank">CCCOL-5271</a></span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 연동 파트너 계정 -->
+      <div class="accounts-section">
+        <div class="accounts-section-title">
+          <div class="accounts-section-icon" style="background:#f0f4ff;">🔗</div>
+          연동 파트너 계정
+        </div>
+        <div class="table-card">
+          <table class="accounts-table">
+            <thead>
+              <tr><th>서비스</th><th>환경</th><th>ID / 계정</th><th>자격증명</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:500;">Google</td>
+                <td>—</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">allpaltv@gmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-google" style="display:inline;">K1552134lch!</span>
+                  <button class="copy-btn" onclick="copyVal('v-google')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">Hejhome</td>
+                <td><span class="type-badge env-qa">QA</span></td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">design0275@gmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-hejhome" style="display:inline;">gkdl11!!</span>
+                  <button class="copy-btn" onclick="copyVal('v-hejhome')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">Homey</td>
+                <td>—</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">allpaltv@gmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-homey" style="display:inline;">K1552134lch!</span>
+                  <button class="copy-btn" onclick="copyVal('v-homey')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">Homey (ThinQ QA)</td>
+                <td><span class="type-badge env-qa">QA</span></td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">b2bsecalendar@yopmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-homey-qa" style="display:inline;">AIhomeb2bse1!</span>
+                  <button class="copy-btn" onclick="copyVal('v-homey-qa')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">Homey Pro</td>
+                <td>—</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">dubai_test@yopmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-homeypro" style="display:inline;">qwerasdf00</span>
+                  <button class="copy-btn" onclick="copyVal('v-homeypro')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">Philips</td>
+                <td>—</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">thinq_real_philips@yopmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-philips" style="display:inline;">1Q2w3e4r5t6y</span>
+                  <button class="copy-btn" onclick="copyVal('v-philips')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">Ring</td>
+                <td>—</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">hj8462.kim@lge.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-ring" style="display:inline;">AIhomeb2bse1!</span>
+                  <button class="copy-btn" onclick="copyVal('v-ring')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">Sonos</td>
+                <td>—</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">thinq_real_sonos@yopmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-sonos" style="display:inline;">1q2w3e4r5t6y</span>
+                  <button class="copy-btn" onclick="copyVal('v-sonos')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">시하스 (온도조절기)</td>
+                <td>—</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">thinq_real_sihas@yopmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-sihas" style="display:inline;">1Q2w3e4r5t6y</span>
+                  <button class="copy-btn" onclick="copyVal('v-sihas')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 네트워크/장비 -->
+      <div class="accounts-section">
+        <div class="accounts-section-title">
+          <div class="accounts-section-icon" style="background:#f0f4ff;">📡</div>
+          네트워크 / 장비
+        </div>
+        <div class="table-card">
+          <table class="accounts-table">
+            <thead>
+              <tr><th>장비</th><th>ID / 계정</th><th>자격증명</th><th>비고</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:500;">메인 AP</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">admin</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-ap" style="display:inline;">lge13245!</span>
+                  <button class="copy-btn" onclick="copyVal('v-ap')" title="복사">⎘</button>
+                </div></td>
+                <td></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">샘플패드 — 아이패드</td>
+                <td>—</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-ipad" style="display:inline;">000000</span>
+                  <button class="copy-btn" onclick="copyVal('v-ipad')" title="복사">⎘</button>
+                </div></td>
+                <td><span class="note-text">디바이스 잠금해제</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">샘플폰 — 갤럭시 S25</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">b2bsegalaxy@gmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-galaxy" style="display:inline;">Qwert12345!</span>
+                  <button class="copy-btn" onclick="copyVal('v-galaxy')" title="복사">⎘</button>
+                </div></td>
+                <td><span class="note-text">Gmail·Google 동일 / 잠금해제: 000000</span></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">샘플폰 — 아이폰 16</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">b2bseiphone@gmail.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-iphone" style="display:inline;">Qwert12345!</span>
+                  <button class="copy-btn" onclick="copyVal('v-iphone')" title="복사">⎘</button>
+                </div></td>
+                <td><span class="note-text">Gmail·Apple 동일 / 잠금해제: 0000</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 콘텐츠/구독 -->
+      <div class="accounts-section">
+        <div class="accounts-section-title">
+          <div class="accounts-section-icon" style="background:var(--c-red-light);">🎵</div>
+          콘텐츠 / 구독
+        </div>
+        <div class="table-card">
+          <table class="accounts-table">
+            <thead>
+              <tr><th>서비스</th><th>ID / 계정</th><th>자격증명</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style="font-weight:500;">멜론 (카카오계정)</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">hj8462.kim@lge.com</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-melon" style="display:inline;">AIhomeb2bse1!</span>
+                  <button class="copy-btn" onclick="copyVal('v-melon')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+              <tr>
+                <td style="font-weight:500;">지니뮤직</td>
+                <td style="font-family:monospace;font-size:var(--t-footnote);">aihomese</td>
+                <td><div class="credential-cell">
+                  <span class="type-badge type-password">PW</span>
+                  <span class="credential-value" id="v-genie" style="display:inline;">1q2w3e4r5t6y</span>
+                  <button class="copy-btn" onclick="copyVal('v-genie')" title="복사">⎘</button>
+                </div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+  </main>
+</div>
+
+
+<!-- Modal -->
+<div class="modal-backdrop" id="modalBg" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 class="modal-title" id="modalTitle">예약 상세</h2>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="detail-grid" id="modalGrid"></div>
+    <div class="modal-actions">
+      <button class="modal-btn-close" onclick="closeModal()">닫기</button>
+      <button class="modal-btn-reject"  id="modalRejectBtn"  onclick="updateStatusFromModal('거절')">거절</button>
+      <button class="modal-btn-confirm" id="modalConfirmBtn" onclick="updateStatusFromModal('확정')">확정</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqmzxbm99Fi9vrKgLxCslUwwEl8TxiyUN6LPMwimf04yjQjIO1s2tjC2jWKnR7iCSrSQ/exec';
+const ADMIN_PW   = 'thinqreal2026';
+const SLOT_LABELS = { '1':'1회차  09:00–10:30', '2':'2회차  13:00–14:30', '3':'3회차  15:00–16:30' };
+
+let allBookings = [], currentModalId = null;
+
+function doLogin() {
+  if (document.getElementById('pwInput').value === ADMIN_PW) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('shell').style.display = 'block';
+    loadData();
+  } else {
+    document.getElementById('loginErr').textContent = '비밀번호가 올바르지 않습니다.';
+  }
+}
+function doLogout() {
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('shell').style.display = 'none';
+  document.getElementById('pwInput').value = '';
+  document.getElementById('loginErr').textContent = '';
+}
+
+function switchTab(id) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  if (id === 'stats') renderStats();
+}
+
+// toggleReveal 제거 (마스킹 미사용)
+
+// ── 계정 정보 — 클립보드 복사 ────────────────────────────────
+function copyVal(id) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    toast('클립보드에 복사됐어요.');
+  }).catch(() => {
+    // fallback
+    const el = document.createElement('textarea');
+    el.value = text; el.style.position = 'fixed'; el.style.opacity = '0';
+    document.body.appendChild(el); el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    toast('클립보드에 복사됐어요.');
+  });
+}
+
+async function loadData() {
+  try {
+    const res = await fetch(SCRIPT_URL + '?type=bookings');
+    allBookings = (await res.json()).records || [];
+    updateKPIs(); renderTable();
+    toast('데이터를 불러왔습니다.');
+  } catch(e) {
+    allBookings = [
+      {id:'1',date:'2026-05-20',slot:'1',name:'김민준',org:'AI홈솔루션팀',phone:'010-1234-5678',email:'mj.kim@lge.com',purpose:'R&D 연구',count:'3',note:'',status:'대기중',timestamp:'2026-05-14T09:00:00'},
+      {id:'2',date:'2026-05-21',slot:'2',name:'이서연',org:'B2B영업팀',phone:'010-2345-6789',email:'sy.lee@lge.com',purpose:'B2B 파트너 시연',count:'8',note:'해외 바이어 동반',status:'확정',timestamp:'2026-05-13T14:30:00'},
+      {id:'3',date:'2026-05-22',slot:'3',name:'박도현',org:'AI연구소',phone:'010-3456-7890',email:'dh.park@lge.com',purpose:'R&D 연구',count:'2',note:'',status:'대기중',timestamp:'2026-05-14T11:00:00'},
+      {id:'4',date:'2026-05-23',slot:'1',name:'최유진',org:'Product팀',phone:'010-4567-8901',email:'yj.choi@lge.com',purpose:'내부 행사',count:'12',note:'',status:'확정',timestamp:'2026-05-12T16:00:00'},
+      {id:'5',date:'2026-04-15',slot:'2',name:'정우성',org:'마케팅팀',phone:'010-5678-9012',email:'ws.jung@lge.com',purpose:'Press Tour',count:'5',note:'',status:'거절',timestamp:'2026-04-10T10:00:00'},
+    ];
+    updateKPIs(); renderTable();
+    toast('데모 데이터로 표시 중 — Apps Script 연결 필요');
+  }
+}
+
+function updateKPIs() {
+  const total     = allBookings.length;
+  const pending   = allBookings.filter(b=>b.status==='대기중').length;
+  const confirmed = allBookings.filter(b=>b.status==='확정').length;
+  const rejected  = allBookings.filter(b=>b.status==='거절').length;
+  document.getElementById('kpiTotal').textContent     = total;
+  document.getElementById('kpiPending').textContent   = pending;
+  document.getElementById('kpiConfirmed').textContent = confirmed;
+  document.getElementById('kpiRejected').textContent  = rejected;
+  const badge = document.getElementById('pendingBadge');
+  badge.textContent = pending;
+  badge.style.display = pending > 0 ? '' : 'none';
+}
+
+function renderTable() {
+  const status = document.getElementById('filterStatus').value;
+  const slot   = document.getElementById('filterSlot').value;
+  const month  = document.getElementById('filterMonth').value;
+  let data = [...allBookings];
+  if (status) data = data.filter(b=>b.status===status);
+  if (slot)   data = data.filter(b=>String(b.slot)===slot);
+  if (month)  data = data.filter(b=>b.date&&b.date.startsWith(month));
+  data.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
+  const tbody = document.getElementById('tableBody');
+  if (!data.length) {
+    tbody.innerHTML = `<tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon">🔍</div><div class="empty-state-text">조건에 맞는 예약이 없습니다.</div></div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(b => {
+    const cls     = b.status==='대기중'?'pending':b.status==='확정'?'confirmed':'rejected';
+    const applied = b.timestamp ? new Date(b.timestamp).toLocaleDateString('ko-KR',{month:'short',day:'numeric'}) : '';
+    const actions = b.status==='대기중'
+      ? `<div class="row-actions" onclick="event.stopPropagation()"><button class="btn-confirm-sm" onclick="updateStatus('${b.id}','확정')">확정</button><button class="btn-reject-sm" onclick="updateStatus('${b.id}','거절')">거절</button></div>`
+      : `<button class="btn-detail-sm" onclick="event.stopPropagation();openModal('${b.id}')">상세</button>`;
+    return `<tr onclick="openModal('${b.id}')">
+      <td><strong style="letter-spacing:-0.02em;">${b.date||''}</strong></td>
+      <td style="color:var(--c-label-2);font-size:var(--t-footnote);">${SLOT_LABELS[b.slot]||b.slot}</td>
+      <td style="font-weight:500;">${b.name}</td>
+      <td style="color:var(--c-label-2);font-size:var(--t-footnote);">${b.org}</td>
+      <td>${b.purpose}</td>
+      <td style="text-align:center;">${b.count}명</td>
+      <td style="color:var(--c-label-3);font-size:var(--t-footnote);">${applied}</td>
+      <td><span class="badge badge-${cls}">${b.status}</span></td>
+      <td>${actions}</td>
+    </tr>`;
+  }).join('');
+}
+
+function openModal(id) {
+  const b = allBookings.find(x=>x.id===id); if (!b) return;
+  currentModalId = id;
+  document.getElementById('modalTitle').textContent = b.name + ' 님 예약 상세';
+  const cls = b.status==='대기중'?'pending':b.status==='확정'?'confirmed':'rejected';
+  document.getElementById('modalGrid').innerHTML = `
+    <span class="detail-label">날짜</span>    <span class="detail-value">${b.date}</span>
+    <span class="detail-label">회차</span>    <span class="detail-value">${SLOT_LABELS[b.slot]||b.slot}</span>
+    <span class="detail-label">소속</span>    <span class="detail-value">${b.org}</span>
+    <span class="detail-label">연락처</span>  <span class="detail-value">${b.phone}</span>
+    <span class="detail-label">이메일</span>  <span class="detail-value" style="color:var(--c-accent);">${b.email}</span>
+    <span class="detail-label">방문 목적</span><span class="detail-value">${b.purpose}</span>
+    <span class="detail-label">방문 인원</span><span class="detail-value">${b.count}명</span>
+    <span class="detail-label">요청 사항</span><span class="detail-value" style="color:var(--c-label-2);">${b.note||'없음'}</span>
+    <span class="detail-label">현재 상태</span><span class="detail-value"><span class="badge badge-${cls}">${b.status}</span></span>
+    <span class="detail-label">신청 일시</span><span class="detail-value" style="color:var(--c-label-2);font-size:var(--t-footnote);">${new Date(b.timestamp).toLocaleString('ko-KR')}</span>
+  `;
+  const isPending = b.status === '대기중';
+  document.getElementById('modalRejectBtn').style.display  = isPending ? '' : 'none';
+  document.getElementById('modalConfirmBtn').style.display = isPending ? '' : 'none';
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal() { document.getElementById('modalBg').classList.remove('open'); currentModalId = null; }
+function updateStatusFromModal(s) { if (currentModalId) { updateStatus(currentModalId,s); closeModal(); } }
+
+async function updateStatus(id, status) {
+  const b = allBookings.find(x=>x.id===id); if (!b) return;
+  b.status = status;
+  try {
+    await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({type:'update',id,status,email:b.email,name:b.name,date:b.date,slotLabel:SLOT_LABELS[b.slot]}) });
+  } catch(e) {}
+  updateKPIs(); renderTable();
+  toast(status==='확정' ? '✓ 확정 처리 — 메일이 발송됩니다.' : '거절 처리되었습니다.');
+}
+
+function renderStats() {
+  const purposes = {};
+  allBookings.forEach(b=>{ purposes[b.purpose]=(purposes[b.purpose]||0)+1; });
+  const maxP = Math.max(...Object.values(purposes),1);
+  const fills = ['','mid','orange','','mid'];
+  document.getElementById('purposeChart').innerHTML =
+    Object.entries(purposes).map(([k,v],i)=>`<div class="bar-item">
+      <div class="bar-meta"><span class="bar-name">${k}</span><span class="bar-count">${v}건</span></div>
+      <div class="bar-track"><div class="bar-fill ${fills[i%fills.length]}" style="width:${(v/maxP*100).toFixed(0)}%"></div></div>
+    </div>`).join('') || '<p style="color:var(--c-label-3);font-size:var(--t-subhead);">데이터 없음</p>';
+
+  const slots = {'1':0,'2':0,'3':0};
+  allBookings.forEach(b=>{ if(slots[b.slot]!==undefined) slots[b.slot]++; });
+  const maxS = Math.max(...Object.values(slots),1);
+  document.getElementById('slotChart').innerHTML =
+    Object.entries(slots).map(([k,v])=>`<div class="bar-item">
+      <div class="bar-meta"><span class="bar-name">${SLOT_LABELS[k]}</span><span class="bar-count">${v}건</span></div>
+      <div class="bar-track"><div class="bar-fill" style="width:${(v/maxS*100).toFixed(0)}%"></div></div>
+    </div>`).join('');
+
+  const months = {};
+  allBookings.forEach(b=>{ if(b.date){const m=b.date.slice(0,7); months[m]=(months[m]||0)+1;} });
+  const sorted = Object.entries(months).sort((a,b)=>a[0].localeCompare(b[0]));
+  const maxM = Math.max(...sorted.map(x=>x[1]),1);
+  const container = document.getElementById('monthChart');
+  container.innerHTML = sorted.length
+    ? sorted.map(([k,v])=>{
+        const pct = Math.max((v/maxM*100).toFixed(0),8);
+        return `<div class="month-col">
+          <div class="month-bar-wrap"><div class="month-bar" style="height:${pct}%"></div></div>
+          <div class="month-val">${v}</div>
+          <div class="month-label">${k.slice(5)}월</div>
+        </div>`;
+      }).join('')
+    : '<p style="color:var(--c-label-3);font-size:var(--t-subhead);">데이터 없음</p>';
+}
+
+function exportCSV() {
+  const headers = ['날짜','회차','이름','소속','연락처','이메일','목적','인원','요청사항','상태','신청일시'];
+  const rows = allBookings.map(b=>[b.date,SLOT_LABELS[b.slot]||b.slot,b.name,b.org,b.phone,b.email,b.purpose,b.count,b.note||'',b.status,new Date(b.timestamp).toLocaleString('ko-KR')]);
+  const csv = [headers,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = 'thinqreal_'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('CSV 파일이 다운로드됩니다.');
+}
+
+function toast(msg, ms=3000) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), ms);
+}
+</script>
+</body>
+</html>
