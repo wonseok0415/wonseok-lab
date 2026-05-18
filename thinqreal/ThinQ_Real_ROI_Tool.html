@@ -667,6 +667,168 @@
   .hero-value, .summary-item .value {
     transition: color 0.3s ease;
   }
+
+  /* ===== Snapshots (시나리오 이력) ===== */
+  .snapshots-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .snapshots-empty {
+    text-align: center;
+    padding: 36px 16px;
+    color: var(--text-tertiary);
+    font-size: 14px;
+    line-height: 1.7;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+  }
+  .snapshot-item {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 20px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    grid-template-rows: auto auto auto;
+    column-gap: 16px;
+    row-gap: 4px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .snapshot-item:hover {
+    border-color: var(--accent-mid);
+    box-shadow: var(--shadow-sm);
+  }
+  .snapshot-label {
+    grid-column: 1;
+    grid-row: 1;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+  }
+  .snapshot-author {
+    font-weight: 400;
+    color: var(--text-tertiary);
+    font-size: 13px;
+    margin-left: 6px;
+  }
+  .snapshot-time {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 12px;
+    color: var(--text-tertiary);
+  }
+  .snapshot-meta {
+    grid-column: 1;
+    grid-row: 3;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 6px;
+  }
+  .snapshot-meta strong {
+    color: var(--accent);
+    font-weight: 600;
+    margin-left: 4px;
+  }
+  .snapshot-actions {
+    grid-column: 2;
+    grid-row: 1 / span 3;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .snapshot-btn {
+    background: transparent;
+    border: 1px solid var(--border-strong);
+    color: var(--text-secondary);
+    padding: 7px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
+    font-family: inherit;
+  }
+  .snapshot-btn:hover {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+  .snapshot-btn.danger:hover {
+    background: #fff0ef;
+    color: var(--red);
+    border-color: #ffb3b0;
+  }
+
+  /* 저장 다이얼로그 */
+  .snapshot-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    z-index: 2000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .snapshot-dialog-overlay.active {
+    display: flex;
+  }
+  .snapshot-dialog {
+    background: white;
+    border-radius: var(--radius-lg);
+    padding: 28px;
+    max-width: 460px;
+    width: 100%;
+    box-shadow: var(--shadow-lg);
+  }
+  .snapshot-dialog h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+  .snapshot-dialog p {
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .snapshot-dialog label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    margin-top: 12px;
+  }
+  .snapshot-dialog input[type="text"] {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--border-strong);
+    border-radius: var(--radius-sm);
+    font-size: 15px;
+    font-family: inherit;
+    color: var(--text-primary);
+    background: var(--bg-primary);
+    transition: border-color .15s ease;
+  }
+  .snapshot-dialog input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: white;
+  }
+  .snapshot-dialog-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    margin-top: 24px;
+  }
 </style>
 </head>
 <body>
@@ -749,6 +911,7 @@
     <button class="btn btn-primary" onclick="resetToDefaults()">기본값으로 초기화</button>
     <button class="btn btn-secondary" onclick="resetToZeroContribution()">확정 산입 항목만 보기</button>
     <button class="btn btn-secondary" onclick="loadSampleContribution()">기여 영업이익 반영 시</button>
+    <button class="btn btn-secondary" onclick="openSnapshotSaveDialog()">📌 현재 시나리오 저장</button>
   </div>
 
   <!-- Input Panels -->
@@ -969,6 +1132,21 @@
     </div>
   </div>
 
+  <!-- 저장된 시나리오 (이력 관리) -->
+  <div class="panel" style="margin-top:24px;">
+    <div class="panel-header">
+      <div class="panel-title-group">
+        <h2>저장된 시나리오</h2>
+        <span class="panel-tag">이력 관리</span>
+      </div>
+      <button class="snapshot-btn" onclick="refreshSnapshots()">🔄 새로고침</button>
+    </div>
+    <p class="panel-desc">실시간 시뮬레이션 결과를 시점별로 저장해 변수 변화 이력을 비교할 수 있습니다.</p>
+    <div id="snapshots-list" class="snapshots-list">
+      <div class="snapshots-empty">불러오는 중…</div>
+    </div>
+  </div>
+
   <footer>
     ThinQ Real ROI 분석툴 · 2026년 5월 · 데이터가 쌓일수록 더 강해지는 공간
   </footer>
@@ -987,6 +1165,22 @@
       </button>
     </div>
     <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- Snapshot Save Dialog -->
+<div class="snapshot-dialog-overlay" id="snapshot-dialog" onclick="closeSnapshotDialog(event)">
+  <div class="snapshot-dialog" onclick="event.stopPropagation()">
+    <h3>현재 시나리오 저장</h3>
+    <p>지금 입력된 변수와 산출 결과를 시점 기록으로 저장합니다.</p>
+    <label for="snapshot-label-input">시나리오 이름 <span style="color:var(--red);">*</span></label>
+    <input type="text" id="snapshot-label-input" placeholder="예: 2026년 5월 초안" maxlength="80">
+    <label for="snapshot-author-input">작성자 (선택)</label>
+    <input type="text" id="snapshot-author-input" placeholder="예: 이철호" maxlength="40">
+    <div class="snapshot-dialog-actions">
+      <button class="btn btn-secondary" onclick="closeSnapshotDialog()">취소</button>
+      <button class="btn btn-primary" onclick="saveSnapshot()">저장</button>
+    </div>
   </div>
 </div>
 
@@ -1695,9 +1889,213 @@ function loadSampleContribution() {
   calculate();
 }
 
+// ==================== 시나리오 스냅샷 (이력 관리) ====================
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxqmzxbm99Fi9vrKgLxCslUwwEl8TxiyUN6LPMwimf04yjQjIO1s2tjC2jWKnR7iCSrSQ/exec';
+const SIMPLE_INPUTS = ['capex','opex','cExtLab','dTest','cVenue','nVisit','cAgency','nPress','rMedia','kAdj'];
+
+function collectInputs() {
+  const inputs = {};
+  SIMPLE_INPUTS.forEach(id => { inputs[id] = +document.getElementById(id).value; });
+  inputs.categories = {};
+  categories.forEach(c => {
+    inputs.categories[c.id] = {
+      pipe:   +document.getElementById(`${c.id}-pipe`).value,
+      margin: +document.getElementById(`${c.id}-margin`).value,
+      attr:   +document.getElementById(`${c.id}-attr`).value,
+    };
+  });
+  return inputs;
+}
+
+function applyInputs(inputs) {
+  if (!inputs) return;
+  SIMPLE_INPUTS.forEach(id => {
+    if (inputs[id] == null) return;
+    document.getElementById(id).value = inputs[id];
+    const slider = document.getElementById(id + '-slider');
+    if (slider) slider.value = inputs[id];
+  });
+  if (inputs.categories) {
+    categories.forEach(c => {
+      const ci = inputs.categories[c.id];
+      if (!ci) return;
+      ['pipe','margin','attr'].forEach(f => {
+        if (ci[f] != null) document.getElementById(`${c.id}-${f}`).value = ci[f];
+      });
+    });
+  }
+  calculate();
+}
+
+function collectOutputs() {
+  const capex = (+document.getElementById('capex').value) * 1e6;
+  const opex  = (+document.getElementById('opex').value)  * 1e6;
+  const cExtLab = (+document.getElementById('cExtLab').value) * 1e6;
+  const dTest = +document.getElementById('dTest').value;
+  const vRnD = cExtLab * dTest;
+  const cVenue = (+document.getElementById('cVenue').value) * 1e6;
+  const nVisit = +document.getElementById('nVisit').value;
+  const cAgency = (+document.getElementById('cAgency').value) * 1e6;
+  const vSalesInfra = cVenue * nVisit + cAgency;
+  let vSalesContrib = 0;
+  categories.forEach(c => {
+    const pipe = (+document.getElementById(`${c.id}-pipe`).value) * 1e6;
+    const margin = (+document.getElementById(`${c.id}-margin`).value) / 100;
+    const attr = (+document.getElementById(`${c.id}-attr`).value) / 100;
+    vSalesContrib += pipe * margin * attr;
+  });
+  const nPress = +document.getElementById('nPress').value;
+  const rMedia = (+document.getElementById('rMedia').value) * 1e6;
+  const kAdj = +document.getElementById('kAdj').value;
+  const vPR = nPress * rMedia * kAdj;
+  const annualValue = vRnD + vSalesInfra + vSalesContrib + vPR;
+  const totalCost = capex + opex;
+  const roi3 = ((annualValue * 3 - totalCost) / totalCost) * 100;
+  const roi5 = ((annualValue * 5 - totalCost) / totalCost) * 100;
+  const profit3 = annualValue * 3 - totalCost;
+  const profit5 = annualValue * 5 - totalCost;
+  const bepYears = annualValue > 0 ? capex / annualValue : null;
+  return {
+    bepYears,
+    bepText: document.getElementById('kpi-bep').textContent,
+    roi3, roi5, profit3, profit5,
+    annualValue, vRnD, vSalesInfra, vSalesContrib, vPR,
+    totalCost,
+  };
+}
+
+function openSnapshotSaveDialog() {
+  document.getElementById('snapshot-label-input').value = '';
+  document.getElementById('snapshot-author-input').value = '';
+  document.getElementById('snapshot-dialog').classList.add('active');
+  setTimeout(() => document.getElementById('snapshot-label-input').focus(), 50);
+}
+
+function closeSnapshotDialog(e) {
+  if (e && e.target && e.target.id !== 'snapshot-dialog') return;
+  document.getElementById('snapshot-dialog').classList.remove('active');
+}
+
+async function saveSnapshot() {
+  const labelEl = document.getElementById('snapshot-label-input');
+  const authorEl = document.getElementById('snapshot-author-input');
+  const label = (labelEl.value || '').trim();
+  const author = (authorEl.value || '').trim();
+  if (!label) { labelEl.focus(); return; }
+
+  const payload = {
+    type: 'roi_snapshot',
+    label,
+    author,
+    timestamp: new Date().toISOString(),
+    inputs: collectInputs(),
+    outputs: collectOutputs(),
+  };
+
+  document.getElementById('snapshot-dialog').classList.remove('active');
+  setSnapshotsStatus('저장 중…');
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    await refreshSnapshots();
+  } catch (err) {
+    setSnapshotsStatus('저장 실패: ' + err.message);
+  }
+}
+
+function setSnapshotsStatus(msg) {
+  document.getElementById('snapshots-list').innerHTML =
+    `<div class="snapshots-empty">${escapeHtml(msg)}</div>`;
+}
+
+function fmtSnapshotTime(iso) {
+  if (!iso) return '';
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function fmtMillions(v) {
+  if (v == null || !isFinite(v)) return '—';
+  return (v / 1e6).toFixed(1) + 'M';
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, m =>
+    ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[m]));
+}
+
+async function refreshSnapshots() {
+  setSnapshotsStatus('불러오는 중…');
+  try {
+    const res = await fetch(SCRIPT_URL + '?type=roi_snapshots');
+    const json = await res.json();
+    renderSnapshots(json.records || []);
+  } catch (err) {
+    setSnapshotsStatus('불러오기 실패: ' + err.message);
+  }
+}
+
+function renderSnapshots(records) {
+  const list = document.getElementById('snapshots-list');
+  window.__snapshots = records;
+  if (!records.length) {
+    list.innerHTML = '<div class="snapshots-empty">아직 저장된 시나리오가 없습니다.<br>위 "📌 현재 시나리오 저장" 버튼으로 첫 시점을 기록해 보세요.</div>';
+    return;
+  }
+  list.innerHTML = records.map(r => {
+    const o = r.outputs || {};
+    const roi3Text = (o.roi3 != null && isFinite(o.roi3))
+      ? (o.roi3 >= 0 ? '+' : '') + Number(o.roi3).toFixed(1) + '%'
+      : '—';
+    const authorHtml = r.author
+      ? `<span class="snapshot-author">· ${escapeHtml(r.author)}</span>`
+      : '';
+    return `
+      <div class="snapshot-item">
+        <div class="snapshot-label">${escapeHtml(r.label || '(제목 없음)')}${authorHtml}</div>
+        <div class="snapshot-time">${escapeHtml(fmtSnapshotTime(r.timestamp))}</div>
+        <div class="snapshot-meta">
+          <span>연간가치<strong>${fmtMillions(o.annualValue)}</strong></span>
+          <span>BEP<strong>${escapeHtml(o.bepText || '—')}</strong></span>
+          <span>3년 ROI<strong>${roi3Text}</strong></span>
+        </div>
+        <div class="snapshot-actions">
+          <button class="snapshot-btn" onclick="loadSnapshot('${escapeHtml(String(r.id))}')">불러오기</button>
+          <button class="snapshot-btn danger" onclick="deleteSnapshot('${escapeHtml(String(r.id))}')">삭제</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function loadSnapshot(id) {
+  const r = (window.__snapshots || []).find(x => String(x.id) === String(id));
+  if (!r) return;
+  applyInputs(r.inputs);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function deleteSnapshot(id) {
+  if (!confirm('이 시나리오를 삭제할까요? 되돌릴 수 없습니다.')) return;
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      body: JSON.stringify({ type: 'roi_delete', id }),
+    });
+    refreshSnapshots();
+  } catch (err) {
+    alert('삭제 실패: ' + err.message);
+  }
+}
+
 // ==================== 초기 실행 ====================
 initCharts();
 calculate();
+refreshSnapshots();
 </script>
 </body>
 </html>

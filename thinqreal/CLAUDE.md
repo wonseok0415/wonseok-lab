@@ -48,8 +48,16 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 |------|------|
 | `GET ?type=availability&date=YYYY-MM-DD` | 확정 슬롯 번호 배열 반환 |
 | `GET ?type=bookings` | 전체 예약 목록 (관리자용) |
+| `GET ?type=roi_snapshots` | ROI 시나리오 이력 목록 (최신순) |
 | `POST type:booking` | Sheets 저장 + 담당자 알림 메일 |
 | `POST type:update` | 상태 변경 + 예약자 확정/거절 메일 |
+| `POST type:roi_snapshot` | ROI 시나리오 스냅샷 저장 (label/author/inputs/outputs) |
+| `POST type:roi_delete` | ROI 시나리오 스냅샷 삭제 (id) |
+
+### Sheets 탭 구성
+- `bookings` (예약, 변경 금지)
+- `roi_snapshots` (ROI 시나리오 이력) — 컬럼: `id`, `timestamp`, `label`, `author`, `inputs(JSON)`, `outputs(JSON)`
+  - 시트가 없으면 Apps Script가 첫 호출 시 자동 생성
 
 ## 예약 슬롯 (확정, 변경 금지)
 | 구분 | 시간 | 비고 |
@@ -78,6 +86,9 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 
 **분석 섹션**
 7. 📈 ROI 분석 — `ThinQ_Real_ROI_Tool.html`을 iframe으로 임베드 (지연 로드, "새 창에서 열기" 버튼 제공)
+   - ROI 툴 내부에 **시나리오 스냅샷 저장/불러오기** 패널 포함 (Apps Script `roi_snapshots` 탭 연동)
+   - 저장: 라벨 + 작성자 + 입력값/산출결과 JSON 저장
+   - 불러오기: 저장 시점의 모든 입력값 복원 → 차트 즉시 재계산
 
 ## 담당자
 | 이름 | 직급 | 이메일 |
