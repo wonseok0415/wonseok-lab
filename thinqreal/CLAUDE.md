@@ -107,8 +107,24 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 - [x] **이용 안내 — 구비 가전 품목 테이블 추가** (PDF 슬라이드 7, 총 45개 품목) — 제조사 컬럼 포함
 - [x] **욕실 이미지 GitHub 업로드** — `images/thinqreal_bathroom.jpg` 업로드 완료 (라이브 확인됨)
 - [x] **GitHub Pages 배포** — `https://wonseok0415.github.io/wonseok-lab/thinqreal/` 정상 서빙 중
-- [ ] **이미지 파일명 재정리** (현재 해시 기반 → 의미있는 이름으로)
-  - 예: `thinqreal_0b405e71.png` → `living_room_1.png`
+- [x] **이미지 파일명 재정리** — 해시 기반 → 의미있는 이름으로 일괄 변경 (아래 매핑 표 참조)
+
+### 이미지 파일명 매핑 (2026-05-18 정리)
+| 신규 파일명 | 용도 |
+|------------|------|
+| `thinqreal_home_hero.png` | 홈 페이지 메인 히어로 |
+| `thinqreal_about.png` | 홈 About 섹션 (split-media) |
+| `thinqreal_space_hero.jpeg` | 공간 소개 페이지 히어로 |
+| `thinqreal_floor_plan.jpeg` | 공간 구성도 (도면) |
+| `thinqreal_living_room.png` | 01 거실 |
+| `thinqreal_kitchen.png` | 02 주방 |
+| `thinqreal_bedroom.png` | 03 침실 |
+| `thinqreal_laundress_room.png` | 04 런드레스룸 |
+| `thinqreal_bathroom.jpg` | 05 욕실 |
+| `thinqreal_entrance_corridor.png` | 06 현관·복도 |
+| `thinqreal_guide_hero.png` | 이용 안내 페이지 히어로 |
+| `thinqreal_admin_lighting.png` | 관리자 — 조명 스위치 안내 슬라이드 |
+| `thinqreal_admin_system.png` | 관리자 — 시스템 구성 슬라이드 |
 
 ## 작업 시 주의사항
 - 이미지는 절대 base64로 HTML에 삽입하지 말 것 (반드시 별도 파일 + GitHub URL)
