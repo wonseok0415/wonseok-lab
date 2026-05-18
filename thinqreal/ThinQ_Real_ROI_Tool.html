@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ThinQ Real ROI 분석툴</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   /* ===== Reset & Base ===== */
@@ -22,10 +23,11 @@
     --text-primary: #1D1D1F;
     --text-secondary: #515154;
     --text-tertiary: #86868B;
-    --accent: #0071E3;
-    --accent-hover: #0077ED;
-    --teal: #00A5B5;
-    --teal-light: #E5F4F6;
+    --accent: #3a5035;
+    --accent-hover: #2d3e2a;
+    --accent-mid: #8fa889;
+    --teal: #5a7553;
+    --teal-light: #eef2ec;
     --orange: #FF9500;
     --orange-light: #FFF4E5;
     --red: #FF3B30;
@@ -43,7 +45,7 @@
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Noto Sans KR", "Apple SD Gothic Neo", sans-serif;
     background: var(--bg-primary);
     color: var(--text-primary);
     line-height: 1.5;
@@ -92,7 +94,7 @@
     right: -10%;
     width: 600px;
     height: 600px;
-    background: radial-gradient(circle, rgba(0,113,227,0.15) 0%, transparent 60%);
+    background: radial-gradient(circle, rgba(143, 168, 137, 0.18) 0%, transparent 60%);
     pointer-events: none;
   }
   .hero-result-label {
@@ -122,7 +124,7 @@
     font-weight: 700;
     letter-spacing: -0.04em;
     line-height: 1;
-    background: linear-gradient(135deg, #FFD60A 0%, #FF9500 100%);
+    background: linear-gradient(135deg, #d4e4ce 0%, #8fa889 100%);
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -263,7 +265,7 @@
   .btn-primary:hover {
     background: var(--accent-hover);
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 113, 227, 0.25);
+    box-shadow: 0 4px 12px rgba(58, 80, 53, 0.25);
   }
   .btn-secondary {
     background: var(--bg-secondary);
@@ -402,7 +404,7 @@
   .variable-value input[type="number"]:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.15);
+    box-shadow: 0 0 0 3px rgba(58, 80, 53, 0.15);
   }
   .variable-value .unit {
     font-size: 12px;
@@ -519,7 +521,7 @@
   .cat-field input:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(0, 113, 227, 0.15);
+    box-shadow: 0 0 0 2px rgba(58, 80, 53, 0.15);
   }
 
   /* ===== Modal Popup ===== */
@@ -1379,9 +1381,9 @@ document.addEventListener('keydown', (e) => {
 
 // ==================== 카테고리 정의 ====================
 const categories = [
-  { id: 'iot',       name: 'IoT 영업이익',       input: '영업팀',       color: '#00A5B5' },
+  { id: 'iot',       name: 'IoT 영업이익',       input: '영업팀',       color: '#3a5035' },
   { id: 'home',      name: '가전 영업이익',      input: '영업팀',       color: '#34C759' },
-  { id: 'planning',  name: 'HS/ES 상품기획',     input: '상품기획팀',   color: '#0071E3' },
+  { id: 'planning',  name: 'HS/ES 상품기획',     input: '상품기획팀',   color: '#8fa889' },
   { id: 'marketing', name: '홍보·광고 마케팅',   input: '홍보·광고팀',  color: '#FF9500' },
   { id: 'task',      name: '신규 Task 기여',     input: 'Task 담당팀',  color: '#AF52DE' },
   { id: 'etc',       name: '기타 기여',           input: '사안별 담당팀', color: '#86868B' },
@@ -1449,13 +1451,13 @@ function initCharts() {
         {
           label: '누적 손익',
           data: [],
-          borderColor: '#0071E3',
-          backgroundColor: 'rgba(0, 113, 227, 0.08)',
+          borderColor: '#3a5035',
+          backgroundColor: 'rgba(58, 80, 53, 0.08)',
           borderWidth: 2.5,
           fill: true,
           tension: 0.3,
           pointRadius: 5,
-          pointBackgroundColor: '#0071E3',
+          pointBackgroundColor: '#3a5035',
           pointBorderColor: 'white',
           pointBorderWidth: 2.5,
           pointHoverRadius: 7,
@@ -1524,7 +1526,7 @@ function initCharts() {
       labels: ['R&D 효율화', '영업 지원 (인프라)', '영업 지원 (기여이익)', 'PR 가치'],
       datasets: [{
         data: [39, 100, 0, 75],
-        backgroundColor: ['#00A5B5', '#0071E3', '#FF9500', '#AF52DE'],
+        backgroundColor: ['#3a5035', '#8fa889', '#FF9500', '#AF52DE'],
         borderWidth: 3,
         borderColor: 'white',
         hoverOffset: 8,

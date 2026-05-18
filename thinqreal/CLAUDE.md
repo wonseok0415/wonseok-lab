@@ -20,8 +20,9 @@ thinqreal/
 ├── ThinQReal_AppScript.gs      # Google Apps Script (배포 완료)
 ├── CLAUDE.md                   # 이 파일
 └── images/                     # 이미지 (GitHub Raw로 참조됨)
-    ├── thinqreal_*.png/jpeg   # 메인 사이트 이미지 10개
-    └── thinqreal_admin_*.png  # 관리자 페이지 이미지 2개
+│   ├── thinqreal_*.png/jpeg   # 메인 사이트 이미지 10개
+│   └── thinqreal_admin_*.png  # 관리자 페이지 이미지 2개
+└── ThinQ_Real_ROI_Tool.html   # ROI 분석 시뮬레이션 툴 (관리자 → 분석 → ROI 분석 탭에서 iframe으로 임베드)
 ```
 
 ## 이미지 경로 규칙
@@ -67,12 +68,16 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 - **이용 안내**: 무선 인터넷 → 유의사항(5개 카테고리 그룹) → 기타 이용 안내 → 구비 가전 테이블(45개) → 주차 안내 → 담당자
 
 ## 관리자 대시보드 탭 (thinqreal_admin.html)
+**관리 섹션**
 1. 📋 예약 관리 (KPI 카드, 필터, 테이블, 승인/거절, CSV 내보내기)
 2. 📊 통계 (목적별/회차별/월별 바 차트)
 3. 🔐 연동 계정 정보 (마스킹 없이 직접 표시, 복사 버튼)
 4. 🎬 시연 시나리오 (9개 시나리오 카드)
 5. 💡 조명 스위치 안내 (공간별 카드)
 6. ⚙️ 시스템 구성 (조명/Homey/ThinQ/난방 카드)
+
+**분석 섹션**
+7. 📈 ROI 분석 — `ThinQ_Real_ROI_Tool.html`을 iframe으로 임베드 (지연 로드, "새 창에서 열기" 버튼 제공)
 
 ## 담당자
 | 이름 | 직급 | 이메일 |
