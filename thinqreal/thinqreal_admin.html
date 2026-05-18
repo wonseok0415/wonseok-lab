@@ -109,6 +109,26 @@ body {
 .tab-panel { display:none; }
 .tab-panel.active { display:block; }
 
+/* ── ROI iframe ── */
+.roi-frame-wrap {
+  background:var(--c-bg); border:1px solid var(--c-separator);
+  border-radius:var(--radius-lg); overflow:hidden;
+}
+.roi-frame {
+  width:100%; height:calc(100svh - 200px); min-height:640px;
+  border:0; display:block; background:var(--c-bg);
+}
+.roi-open-btn {
+  display:inline-flex; align-items:center; gap:var(--sp-8);
+  min-height:36px; padding:0 var(--sp-16);
+  background:var(--c-fill); border:1px solid var(--c-separator);
+  border-radius:var(--radius-sm); cursor:pointer;
+  font-size:var(--t-footnote); color:var(--c-label-2);
+  font-family:inherit; text-decoration:none; letter-spacing:-0.012em;
+  transition:background .15s var(--ease), color .15s var(--ease);
+}
+.roi-open-btn:hover { background:var(--c-fill-2); color:var(--c-label); }
+
 .page-header { margin-bottom:var(--sp-32); }
 .page-header h1 { font-size:clamp(28px,4vw,40px); font-weight:600; letter-spacing:-0.03em; line-height:1.1; }
 .page-header p { font-size:var(--t-subhead); color:var(--c-label-2); margin-top:var(--sp-4); letter-spacing:-0.016em; }
@@ -519,6 +539,10 @@ body {
     </div>
     <div class="nav-item" id="nav-system" onclick="switchTab('system')">
       <span class="nav-item-icon">⚙️</span>시스템 구성
+    </div>
+    <span class="nav-section-label" style="margin-top:var(--sp-8);">분석</span>
+    <div class="nav-item" id="nav-roi" onclick="switchTab('roi')">
+      <span class="nav-item-icon">📈</span>ROI 분석
     </div>
     <span class="nav-section-label" style="margin-top:var(--sp-8);">도구</span>
     <div class="nav-item" onclick="loadData()">
@@ -1319,6 +1343,19 @@ body {
       </div>
     </div>
 
+    <!-- ROI 분석 -->
+    <div class="tab-panel" id="tab-roi">
+      <div class="page-header" style="display:flex; align-items:flex-end; justify-content:space-between; gap:var(--sp-16); flex-wrap:wrap;">
+        <div>
+          <h1>ROI 분석</h1>
+          <p>ThinQ Real 운영의 투자 회수 시뮬레이션 도구입니다.</p>
+        </div>
+        <a class="roi-open-btn" href="ThinQ_Real_ROI_Tool.html" target="_blank" rel="noopener">새 창에서 열기 ↗</a>
+      </div>
+      <div class="roi-frame-wrap">
+        <iframe id="roiFrame" class="roi-frame" title="ThinQ Real ROI 분석툴" loading="lazy"></iframe>
+      </div>
+    </div>
 
   </main>
 </div>
@@ -1371,6 +1408,10 @@ function switchTab(id) {
   document.getElementById('tab-'+id).classList.add('active');
   document.getElementById('nav-'+id).classList.add('active');
   if (id === 'stats') renderStats();
+  if (id === 'roi') {
+    const f = document.getElementById('roiFrame');
+    if (!f.getAttribute('src')) f.setAttribute('src', 'ThinQ_Real_ROI_Tool.html');
+  }
 }
 
 // toggleReveal 제거 (마스킹 미사용)
