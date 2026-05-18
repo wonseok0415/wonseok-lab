@@ -1350,7 +1350,7 @@ body {
           <h1>ROI 분석</h1>
           <p>ThinQ Real 운영의 투자 회수 시뮬레이션 도구입니다.</p>
         </div>
-        <a class="roi-open-btn" href="ThinQ_Real_ROI_Tool.html" target="_blank" rel="noopener">새 창에서 열기 ↗</a>
+        <a class="roi-open-btn" id="roiOpenLink" href="ThinQ_Real_ROI_Tool.html" target="_blank" rel="noopener">새 창에서 열기 ↗</a>
       </div>
       <div class="roi-frame-wrap">
         <iframe id="roiFrame" class="roi-frame" title="ThinQ Real ROI 분석툴" loading="lazy"></iframe>
@@ -1402,6 +1402,15 @@ function doLogout() {
   document.getElementById('loginErr').textContent = '';
 }
 
+// ROI 툴 캐시 무력화 토큰 (ROI 툴을 갱신할 때마다 이 숫자를 올리세요)
+const ROI_BUILD = '20260518a';
+
+// "새 창에서 열기" 링크에도 동일 토큰 부착
+(function attachRoiBuild() {
+  const link = document.getElementById('roiOpenLink');
+  if (link) link.setAttribute('href', 'ThinQ_Real_ROI_Tool.html?v=' + ROI_BUILD);
+})();
+
 function switchTab(id) {
   document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -1410,7 +1419,8 @@ function switchTab(id) {
   if (id === 'stats') renderStats();
   if (id === 'roi') {
     const f = document.getElementById('roiFrame');
-    if (!f.getAttribute('src')) f.setAttribute('src', 'ThinQ_Real_ROI_Tool.html');
+    // 캐시 무력화: 빌드 토큰을 쿼리로 부착해 GitHub Pages/iframe 캐시 우회
+    if (!f.getAttribute('src')) f.setAttribute('src', 'ThinQ_Real_ROI_Tool.html?v=' + ROI_BUILD);
   }
 }
 
