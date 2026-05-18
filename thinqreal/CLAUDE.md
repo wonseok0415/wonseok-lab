@@ -105,10 +105,10 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 - [x] **이용 안내 — 기타 이용 안내 섹션 추가** (PDF 슬라이드 6)
   - 수압, 촬영, 창호, 조리, 침대, 욕실 이용 시 유의사항
 - [x] **이용 안내 — 구비 가전 품목 테이블 추가** (PDF 슬라이드 7, 총 45개 품목) — 제조사 컬럼 포함
-- [ ] **욕실 이미지 GitHub 업로드** — `images/thinqreal_bathroom.jpg`를 `wonseok0415/wonseok-lab` 레포의 `thinqreal/images/`에 push 필요 (push 전까지 욕실 이미지 404)
+- [x] **욕실 이미지 GitHub 업로드** — `images/thinqreal_bathroom.jpg` 업로드 완료 (라이브 확인됨)
+- [x] **GitHub Pages 배포** — `https://wonseok0415.github.io/wonseok-lab/thinqreal/` 정상 서빙 중
 - [ ] **이미지 파일명 재정리** (현재 해시 기반 → 의미있는 이름으로)
   - 예: `thinqreal_0b405e71.png` → `living_room_1.png`
-- [ ] **GitHub Pages 배포**
 
 ## 작업 시 주의사항
 - 이미지는 절대 base64로 HTML에 삽입하지 말 것 (반드시 별도 파일 + GitHub URL)
@@ -151,7 +151,6 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 - 주요 추가: ThinQ ON(HMAK4W.AKOR), 보이스컨트롤러(HAAL3W.AKOR), AP(Unifi U7-Pro-XG), 스마트버튼×2, 도어센서, 모션조도센서, 스마트플러그, 스마트도어락, 전동창호×2, 월패드, 온도조절기, 전동커튼 등
 
 ### 핵심 제약 (다음 세션에서도 유지)
-- 욕실 이미지는 **로컬에만 존재**, GitHub에 push 전까지 라이브 사이트에서 404
 - 구비 가전 45개 순서는 PDF 슬라이드 7 그대로 유지 (재정렬 금지)
 - 유의사항 카테고리 5개 그룹 구조는 PDF 기준이므로 임의 통합·분리 금지
 
