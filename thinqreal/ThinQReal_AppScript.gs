@@ -13,7 +13,8 @@
 
 // ── 설정값 ──────────────────────────────────────────────────
 const SHEET_ID   = '1-Z158TV46MtSEArir9bW4h4KQ438NCuhb3qaGyOooA0';  // ← Sheets URL의 /d/ 뒤 ID
-const SHEET_NAME = 'bookings';               // 시트 탭 이름
+const SHEET_NAME = 'bookings';               // 시트 탭 이름 (예약)
+const ROI_SHEET_NAME = 'roi_snapshots';      // 시트 탭 이름 (ROI 시나리오 이력)
 const ADMIN_EMAIL = 'ch275.lee@lge.com';     // 신규 예약 알림 수신 담당자
 
 
@@ -30,6 +31,9 @@ function doGet(e) {
   }
   if (type === 'bookings') {
     return handleGetBookings();
+  }
+  if (type === 'roi_snapshots') {
+    return handleGetRoiSnapshots();
   }
 
   return jsonResponse({ error: 'Unknown type' });
@@ -106,6 +110,8 @@ function doPost(e) {
 
   if (data.type === 'booking') return handleNewBooking(data);
   if (data.type === 'update')  return handleUpdateStatus(data);
+  if (data.type === 'roi_snapshot') return handleNewRoiSnapshot(data);
+  if (data.type === 'roi_delete')   return handleDeleteRoiSnapshot(data);
 
   return jsonResponse({ error: 'Unknown type' });
 }
@@ -259,6 +265,77 @@ function getSheet() {
     .openById(SHEET_ID)
     .getSheetByName(SHEET_NAME)
     || SpreadsheetApp.openById(SHEET_ID).insertSheet(SHEET_NAME);
+}
+
+// ============================================================
+//  ROI 시나리오 스냅샷 (이력 관리)
+//  - 시트 탭: roi_snapshots
+//  - 컬럼: id, timestamp, label, author, inputs(JSON), outputs(JSON)
+// ============================================================
+
+function getRoiSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  return ss.getSheetByName(ROI_SHEET_NAME) || ss.insertSheet(ROI_SHEET_NAME);
+}
+
+function getOrCreateRoiHeaders(sheet) {
+  const HEADERS = ['id', 'timestamp', 'label', 'author', 'inputs', 'outputs'];
+  const firstRow = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+  if (!firstRow[0]) {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    const headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
+    headerRange.setBackground('#3a5035');
+    headerRange.setFontColor('#ffffff');
+    headerRange.setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  return HEADERS;
+}
+
+function handleGetRoiSnapshots() {
+  const sheet = getRoiSheet();
+  getOrCreateRoiHeaders(sheet);
+  const rows = sheet.getDataRange().getValues();
+  const headers = rows[0];
+  const records = rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, j) => { obj[h] = row[j] ?? ''; });
+    try { obj.inputs  = JSON.parse(obj.inputs  || '{}'); } catch(err) { obj.inputs  = {}; }
+    try { obj.outputs = JSON.parse(obj.outputs || '{}'); } catch(err) { obj.outputs = {}; }
+    return obj;
+  }).filter(r => r.id);
+  // 최신순 정렬 (timestamp 내림차순)
+  records.sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+  return jsonResponse({ records });
+}
+
+function handleNewRoiSnapshot(data) {
+  const sheet = getRoiSheet();
+  const headers = getOrCreateRoiHeaders(sheet);
+  const id = String(Date.now());
+  const row = headers.map(h => {
+    if (h === 'id')        return id;
+    if (h === 'timestamp') return data.timestamp || new Date().toISOString();
+    if (h === 'inputs')    return JSON.stringify(data.inputs  || {});
+    if (h === 'outputs')   return JSON.stringify(data.outputs || {});
+    return data[h] ?? '';
+  });
+  sheet.appendRow(row);
+  return jsonResponse({ success: true, id });
+}
+
+function handleDeleteRoiSnapshot(data) {
+  const sheet = getRoiSheet();
+  const rows = sheet.getDataRange().getValues();
+  const headers = rows[0];
+  const idIdx = headers.indexOf('id');
+  for (let i = 1; i < rows.length; i++) {
+    if (String(rows[i][idIdx]) === String(data.id)) {
+      sheet.deleteRow(i + 1);
+      return jsonResponse({ success: true });
+    }
+  }
+  return jsonResponse({ error: 'Record not found' });
 }
 
 // 헤더가 없으면 자동 생성
