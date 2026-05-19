@@ -450,7 +450,7 @@ button, input, select, textarea { font-family: inherit; }
   border-bottom: 1px solid rgba(58,80,53,0.12) !important;
 }
 .reservation-layout {
-  display: grid; grid-template-columns: 1fr 380px;
+  display: grid; grid-template-columns: 1fr 440px;
   gap: var(--sp-40); padding: var(--sp-48) max(24px, calc(50vw - 580px));
   align-items: start;
 }
@@ -616,6 +616,15 @@ button, input, select, textarea { font-family: inherit; }
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--c-accent); background: var(--c-bg);
 }
+/* placeholder는 본문보다 작고 자간을 좁혀 좁은 폼 폭에서도 잘리지 않게 */
+.form-input::placeholder, .form-textarea::placeholder {
+  color: var(--c-label-3); font-size: var(--t-footnote);
+  letter-spacing: -0.024em;
+}
+/* 빈 값일 때(= 미선택) 셀렉트도 placeholder처럼 회색으로 — required + :invalid 활용 */
+.form-select:required:invalid { color: var(--c-label-3); }
+.form-select option { color: var(--c-label); }
+.form-select option[value=""] { color: var(--c-label-3); }
 .form-textarea { min-height: 88px; padding: var(--sp-12); resize: vertical; line-height: 1.5; }
 .form-select { appearance: none; cursor: pointer; padding-right: 40px; }
 .form-row {
@@ -1139,7 +1148,7 @@ footer {
           </div>
           <div class="form-group">
             <label class="form-label">부서 *</label>
-            <input class="form-input" id="fDept" type="text" placeholder="AI홈솔루션팀">
+            <input class="form-input" id="fDept" type="text" placeholder="AI홈솔루션엔지니어링팀">
           </div>
         </div>
         <div class="form-group">
@@ -1153,7 +1162,7 @@ footer {
         <div class="form-group">
           <label class="form-label">방문 목적 *</label>
           <div class="form-select-wrap">
-            <select class="form-select" id="fPurpose">
+            <select class="form-select" id="fPurpose" required>
               <option value="">선택해 주세요</option>
               <option>R&D 연구</option>
               <option>B2B 파트너 시연</option>
@@ -1388,7 +1397,7 @@ footer {
         W6동 1층<br>
         보안게이트 출구 앞<br>
         주차장 엘리베이터 앞<br>
-        <span style="font-size:var(--t-caption);color:var(--c-label-3);display:block;margin-top:var(--sp-8);">보안게이트 밖 위치 — 별도 보안 절차 없이 방문 가능합니다.</span>
+        <span style="font-size:var(--t-caption);color:var(--c-label-3);display:block;margin-top:var(--sp-8);">보안게이트 밖 위치 — 별도 보안 절차 없이 방문 가능</span>
       </div>
     </div>
   </div>
