@@ -152,10 +152,17 @@ body {
   min-width:160px; letter-spacing:-0.008em;
 }
 .roi-formula-expr {
-  font-family:'SF Mono', ui-monospace, Menlo, monospace;
-  font-size:14px; color:var(--c-accent); letter-spacing:-0.005em;
+  font-family: 'Cambria Math', Cambria, 'Times New Roman', Georgia, serif;
+  font-size: 17px; font-weight: 500;
+  color: var(--c-accent);
+  letter-spacing: 0.005em; line-height: 1.55;
 }
-.roi-formula-expr sub { font-size:10px; }
+.roi-formula-expr sub {
+  font-family: 'Cambria Math', Cambria, 'Times New Roman', Georgia, serif;
+  font-size: 0.7em; vertical-align: baseline;
+  position: relative; bottom: -0.25em;
+  letter-spacing: 0;
+}
 .roi-explain-grid {
   display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
   gap:var(--sp-16); margin-bottom:var(--sp-20);
@@ -183,19 +190,26 @@ body {
   line-height:1.6; margin-bottom:var(--sp-12);
 }
 .roi-card-eq {
-  font-family:'SF Mono', ui-monospace, Menlo, monospace;
-  font-size:12.5px; color:var(--c-accent); background:var(--c-bg);
-  padding:var(--sp-8) var(--sp-12); border-radius:var(--radius-sm);
+  font-family: 'Cambria Math', Cambria, 'Times New Roman', Georgia, serif;
+  font-size: 15.5px; font-weight: 500;
+  color: var(--c-accent); background:var(--c-bg);
+  padding: 10px var(--sp-12); border-radius:var(--radius-sm);
   margin-bottom:var(--sp-12); border:1px solid var(--c-separator);
-  letter-spacing:-0.005em;
+  letter-spacing: 0.005em; line-height: 1.6;
 }
-.roi-card-eq sub { font-size:9px; }
+.roi-card-eq sub {
+  font-size: 0.72em; vertical-align: baseline;
+  position: relative; bottom: -0.22em;
+}
 .roi-explain-card dl { display:grid; gap:var(--sp-8); }
 .roi-explain-card dt {
   font-size:var(--t-caption); font-weight:600; color:var(--c-label);
   letter-spacing:-0.008em;
 }
-.roi-explain-card dt sub { font-size:9px; }
+.roi-explain-card dt sub {
+  font-size: 0.75em; vertical-align: baseline;
+  position: relative; bottom: -0.2em; font-weight: 500;
+}
 .roi-explain-card dd {
   font-size:var(--t-caption); color:var(--c-label-2);
   margin-left:0; margin-top:2px; line-height:1.55;
@@ -205,7 +219,10 @@ body {
   font-size:var(--t-caption); color:var(--c-label-2); line-height:1.55;
   letter-spacing:-0.008em;
 }
-.roi-explain-card li sub { font-size:9px; }
+.roi-explain-card li sub {
+  font-size: 0.75em; vertical-align: baseline;
+  position: relative; bottom: -0.2em;
+}
 .roi-explain-card li strong { color:var(--c-label); font-weight:600; }
 .roi-explain-footer {
   font-size:var(--t-caption); color:var(--c-label-3);
