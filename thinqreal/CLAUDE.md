@@ -138,7 +138,6 @@ Apps Script 콜드 스타트(1~3초) 자체는 서버 측 제약이라 완전히
 |------------|------|
 | `thinqreal_home_hero.png` | 홈 페이지 메인 히어로 |
 | `thinqreal_about.png` | 홈 About 섹션 (split-media) |
-| `thinqreal_space_hero.jpeg` | 공간 소개 페이지 히어로 |
 | `thinqreal_floor_plan.jpeg` | 공간 구성도 (도면) |
 | `thinqreal_living_room.png` | 01 거실 |
 | `thinqreal_kitchen.png` | 02 주방 |

@@ -314,6 +314,47 @@ button, input, select, textarea { font-family: inherit; }
   letter-spacing: -0.028em; color: #fff;
 }
 
+/* 텍스트 전용 히어로 — 사진 대신 그라데이션·타이포그래피로 구성 */
+.page-hero.text-only {
+  background: var(--c-accent);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 12% 0%, rgba(255,255,255,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(143,168,137,0.22) 0%, transparent 70%),
+    linear-gradient(135deg, #3a5035 0%, #2d3e2a 100%);
+  align-items: center;
+}
+.page-hero.text-only::after { display: none; }
+.page-hero.text-only::before {
+  content: attr(data-wordmark);
+  position: absolute;
+  right: max(24px, calc(50vw - 580px));
+  bottom: -56px;
+  font-size: clamp(180px, 26vw, 320px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: rgba(255,255,255,0.05);
+  line-height: 0.85;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+.page-hero.text-only .page-hero-body { padding-block: var(--sp-48); max-width: 100%; }
+.page-hero-accent-line {
+  width: 48px; height: 2px; background: var(--c-accent-mid);
+  margin-bottom: var(--sp-24); border-radius: 1px;
+}
+.page-hero.text-only .label-overline { color: var(--c-accent-mid); }
+.page-hero.text-only .page-title {
+  font-size: clamp(40px, 6vw, 64px);
+  line-height: 1.05; letter-spacing: -0.032em;
+}
+.page-hero-kicker {
+  margin-top: var(--sp-20);
+  font-size: var(--t-body); color: rgba(255,255,255,0.78);
+  letter-spacing: -0.016em; line-height: 1.55;
+  max-width: 560px;
+}
+
 .fp-section {
   padding: var(--sp-64) max(24px, calc(50vw - 580px));
   display: grid; grid-template-columns: 1fr 1fr;
@@ -864,10 +905,12 @@ footer {
 
 <!-- ══ SPACE ══ -->
 <div id="page-space" class="page">
-  <div class="page-hero" style="background-image:url('https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/thinqreal_space_hero.jpeg');">
+  <div class="page-hero text-only" data-wordmark="SPACE">
     <div class="page-hero-body">
-      <span class="label-overline" style="color:rgba(255,255,255,0.6);margin-bottom:var(--sp-8);">Space</span>
+      <div class="page-hero-accent-line"></div>
+      <span class="label-overline">Space</span>
       <h1 class="page-title">공간 소개</h1>
+      <p class="page-hero-kicker">30평형 정방형 공간에 거실·주방·침실·런드레스룸·욕실·현관까지 7개 공간을 구성했습니다. 난방을 제외한 모든 기기가 실제로 동작합니다.</p>
     </div>
   </div>
 
