@@ -96,8 +96,20 @@ function doGet(e) {
   if (type === 'mail_status') {
     return handleMailStatus();
   }
+  if (type === 'appliances') {
+    return handleGetAppliances();
+  }
 
   return jsonResponse({ error: 'Unknown type' });
+}
+
+// 구비 가전 목록 반환 — APPLIANCES 상수가 메일/관리자 페이지 양쪽에서
+// 사용되는 단일 소스가 되도록 노출.
+function handleGetAppliances() {
+  const items = APPLIANCES.map(r => ({
+    category: r[0], name: r[1], model: r[2], maker: r[3]
+  }));
+  return jsonResponse({ count: items.length, items: items });
 }
 
 
@@ -292,8 +304,8 @@ function sendAdminAlert(data, id) {
   }
 }
 
-// 구비 가전 리스트를 메일 본문용 텍스트로 포맷 (R&D 연구 목적일 때 첨부)
-function buildAppliancesSection() {
+// 구비 가전 — 평문 본문용 (HTML을 못 보는 클라이언트 대비)
+function buildAppliancesText() {
   const lines = APPLIANCES.map((row, i) => {
     const idx = String(i + 1).padStart(2, '0');
     return `   ${idx}. ${row[0]}  /  ${row[1]}  /  ${row[2]}  /  ${row[3]}`;
@@ -305,26 +317,77 @@ function buildAppliancesSection() {
   ].concat(lines).join('\n');
 }
 
-// 예약자 확정/거절 메일
+// 구비 가전 — HTML 본문용 표 (브라우저 폭 변화에도 정렬 유지)
+function buildAppliancesHtml() {
+  const rows = APPLIANCES.map((r, i) => {
+    const bg = i % 2 === 0 ? '#ffffff' : '#fafafa';
+    const idx = String(i + 1).padStart(2, '0');
+    return (
+      '<tr style="background:' + bg + ';">' +
+        '<td style="padding:8px 10px;border-bottom:1px solid #eeeeee;font-size:12px;color:#aeaeb2;text-align:right;width:36px;font-variant-numeric:tabular-nums;">' + idx + '</td>' +
+        '<td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:13px;color:#1d1d1f;font-weight:500;white-space:nowrap;">' + escapeHtml(r[0]) + '</td>' +
+        '<td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:13px;color:#3a3a3c;">' + escapeHtml(r[1]) + '</td>' +
+        '<td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:12px;color:#6e6e73;font-family:Consolas,Menlo,monospace;white-space:nowrap;">' + escapeHtml(r[2]) + '</td>' +
+        '<td style="padding:8px 12px;border-bottom:1px solid #eeeeee;font-size:12px;color:#6e6e73;white-space:nowrap;">' + escapeHtml(r[3]) + '</td>' +
+      '</tr>'
+    );
+  }).join('');
+
+  return (
+    '<div style="margin-top:24px;">' +
+      '<div style="font-size:15px;font-weight:600;color:#1d1d1f;margin-bottom:6px;">📦 구비 가전 및 품목 <span style="color:#6e6e73;font-weight:400;">(총 ' + APPLIANCES.length + '개)</span></div>' +
+      '<div style="font-size:12px;color:#6e6e73;margin-bottom:12px;">리스트 품목 외 연구원들의 개인 장비·물품들이 있으므로 위치 변경이나 분실에 유의해 주세요.</div>' +
+      '<div style="overflow-x:auto;">' +
+        '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;width:100%;min-width:520px;border:1px solid #eeeeee;border-radius:6px;overflow:hidden;">' +
+          '<thead>' +
+            '<tr style="background:#f5f5f7;">' +
+              '<th style="padding:10px;border-bottom:1px solid #e8e8ed;font-size:11px;font-weight:600;color:#6e6e73;text-transform:uppercase;letter-spacing:0.04em;text-align:right;width:36px;">#</th>' +
+              '<th style="padding:10px 12px;border-bottom:1px solid #e8e8ed;font-size:11px;font-weight:600;color:#6e6e73;text-transform:uppercase;letter-spacing:0.04em;text-align:left;">구분</th>' +
+              '<th style="padding:10px 12px;border-bottom:1px solid #e8e8ed;font-size:11px;font-weight:600;color:#6e6e73;text-transform:uppercase;letter-spacing:0.04em;text-align:left;">제품명</th>' +
+              '<th style="padding:10px 12px;border-bottom:1px solid #e8e8ed;font-size:11px;font-weight:600;color:#6e6e73;text-transform:uppercase;letter-spacing:0.04em;text-align:left;">모델명</th>' +
+              '<th style="padding:10px 12px;border-bottom:1px solid #e8e8ed;font-size:11px;font-weight:600;color:#6e6e73;text-transform:uppercase;letter-spacing:0.04em;text-align:left;">제조사</th>' +
+            '</tr>' +
+          '</thead>' +
+          '<tbody>' + rows + '</tbody>' +
+        '</table>' +
+      '</div>' +
+      '<div style="margin-top:10px;padding:10px 12px;background:#f5f5f7;border-left:3px solid #8fa889;border-radius:4px;font-size:12px;color:#6e6e73;line-height:1.55;">' +
+        '연구 목적의 방문에 도움이 되시도록 구비 가전 정보를 함께 안내드립니다. (R&amp;D 연구 목적으로 예약하신 분께만 발송됩니다.)' +
+      '</div>' +
+    '</div>'
+  );
+}
+
+function escapeHtml(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+// 예약자 확정/거절 메일 — HTML + plain-text 동시 발송
 function sendGuestMail(data) {
   const isConfirmed = data.status === '확정';
   const subject = isConfirmed
     ? `[ThinQ Real] 예약이 확정되었습니다 — ${data.date} ${data.slotLabel || ''}`
     : `[ThinQ Real] 예약 신청이 거절되었습니다`;
 
-  const body = isConfirmed
-    ? buildConfirmBody(data)
-    : buildRejectBody(data);
+  const text = isConfirmed ? buildConfirmText(data) : buildRejectText(data);
+  const html = isConfirmed ? buildConfirmHtml(data) : buildRejectHtml(data);
 
   try {
-    MailApp.sendEmail({ to: data.email, cc: CC_EMAIL, subject, body });
+    MailApp.sendEmail({
+      to: data.email, cc: CC_EMAIL, subject,
+      body: text, htmlBody: html,
+    });
     Logger.log('Guest mail sent → ' + data.email + ' (' + data.status + ')');
   } catch(err) {
     Logger.log('Guest mail error: ' + err.message);
   }
 }
 
-function buildConfirmBody(data) {
+function buildConfirmText(data) {
   const includeAppliances = (data.purpose || '').indexOf('R&D') >= 0;
 
   const sections = [
@@ -359,7 +422,10 @@ function buildConfirmBody(data) {
     sections.push('');
     sections.push('────────────────────────────────────────');
     sections.push('');
-    sections.push(buildAppliancesSection());
+    sections.push(buildAppliancesText());
+    sections.push('');
+    sections.push('   ※ 연구 목적의 방문에 도움이 되시도록 구비 가전 정보를');
+    sections.push('     함께 안내드립니다. (R&D 연구 목적 예약자에 한해 발송)');
   }
 
   sections.push('');
@@ -369,7 +435,63 @@ function buildConfirmBody(data) {
   return sections.join('\n');
 }
 
-function buildRejectBody(data) {
+function buildConfirmHtml(data) {
+  const includeAppliances = (data.purpose || '').indexOf('R&D') >= 0;
+  const name = escapeHtml(data.name);
+  const date = escapeHtml(data.date);
+  const slot = escapeHtml(data.slotLabel || '');
+
+  const infoRow = (icon, label, valueHtml) =>
+    '<tr>' +
+      '<td valign="top" style="padding:14px 12px 14px 0;width:88px;font-size:13px;color:#6e6e73;font-weight:600;white-space:nowrap;">' + icon + '&nbsp;' + label + '</td>' +
+      '<td valign="top" style="padding:14px 0;font-size:14px;color:#1d1d1f;line-height:1.6;">' + valueHtml + '</td>' +
+    '</tr>';
+
+  const rows =
+    infoRow('📅', '일정',
+      '<div style="font-size:16px;font-weight:600;color:#3a5035;">' + date + '</div>' +
+      '<div style="color:#6e6e73;font-size:13px;">' + slot + '</div>') +
+    infoRow('📍', '위치',
+      '마곡 LG사이언스파크 W6동 1층' +
+      '<div style="color:#6e6e73;font-size:13px;">보안게이트 출구 앞 / 주차장 엘리베이터 앞</div>' +
+      '<div style="color:#aeaeb2;font-size:12px;margin-top:2px;">보안게이트 밖에 위치해 별도 보안 절차 없이 방문 가능</div>') +
+    infoRow('📶', '무선 인터넷',
+      '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;">' +
+        '<tr><td style="padding:2px 16px 2px 0;color:#6e6e73;font-size:13px;">2.4&nbsp;GHz</td><td style="padding:2px 0;font-family:Consolas,Menlo,monospace;font-size:13px;color:#1d1d1f;">LGE_AI_HOME_2.4G</td></tr>' +
+        '<tr><td style="padding:2px 16px 2px 0;color:#6e6e73;font-size:13px;">5&nbsp;GHz</td><td style="padding:2px 0;font-family:Consolas,Menlo,monospace;font-size:13px;color:#1d1d1f;">LGE_AI_HOME</td></tr>' +
+        '<tr><td style="padding:2px 16px 2px 0;color:#6e6e73;font-size:13px;">비밀번호</td><td style="padding:2px 0;font-family:Consolas,Menlo,monospace;font-size:13px;color:#1d1d1f;">real2026</td></tr>' +
+      '</table>') +
+    infoRow('☎', '문의',
+      '<div>이철호 책임 연구원 · <a href="mailto:ch275.lee@lge.com" style="color:#3a5035;text-decoration:none;">ch275.lee@lge.com</a></div>' +
+      '<div>서문수 선임 연구원 · <a href="mailto:moonsu.seo@lge.com" style="color:#3a5035;text-decoration:none;">moonsu.seo@lge.com</a></div>' +
+      '<div>김현진 선임 연구원 · <a href="mailto:hj8462.kim@lge.com" style="color:#3a5035;text-decoration:none;">hj8462.kim@lge.com</a></div>') +
+    infoRow('📖', '방문 안내',
+      '<a href="' + GUIDE_URL + '" style="color:#3a5035;font-weight:500;text-decoration:none;">방문 전 이용 안내 페이지 열기 ↗</a>' +
+      '<div style="color:#6e6e73;font-size:12px;margin-top:2px;">운영 시간 · 유의사항 · 주차 등 자세한 내용</div>');
+
+  return (
+    '<div style="background:#f5f5f7;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,\'Helvetica Neue\',\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;">' +
+      '<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="border-collapse:collapse;max-width:680px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">' +
+        '<tr><td style="background:#3a5035;color:#ffffff;padding:24px 28px;">' +
+          '<div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.7;">ThinQ Real</div>' +
+          '<div style="font-size:20px;font-weight:600;margin-top:4px;">예약이 확정되었습니다</div>' +
+        '</td></tr>' +
+        '<tr><td style="padding:28px;">' +
+          '<div style="font-size:15px;color:#1d1d1f;margin-bottom:20px;">안녕하세요, <strong>' + name + '</strong>님.<br>요청하신 ThinQ Real 방문 예약이 확정되었습니다.</div>' +
+          '<table role="presentation" cellspacing="0" cellpadding="0" border="0" style="border-collapse:collapse;width:100%;border-top:1px solid #eeeeee;">' +
+            rows +
+          '</table>' +
+          (includeAppliances ? buildAppliancesHtml() : '') +
+          '<div style="margin-top:28px;padding-top:20px;border-top:1px solid #eeeeee;font-size:13px;color:#6e6e73;line-height:1.6;">' +
+            '감사합니다.<br>HS플랫폼사업센터 AI홈솔루션엔지니어링팀' +
+          '</div>' +
+        '</td></tr>' +
+      '</table>' +
+    '</div>'
+  );
+}
+
+function buildRejectText(data) {
   return [
     `안녕하세요, ${data.name}님.`,
     ``,
@@ -389,6 +511,41 @@ function buildRejectBody(data) {
     `감사합니다.`,
     `HS플랫폼사업센터 AI홈솔루션엔지니어링팀`,
   ].join('\n');
+}
+
+function buildRejectHtml(data) {
+  const name = escapeHtml(data.name);
+  const date = escapeHtml(data.date);
+  const slot = escapeHtml(data.slotLabel || '');
+  return (
+    '<div style="background:#f5f5f7;padding:24px 12px;font-family:-apple-system,BlinkMacSystemFont,\'Helvetica Neue\',\'Apple SD Gothic Neo\',\'Malgun Gothic\',sans-serif;">' +
+      '<table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="border-collapse:collapse;max-width:680px;width:100%;background:#ffffff;border-radius:12px;overflow:hidden;">' +
+        '<tr><td style="background:#6e6e73;color:#ffffff;padding:24px 28px;">' +
+          '<div style="font-size:12px;letter-spacing:0.12em;text-transform:uppercase;opacity:0.7;">ThinQ Real</div>' +
+          '<div style="font-size:20px;font-weight:600;margin-top:4px;">예약 신청이 거절되었습니다</div>' +
+        '</td></tr>' +
+        '<tr><td style="padding:28px;">' +
+          '<div style="font-size:15px;color:#1d1d1f;line-height:1.7;">' +
+            '안녕하세요, <strong>' + name + '</strong>님.<br>' +
+            '아쉽게도 요청하신 일정(<strong>' + date + ' ' + slot + '</strong>)에 ThinQ Real 방문 예약이 어렵게 되었습니다.' +
+          '</div>' +
+          '<div style="margin-top:16px;font-size:14px;color:#3a3a3c;">다른 일정으로 다시 신청해 주시거나, 아래 담당자에게 문의해 주세요.</div>' +
+          '<div style="margin-top:24px;padding:16px 18px;background:#f5f5f7;border-radius:8px;font-size:13px;line-height:1.8;">' +
+            '<div style="font-weight:600;color:#3a3a3c;margin-bottom:6px;">☎ 문의</div>' +
+            '<div>이철호 책임 연구원 · <a href="mailto:ch275.lee@lge.com" style="color:#3a5035;text-decoration:none;">ch275.lee@lge.com</a></div>' +
+            '<div>서문수 선임 연구원 · <a href="mailto:moonsu.seo@lge.com" style="color:#3a5035;text-decoration:none;">moonsu.seo@lge.com</a></div>' +
+            '<div>김현진 선임 연구원 · <a href="mailto:hj8462.kim@lge.com" style="color:#3a5035;text-decoration:none;">hj8462.kim@lge.com</a></div>' +
+          '</div>' +
+          '<div style="margin-top:18px;font-size:13px;">' +
+            '<a href="' + GUIDE_URL + '" style="color:#3a5035;text-decoration:none;font-weight:500;">📖 방문 안내 페이지 열기 ↗</a>' +
+          '</div>' +
+          '<div style="margin-top:28px;padding-top:20px;border-top:1px solid #eeeeee;font-size:13px;color:#6e6e73;line-height:1.6;">' +
+            '감사합니다.<br>HS플랫폼사업센터 AI홈솔루션엔지니어링팀' +
+          '</div>' +
+        '</td></tr>' +
+      '</table>' +
+    '</div>'
+  );
 }
 
 // ============================================================
