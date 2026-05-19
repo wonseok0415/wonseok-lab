@@ -250,3 +250,46 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 4. VPN (Cloudflare WARP 등) — 미들박스 우회 효과
 5. **새로고침을 정상 도구로 활용** — 세션은 서버에 보존되므로 진행 상황이 사라지지 않음. 응답이 오래 멈췄다 싶으면 새로고침하여 재접속
 6. 긴 작업은 **GitHub Actions** 트리거로 비동기 실행 (https://code.claude.com/docs/en/claude-code-on-the-web)
+
+## 진행 중 (2026-05-19 시점) — 도메인 이전 작업
+
+ThinQ Real을 독립 도메인 `thinqreal.com` (hosting.kr에서 구입)으로 이전하는 작업이 진행 중. 새 세션에서 이 항목부터 확인할 것.
+
+### 결정된 사항
+- **도메인**: `thinqreal.com` (hosting.kr 구입)
+- **신규 리포**: `wonseok0415/thinqreal` (별도 분리, 루트 = 사이트 루트)
+- **이전 사유**: 현재 `wonseok-lab/thinqreal/` 하위 경로 구조는 도메인 연결 시 `thinqreal.com/thinqreal/thinqreal.html`처럼 지저분해짐 → 리포 분리로 `thinqreal.com/`만으로 접속 가능하게.
+
+### 단계별 체크리스트
+1. [ ] hosting.kr에서 `thinqreal.com` 구매 (WHOIS 보호 / 자동 갱신 ON 권장)
+2. [ ] GitHub에서 `wonseok0415/thinqreal` 신규 리포 생성 (Public, README 포함)
+3. [ ] Claude App에 신규 리포 접근 권한 부여 (github.com/settings/installations → Claude → Configure)
+4. [ ] Claude Code 웹에서 **신규 리포로 새 세션 시작**
+5. [ ] `wonseok-lab/thinqreal/` 폴더 전체를 신규 리포 루트로 이전
+   - `thinqreal.html`, `thinqreal_admin.html`, `ThinQReal_AppScript.gs`, `ThinQ_Real_ROI_Tool.html`, `CLAUDE.md`, `images/` 통째로
+   - **이미지 경로 변환**: 현재 코드에 박힌 `https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/...` 절대 URL을 상대경로 `./images/...` (또는 `images/...`)로 일괄 교체
+     - 대표 위치: `thinqreal.html` 네비바 로고 (`LG_AI_Home_logo.png`), 본문 이미지들
+     - `thinqreal_admin.html`도 동일 검토
+   - 본 `CLAUDE.md`의 "이미지 경로 규칙" 섹션도 신규 리포 기준으로 갱신
+6. [ ] 신규 리포 Settings → Pages → Source: main / (root) 선택 → 임시 주소(`wonseok0415.github.io/thinqreal/`)로 동작 확인
+7. [ ] hosting.kr DNS 레코드 추가:
+   ```
+   A    @    185.199.108.153
+   A    @    185.199.109.153
+   A    @    185.199.110.153
+   A    @    185.199.111.153
+   CNAME www  wonseok0415.github.io
+   ```
+8. [ ] 신규 리포 Settings → Pages → Custom domain: `thinqreal.com` → Save (자동 `CNAME` 파일 생성)
+9. [ ] DNS 전파 후 Enforce HTTPS 체크
+10. [ ] **Apps Script `GUIDE_URL` 교체**: `https://wonseok0415.github.io/wonseok-lab/thinqreal/thinqreal.html#page-guide` → `https://thinqreal.com/#page-guide` → **Apps Script 재배포**
+11. [ ] 옛 경로(`wonseok-lab/thinqreal/`) 처리 방침 결정:
+    - 옵션 A: 그대로 유지 (옛 북마크 유저 대비)
+    - 옵션 B: 폴더 삭제 + README에 새 도메인 안내만 남기기
+    - 옵션 C: `thinqreal.html`을 새 도메인으로 자동 리다이렉트하는 stub만 남기기
+12. [ ] CLAUDE.md에서 본 "진행 중" 섹션을 "완료 내역"으로 이동 + 호스팅 정보 표(프로젝트 개요 / Apps Script URL 등) 신규 도메인 기준으로 갱신
+
+### 주의사항
+- Apps Script URL, Sheets ID, 슬롯 시간표, 디자인 시스템은 **불변** (기존 §작업 시 주의사항 참조)
+- 이전 후에도 Apps Script 자체는 그대로 사용 (URL 변경 없음). `GUIDE_URL`만 교체 + 재배포 1회 필요.
+- 신규 리포로 옮긴 직후 **이미지가 깨져 보이면** 절대 URL 잔존 흔적이므로 grep으로 `raw.githubusercontent.com/wonseok0415/wonseok-lab` 검색해 모두 상대경로로 교체할 것.
