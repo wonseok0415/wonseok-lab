@@ -129,6 +129,90 @@ body {
 }
 .roi-open-btn:hover { background:var(--c-fill-2); color:var(--c-label); }
 
+/* ROI 동작 원리 설명 패널 */
+.roi-explain {
+  margin-top:var(--sp-32); padding:var(--sp-32);
+  background:var(--c-bg); border:1px solid var(--c-separator);
+  border-radius:var(--radius-lg);
+}
+.roi-explain-header { margin-bottom:var(--sp-24); }
+.roi-explain-header h2 {
+  font-size:var(--t-title-3); font-weight:600; letter-spacing:-0.022em;
+  margin-bottom:var(--sp-4);
+}
+.roi-explain-header p { color:var(--c-label-2); font-size:var(--t-subhead); letter-spacing:-0.016em; }
+.roi-explain-formula {
+  background:var(--c-fill); border-radius:var(--radius-md);
+  padding:var(--sp-20) var(--sp-24); margin-bottom:var(--sp-24);
+  display:flex; flex-direction:column; gap:var(--sp-8);
+}
+.roi-formula-line { display:flex; flex-wrap:wrap; align-items:baseline; gap:var(--sp-12); }
+.roi-formula-label {
+  font-size:var(--t-footnote); font-weight:600; color:var(--c-label-2);
+  min-width:160px; letter-spacing:-0.008em;
+}
+.roi-formula-expr {
+  font-family:'SF Mono', ui-monospace, Menlo, monospace;
+  font-size:14px; color:var(--c-accent); letter-spacing:-0.005em;
+}
+.roi-formula-expr sub { font-size:10px; }
+.roi-explain-grid {
+  display:grid; grid-template-columns:repeat(auto-fit, minmax(280px, 1fr));
+  gap:var(--sp-16); margin-bottom:var(--sp-20);
+}
+.roi-explain-card {
+  background:var(--c-bg-2); border:1px solid var(--c-separator);
+  border-radius:var(--radius-md); padding:var(--sp-20);
+}
+.roi-explain-card header {
+  display:flex; align-items:center; gap:var(--sp-8); margin-bottom:var(--sp-12);
+}
+.roi-explain-card h3 {
+  font-size:var(--t-subhead); font-weight:600; letter-spacing:-0.016em;
+}
+.roi-card-tag {
+  display:inline-flex; align-items:center; padding:2px 10px; border-radius:980px;
+  font-size:11px; font-weight:600; letter-spacing:0.02em;
+  background:var(--c-fill); color:var(--c-label-2);
+}
+.roi-card-tag.tag-teal   { background:var(--c-accent-light); color:var(--c-accent); }
+.roi-card-tag.tag-orange { background:#fff4e5; color:#cc7000; }
+.roi-card-tag.tag-purple { background:#eeedfe; color:#7f51e4; }
+.roi-card-desc {
+  font-size:var(--t-footnote); color:var(--c-label-2);
+  line-height:1.6; margin-bottom:var(--sp-12);
+}
+.roi-card-eq {
+  font-family:'SF Mono', ui-monospace, Menlo, monospace;
+  font-size:12.5px; color:var(--c-accent); background:var(--c-bg);
+  padding:var(--sp-8) var(--sp-12); border-radius:var(--radius-sm);
+  margin-bottom:var(--sp-12); border:1px solid var(--c-separator);
+  letter-spacing:-0.005em;
+}
+.roi-card-eq sub { font-size:9px; }
+.roi-explain-card dl { display:grid; gap:var(--sp-8); }
+.roi-explain-card dt {
+  font-size:var(--t-caption); font-weight:600; color:var(--c-label);
+  letter-spacing:-0.008em;
+}
+.roi-explain-card dt sub { font-size:9px; }
+.roi-explain-card dd {
+  font-size:var(--t-caption); color:var(--c-label-2);
+  margin-left:0; margin-top:2px; line-height:1.55;
+}
+.roi-explain-card ul { padding-left:var(--sp-16); display:flex; flex-direction:column; gap:6px; }
+.roi-explain-card li {
+  font-size:var(--t-caption); color:var(--c-label-2); line-height:1.55;
+  letter-spacing:-0.008em;
+}
+.roi-explain-card li sub { font-size:9px; }
+.roi-explain-card li strong { color:var(--c-label); font-weight:600; }
+.roi-explain-footer {
+  font-size:var(--t-caption); color:var(--c-label-3);
+  border-top:1px solid var(--c-separator); padding-top:var(--sp-16);
+  line-height:1.6; letter-spacing:-0.008em;
+}
+
 .page-header { margin-bottom:var(--sp-32); }
 .page-header h1 { font-size:clamp(28px,4vw,40px); font-weight:600; letter-spacing:-0.03em; line-height:1.1; }
 .page-header p { font-size:var(--t-subhead); color:var(--c-label-2); margin-top:var(--sp-4); letter-spacing:-0.016em; }
@@ -551,6 +635,9 @@ body {
     </div>
     <div class="nav-item" id="nav-system" onclick="switchTab('system')">
       <span class="nav-item-icon">⚙️</span>시스템 구성
+    </div>
+    <div class="nav-item" id="nav-appliances" onclick="switchTab('appliances')">
+      <span class="nav-item-icon">📦</span>구비 가전
     </div>
     <span class="nav-section-label" style="margin-top:var(--sp-8);">분석</span>
     <div class="nav-item" id="nav-roi" onclick="switchTab('roi')">
@@ -1355,6 +1442,33 @@ body {
       </div>
     </div>
 
+    <!-- 구비 가전 -->
+    <div class="tab-panel" id="tab-appliances">
+      <div class="page-header">
+        <h1>구비 가전</h1>
+        <p>ThinQ Real 공간에 구비된 가전·IoT·소품 전체 목록입니다. R&D 연구 목적의 예약 확정 메일에는 이 목록이 함께 발송됩니다.</p>
+      </div>
+      <div style="background:var(--c-bg-2); border:1px solid var(--c-separator); border-radius:var(--radius-md); padding:var(--sp-16) var(--sp-20); margin-bottom:var(--sp-20); color:var(--c-label-2); font-size:var(--t-subhead); line-height:1.6;">
+        리스트 품목 외 연구원들의 개인 장비·물품들이 있으므로 위치 변경이나 분실에 유의해 주세요. (총 <strong id="appliancesCount">45</strong>개 품목)
+      </div>
+      <div style="background:var(--c-bg); border:1px solid var(--c-separator); border-radius:var(--radius-md); overflow:hidden;">
+        <div style="overflow-x:auto;">
+          <table class="booking-table" id="appliancesTable">
+            <thead>
+              <tr>
+                <th style="width:48px; text-align:right;">#</th>
+                <th style="width:24%;">구분</th>
+                <th>제품명</th>
+                <th style="width:22%;">모델명</th>
+                <th style="width:14%;">제조사</th>
+              </tr>
+            </thead>
+            <tbody id="appliancesBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- ROI 분석 -->
     <div class="tab-panel" id="tab-roi">
       <div class="page-header" style="display:flex; align-items:flex-end; justify-content:space-between; gap:var(--sp-16); flex-wrap:wrap;">
@@ -1367,6 +1481,88 @@ body {
       <div class="roi-frame-wrap">
         <iframe id="roiFrame" class="roi-frame" title="ThinQ Real ROI 분석툴" loading="lazy"></iframe>
       </div>
+
+      <!-- ROI 동작 원리 설명 -->
+      <section class="roi-explain">
+        <header class="roi-explain-header">
+          <h2>분석 툴 동작 원리</h2>
+          <p>위 시뮬레이션이 사용하는 산식과 변수의 의미를 정리한 안내입니다.</p>
+        </header>
+
+        <div class="roi-explain-formula">
+          <div class="roi-formula-line"><span class="roi-formula-label">BEP (손익분기 회수기간)</span><span class="roi-formula-expr">=  C<sub>Invest</sub>  /  연간 창출 가치</span></div>
+          <div class="roi-formula-line"><span class="roi-formula-label">연간 창출 가치</span><span class="roi-formula-expr">=  V<sub>R&amp;D</sub>  +  V<sub>Sales (A)</sub>  +  V<sub>Sales (B)</sub>  +  V<sub>PR</sub></span></div>
+          <div class="roi-formula-line"><span class="roi-formula-label">N년 ROI</span><span class="roi-formula-expr">=  ( 연간가치 × N − (C<sub>Invest</sub> + C<sub>Oper</sub>) )  /  (C<sub>Invest</sub> + C<sub>Oper</sub>)  × 100</span></div>
+        </div>
+
+        <div class="roi-explain-grid">
+          <article class="roi-explain-card">
+            <header><span class="roi-card-tag">분모</span><h3>비용 구조</h3></header>
+            <dl>
+              <dt>C<sub>Invest</sub> · 리뉴얼 투자비 (Capex)</dt>
+              <dd>공간 리뉴얼·하드웨어 구축 등 1회성 자본 지출</dd>
+              <dt>C<sub>Oper</sub> · 연간 운영비 (Opex)</dt>
+              <dd>유지·관리·소모품 등 매년 발생하는 운영 비용</dd>
+            </dl>
+          </article>
+
+          <article class="roi-explain-card">
+            <header><span class="roi-card-tag tag-teal">V_R&amp;D</span><h3>R&D 효율화</h3></header>
+            <p class="roi-card-desc">외부 스튜디오 임차료를 자사 공간 활용으로 방어한 가치.</p>
+            <div class="roi-card-eq">V<sub>R&amp;D</sub> = C<sub>ext_lab</sub> × D<sub>test</sub></div>
+            <ul>
+              <li><strong>C<sub>ext_lab</sub></strong> · 외부 스튜디오 일일 단가 (백만원/일)</li>
+              <li><strong>D<sub>test</sub></strong> · 연간 내부 사용일수 (일)</li>
+            </ul>
+          </article>
+
+          <article class="roi-explain-card">
+            <header><span class="roi-card-tag tag-teal">V_Sales (A)</span><h3>영업 지원 — 인프라 효용</h3></header>
+            <p class="roi-card-desc">외부 응대 공간 구축·운영의 기회비용을 절감한 가치.</p>
+            <div class="roi-card-eq">V<sub>Sales(A)</sub> = C<sub>venue</sub> × N<sub>visit</sub> + C<sub>agency</sub></div>
+            <ul>
+              <li><strong>C<sub>venue</sub></strong> · 외부 응대 공간 회당 비용</li>
+              <li><strong>N<sub>visit</sub></strong> · 연간 외부 방문 건수</li>
+              <li><strong>C<sub>agency</sub></strong> · 도슨트 등 외주 절감</li>
+            </ul>
+          </article>
+
+          <article class="roi-explain-card">
+            <header><span class="roi-card-tag tag-orange">V_Sales (B)</span><h3>영업 지원 — 기여 영업이익</h3></header>
+            <p class="roi-card-desc">방문 응대를 통해 실제 수주에 기여한 정도를 카테고리별로 가산.</p>
+            <div class="roi-card-eq">V<sub>Sales(B)</sub> = Σ ( 수주금액 × 이익률 × 기여도 )</div>
+            <ul>
+              <li>카테고리 : IoT · 가전 · HS/ES 상품기획 · 홍보·광고 · 신규 Task · 기타</li>
+              <li>각 카테고리는 영업·기획·마케팅 등 담당팀의 데이터를 직접 입력</li>
+            </ul>
+          </article>
+
+          <article class="roi-explain-card">
+            <header><span class="roi-card-tag tag-purple">V_PR</span><h3>PR 가치 (AVE 기반)</h3></header>
+            <p class="roi-card-desc">Press Tour의 광고환산가치(AVE)를 보수적으로 산정.</p>
+            <div class="roi-card-eq">V<sub>PR</sub> = N<sub>press</sub> × R<sub>media</sub> × K<sub>adj</sub></div>
+            <ul>
+              <li><strong>N<sub>press</sub></strong> · Press Tour 건수</li>
+              <li><strong>R<sub>media</sub></strong> · 건당 매체 광고 정가</li>
+              <li><strong>K<sub>adj</sub></strong> · 보수 계수 (0–1) — 광고가 대비 PR 가치 보정</li>
+            </ul>
+          </article>
+
+          <article class="roi-explain-card">
+            <header><span class="roi-card-tag">해석 가이드</span><h3>지표 읽는 법</h3></header>
+            <ul>
+              <li><strong>BEP</strong> ≤ 3년이면 통상 ROI 관점에서 충분히 매력적</li>
+              <li><strong>3년 ROI ≥ 0</strong> 시점부터 누적 손익이 흑자 전환</li>
+              <li>R&amp;D·Sales(A)·PR은 기본값으로도 산입되지만, Sales(B)는 부서 입력이 있어야 가산되어 보수적 추정에 유리</li>
+              <li>시점별 시나리오는 하단 "저장된 시나리오"에 기록해 변경 이력 비교</li>
+            </ul>
+          </article>
+        </div>
+
+        <footer class="roi-explain-footer">
+          출처: ThinQ Real ROI 산정 모델 (사내 검토용). 변수와 산식의 자세한 의미는 시뮬레이션 도구의 각 ⓘ 아이콘에서도 확인할 수 있습니다.
+        </footer>
+      </section>
     </div>
 
   </main>
@@ -1429,11 +1625,79 @@ function switchTab(id) {
   document.getElementById('tab-'+id).classList.add('active');
   document.getElementById('nav-'+id).classList.add('active');
   if (id === 'stats') renderStats();
+  if (id === 'appliances') renderAppliances();
   if (id === 'roi') {
     const f = document.getElementById('roiFrame');
     // 캐시 무력화: 빌드 토큰을 쿼리로 부착해 GitHub Pages/iframe 캐시 우회
     if (!f.getAttribute('src')) f.setAttribute('src', 'ThinQ_Real_ROI_Tool.html?v=' + ROI_BUILD);
   }
+}
+
+// 구비 가전 (45개) — 메인 사이트에서 옮겨 관리자 전용으로 표시.
+// R&D 연구 목적의 예약 확정 메일에는 Apps Script의 APPLIANCES 상수가
+// 함께 발송되므로, 양쪽 데이터 일치를 유지해야 한다.
+const APPLIANCES = [
+  ['시스템에어컨 (거실)','1Way 정온제습(콜드프리) 에어컨 (신제품)','미출시','LG전자'],
+  ['시스템에어컨 (침실)','1Way 정온제습(콜드프리) 에어컨 (신제품)','미출시','LG전자'],
+  ['욕실 환기','바스에어시스템 (듀얼배기)','M-X0120BASV','LG전자'],
+  ['프리미엄 환기','LG 프리미엄 환기 PLUS','Z-E0250L2AR','LG전자'],
+  ['스마트디퓨저 (배기)','환기 디퓨저','PVD-R120TD.AKM','LG전자'],
+  ['스마트디퓨저 (급기)','환기 디퓨저','PVD-S120AA.AKM','LG전자'],
+  ['시스템공청기','시스템 공청기','미출시','LG전자'],
+  ['스탠바이미2','LG 스탠바이미2','27LX6TPGAA','LG전자'],
+  ['TV','LG QNED TV','86QNED90KQA','LG전자'],
+  ['냉장고','LG 오브제컬렉션 무드업','M624GNN0A2','LG전자'],
+  ['김치냉장고','LG 디오스 김치톡톡 무드업','Z331GNN152','LG전자'],
+  ['와인셀러','LG 디오스 오브제컬렉션 와인셀러 (81병)','W0812GG','LG전자'],
+  ['세탁기','LG 트롬 AI 오브제컬렉션 워시타워 (세탁 25kg)','FA25GJFB','LG전자'],
+  ['건조기','LG 트롬 AI 오브제컬렉션 워시타워 (건조 25kg)','RA25GJFB','LG전자'],
+  ['제습기','LG 휘센 오브제컬렉션 제습기','DQ235MEGA','LG전자'],
+  ['공기청정기','LG 퓨리케어 AI 오브제컬렉션 360˚ 공기청정기','AS355NSNA','LG전자'],
+  ['하이드로타워','LG 퓨리케어 오브제컬렉션 하이드로타워','HY705RSUAB','LG전자'],
+  ['하이드로 에센셜','LG 퓨리케어 오브제컬렉션 하이드로 에센셜','HY505RWLAH','LG전자'],
+  ['에어로스피커','LG 퓨리케어 AI 오브제컬렉션 에어로스피커','AS065SWHA','LG전자'],
+  ['사운드바','LG 사운드바 스위트','H7','LG전자'],
+  ['정수기','LG 퓨리케어 정수기 (듀얼, 냉온정)','WU923AS','LG전자'],
+  ['의류관리기','LG 스타일러 오브제컬렉션','SC5GMR52C','LG전자'],
+  ['안마의자','LG 힐링미 오브제컬렉션 안마의자 (아르테UP)','MH21RRY','LG전자'],
+  ['로봇청소기','히든스테이션 로봇청소기','미출시','LG전자'],
+  ['광파오븐','LG 디오스 오브제컬렉션 광파오븐','MLJ32ERS','LG전자'],
+  ['인덕션','LG 디오스 오브제컬렉션 인덕션 1등급','BEI3ANHLE','LG전자'],
+  ['식기세척기','LG 디오스 오브제컬렉션 식기세척기 (열풍+스팀)','DFBJ4ES','LG전자'],
+  ['식물생활가전','틔운 오브제컬렉션','L123G1P','LG전자'],
+  ['스마트수전','LG 샤워 스테이션','미출시','LG전자'],
+  ['ThinQ ON','LG AI Home','HMAK4W.AKOR','LG전자'],
+  ['보이스 컨트롤러','LG AI Home','HAAL3W.AKOR','LG전자'],
+  ['공기질 센서','LG 공기질 센서','TMSA2A4W.AKOR','LG전자'],
+  ['온습도 센서','LG 온습도 센서','TMSTAA4W.AKOR','LG전자'],
+  ['스마트 버튼 (1구)','LG 스마트 버튼','TMCB1B4W.AKOR','LG전자'],
+  ['스마트 버튼 (2구)','LG 스마트 버튼','TMCB2B4W.AKOR','LG전자'],
+  ['도어 센서','LG 도어 센서','TMSDAA4W.AKOR','LG전자'],
+  ['모션 조도 센서','LG 모션 조도 센서','TMSMAA4W.AKOR','LG전자'],
+  ['스마트 플러그','LG 스마트 플러그','TMCP114W.AKOR','LG전자'],
+  ['스마트 도어락','LG 스마트 도어락','TZCDP14B.AKOR','LG전자'],
+  ['전동창호 (분합창)','LX 하우시스 전동창호 분합창 (Sliding)','미출시','LX하우시스'],
+  ['전동창호 (주방창)','LX 하우시스 전동창호 주방창 (Outward)','미출시','LX하우시스'],
+  ['월패드','현대HT 월패드','HNF-I7130','현대HT'],
+  ['온도조절기','시하스 온도조절기','—','시하스'],
+  ['AP','Unifi U7-Pro-XG','U7-Pro-XG','Ubiquiti'],
+  ['전동커튼','마마바 (Matter over WiFi)','—','마마바'],
+];
+
+let appliancesRendered = false;
+function renderAppliances() {
+  if (appliancesRendered) return;
+  appliancesRendered = true;
+  document.getElementById('appliancesCount').textContent = String(APPLIANCES.length);
+  document.getElementById('appliancesBody').innerHTML = APPLIANCES.map((r, i) => `
+    <tr>
+      <td style="text-align:right;color:var(--c-label-3);font-variant-numeric:tabular-nums;">${String(i+1).padStart(2,'0')}</td>
+      <td style="font-weight:500;">${r[0]}</td>
+      <td style="color:var(--c-label-2);">${r[1]}</td>
+      <td style="font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;color:var(--c-label-2);">${r[2]}</td>
+      <td style="color:var(--c-label-2);">${r[3]}</td>
+    </tr>
+  `).join('');
 }
 
 // toggleReveal 제거 (마스킹 미사용)
