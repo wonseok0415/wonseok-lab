@@ -186,11 +186,12 @@ body {
 
 .row-actions { display:flex; gap:var(--sp-8); }
 .btn-confirm-sm {
-  min-height:32px; padding:0 var(--sp-12); background:var(--c-accent); color:#fff; border:none;
-  border-radius:var(--radius-sm); font-size:var(--t-caption); font-weight:500; cursor:pointer; font-family:inherit;
-  transition:background .15s var(--ease);
+  min-height:32px; padding:0 var(--sp-12); background:var(--c-bg); color:var(--c-accent);
+  border:1px solid rgba(58,80,53,.3); border-radius:var(--radius-sm);
+  font-size:var(--t-caption); font-weight:500; cursor:pointer; font-family:inherit;
+  transition:all .15s var(--ease);
 }
-.btn-confirm-sm:hover { background:var(--c-accent-hover); }
+.btn-confirm-sm:hover { background:var(--c-accent); color:#fff; border-color:var(--c-accent); }
 .btn-reject-sm {
   min-height:32px; padding:0 var(--sp-12); background:var(--c-bg); color:var(--c-red);
   border:1px solid rgba(255,59,48,.3); border-radius:var(--radius-sm);
@@ -1478,12 +1479,20 @@ function normalizeRecord(b) {
   };
 }
 
-// 회차 라벨 다중 표시 (예: "1회차  09:00–10:30 · 2회차  13:00–14:30")
+// 회차 라벨 전체 표시 (모달·메일·CSV용): "1회차  09:00–10:30 · 2회차  13:00–14:30"
 function fmtSlots(b) {
   if (b.slotsArr && b.slotsArr.length) {
     return b.slotsArr.map(n => SLOT_LABELS[String(n)] || String(n)).join(' · ');
   }
   return SLOT_LABELS[b.slot] || b.slot || '';
+}
+
+// 회차 라벨 컴팩트 표시 (표용): 다중일 때 시간 생략 → "1회차 · 2회차 · 3회차"
+function fmtSlotsCompact(b) {
+  if (b.slotsArr && b.slotsArr.length > 1) {
+    return b.slotsArr.map(n => n + '회차').join(' · ');
+  }
+  return fmtSlots(b);
 }
 
 async function loadData() {
@@ -1543,7 +1552,7 @@ function renderTable() {
       : `<button class="btn-detail-sm" onclick="event.stopPropagation();openModal('${b.id}')">상세</button>`;
     return `<tr onclick="openModal('${b.id}')">
       <td><strong style="letter-spacing:-0.02em;">${b.date||''}</strong></td>
-      <td style="color:var(--c-label-2);font-size:var(--t-footnote);">${fmtSlots(b)}</td>
+      <td style="color:var(--c-label-2);font-size:var(--t-footnote);white-space:nowrap;">${fmtSlotsCompact(b)}</td>
       <td style="font-weight:500;">${b.name}</td>
       <td style="color:var(--c-label-2);font-size:var(--t-footnote);">${b.org}</td>
       <td>${b.purpose}</td>
