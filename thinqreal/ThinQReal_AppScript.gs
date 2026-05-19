@@ -96,8 +96,20 @@ function doGet(e) {
   if (type === 'mail_status') {
     return handleMailStatus();
   }
+  if (type === 'appliances') {
+    return handleGetAppliances();
+  }
 
   return jsonResponse({ error: 'Unknown type' });
+}
+
+// 구비 가전 목록 반환 — APPLIANCES 상수가 메일/관리자 페이지 양쪽에서
+// 사용되는 단일 소스가 되도록 노출.
+function handleGetAppliances() {
+  const items = APPLIANCES.map(r => ({
+    category: r[0], name: r[1], model: r[2], maker: r[3]
+  }));
+  return jsonResponse({ count: items.length, items: items });
 }
 
 

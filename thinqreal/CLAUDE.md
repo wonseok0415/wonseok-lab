@@ -53,6 +53,7 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 | `GET ?type=roi_snapshots` | ROI 시나리오 이력 목록 (최신순) |
 | `GET ?type=mail_status` | 메일 발송 설정 + 남은 일일 할당량 (메일 미발송, 진단용) |
 | `GET ?type=mail_test` | 테스트 메일 1통 발송 (실패 시 사유 응답) |
+| `GET ?type=appliances` | 구비 가전 45개 목록 — `APPLIANCES` 상수의 단일 소스 |
 | `POST type:booking` | Sheets 저장 + 담당자 알림 메일 |
 | `POST type:update` | 상태 변경 + 예약자 확정/거절 메일 |
 | `POST type:roi_snapshot` | ROI 시나리오 스냅샷 저장 (label/author/inputs/outputs) |
@@ -88,7 +89,7 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 4. 🎬 시연 시나리오 (9개 시나리오 카드)
 5. 💡 조명 스위치 안내 (공간별 카드)
 6. ⚙️ 시스템 구성 (조명/Homey/ThinQ/난방 카드)
-7. 📦 구비 가전 (45개 품목 — 메인 사이트에서 이관, 관리자 전용)
+7. 📦 구비 가전 (45개 품목 — 관리자 전용, Apps Script `?type=appliances`에서 fetch)
 
 **분석 섹션**
 8. 📈 ROI 분석 — `ThinQ_Real_ROI_Tool.html`을 iframe으로 임베드 (지연 로드, "새 창에서 열기" 버튼 제공)

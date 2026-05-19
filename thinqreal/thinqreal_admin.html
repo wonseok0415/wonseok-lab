@@ -1633,71 +1633,33 @@ function switchTab(id) {
   }
 }
 
-// 구비 가전 (45개) — 메인 사이트에서 옮겨 관리자 전용으로 표시.
-// R&D 연구 목적의 예약 확정 메일에는 Apps Script의 APPLIANCES 상수가
-// 함께 발송되므로, 양쪽 데이터 일치를 유지해야 한다.
-const APPLIANCES = [
-  ['시스템에어컨 (거실)','1Way 정온제습(콜드프리) 에어컨 (신제품)','미출시','LG전자'],
-  ['시스템에어컨 (침실)','1Way 정온제습(콜드프리) 에어컨 (신제품)','미출시','LG전자'],
-  ['욕실 환기','바스에어시스템 (듀얼배기)','M-X0120BASV','LG전자'],
-  ['프리미엄 환기','LG 프리미엄 환기 PLUS','Z-E0250L2AR','LG전자'],
-  ['스마트디퓨저 (배기)','환기 디퓨저','PVD-R120TD.AKM','LG전자'],
-  ['스마트디퓨저 (급기)','환기 디퓨저','PVD-S120AA.AKM','LG전자'],
-  ['시스템공청기','시스템 공청기','미출시','LG전자'],
-  ['스탠바이미2','LG 스탠바이미2','27LX6TPGAA','LG전자'],
-  ['TV','LG QNED TV','86QNED90KQA','LG전자'],
-  ['냉장고','LG 오브제컬렉션 무드업','M624GNN0A2','LG전자'],
-  ['김치냉장고','LG 디오스 김치톡톡 무드업','Z331GNN152','LG전자'],
-  ['와인셀러','LG 디오스 오브제컬렉션 와인셀러 (81병)','W0812GG','LG전자'],
-  ['세탁기','LG 트롬 AI 오브제컬렉션 워시타워 (세탁 25kg)','FA25GJFB','LG전자'],
-  ['건조기','LG 트롬 AI 오브제컬렉션 워시타워 (건조 25kg)','RA25GJFB','LG전자'],
-  ['제습기','LG 휘센 오브제컬렉션 제습기','DQ235MEGA','LG전자'],
-  ['공기청정기','LG 퓨리케어 AI 오브제컬렉션 360˚ 공기청정기','AS355NSNA','LG전자'],
-  ['하이드로타워','LG 퓨리케어 오브제컬렉션 하이드로타워','HY705RSUAB','LG전자'],
-  ['하이드로 에센셜','LG 퓨리케어 오브제컬렉션 하이드로 에센셜','HY505RWLAH','LG전자'],
-  ['에어로스피커','LG 퓨리케어 AI 오브제컬렉션 에어로스피커','AS065SWHA','LG전자'],
-  ['사운드바','LG 사운드바 스위트','H7','LG전자'],
-  ['정수기','LG 퓨리케어 정수기 (듀얼, 냉온정)','WU923AS','LG전자'],
-  ['의류관리기','LG 스타일러 오브제컬렉션','SC5GMR52C','LG전자'],
-  ['안마의자','LG 힐링미 오브제컬렉션 안마의자 (아르테UP)','MH21RRY','LG전자'],
-  ['로봇청소기','히든스테이션 로봇청소기','미출시','LG전자'],
-  ['광파오븐','LG 디오스 오브제컬렉션 광파오븐','MLJ32ERS','LG전자'],
-  ['인덕션','LG 디오스 오브제컬렉션 인덕션 1등급','BEI3ANHLE','LG전자'],
-  ['식기세척기','LG 디오스 오브제컬렉션 식기세척기 (열풍+스팀)','DFBJ4ES','LG전자'],
-  ['식물생활가전','틔운 오브제컬렉션','L123G1P','LG전자'],
-  ['스마트수전','LG 샤워 스테이션','미출시','LG전자'],
-  ['ThinQ ON','LG AI Home','HMAK4W.AKOR','LG전자'],
-  ['보이스 컨트롤러','LG AI Home','HAAL3W.AKOR','LG전자'],
-  ['공기질 센서','LG 공기질 센서','TMSA2A4W.AKOR','LG전자'],
-  ['온습도 센서','LG 온습도 센서','TMSTAA4W.AKOR','LG전자'],
-  ['스마트 버튼 (1구)','LG 스마트 버튼','TMCB1B4W.AKOR','LG전자'],
-  ['스마트 버튼 (2구)','LG 스마트 버튼','TMCB2B4W.AKOR','LG전자'],
-  ['도어 센서','LG 도어 센서','TMSDAA4W.AKOR','LG전자'],
-  ['모션 조도 센서','LG 모션 조도 센서','TMSMAA4W.AKOR','LG전자'],
-  ['스마트 플러그','LG 스마트 플러그','TMCP114W.AKOR','LG전자'],
-  ['스마트 도어락','LG 스마트 도어락','TZCDP14B.AKOR','LG전자'],
-  ['전동창호 (분합창)','LX 하우시스 전동창호 분합창 (Sliding)','미출시','LX하우시스'],
-  ['전동창호 (주방창)','LX 하우시스 전동창호 주방창 (Outward)','미출시','LX하우시스'],
-  ['월패드','현대HT 월패드','HNF-I7130','현대HT'],
-  ['온도조절기','시하스 온도조절기','—','시하스'],
-  ['AP','Unifi U7-Pro-XG','U7-Pro-XG','Ubiquiti'],
-  ['전동커튼','마마바 (Matter over WiFi)','—','마마바'],
-];
+// 구비 가전 — Apps Script의 APPLIANCES 상수를 단일 소스로 사용한다.
+// 첫 진입 시 ?type=appliances 로 조회하고 이후 메모리 캐시.
+let appliancesCache = null;
+async function renderAppliances() {
+  const body  = document.getElementById('appliancesBody');
+  const count = document.getElementById('appliancesCount');
+  if (appliancesCache) return;
 
-let appliancesRendered = false;
-function renderAppliances() {
-  if (appliancesRendered) return;
-  appliancesRendered = true;
-  document.getElementById('appliancesCount').textContent = String(APPLIANCES.length);
-  document.getElementById('appliancesBody').innerHTML = APPLIANCES.map((r, i) => `
-    <tr>
-      <td style="text-align:right;color:var(--c-label-3);font-variant-numeric:tabular-nums;">${String(i+1).padStart(2,'0')}</td>
-      <td style="font-weight:500;">${r[0]}</td>
-      <td style="color:var(--c-label-2);">${r[1]}</td>
-      <td style="font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;color:var(--c-label-2);">${r[2]}</td>
-      <td style="color:var(--c-label-2);">${r[3]}</td>
-    </tr>
-  `).join('');
+  body.innerHTML = `<tr><td colspan="5" style="padding:var(--sp-32);text-align:center;color:var(--c-label-3);">불러오는 중…</td></tr>`;
+  try {
+    const res = await fetch(SCRIPT_URL + '?type=appliances');
+    const json = await res.json();
+    if (!json.items) throw new Error(json.error || 'No items');
+    appliancesCache = json.items;
+    count.textContent = String(json.count);
+    body.innerHTML = json.items.map((it, i) => `
+      <tr>
+        <td style="text-align:right;color:var(--c-label-3);font-variant-numeric:tabular-nums;">${String(i+1).padStart(2,'0')}</td>
+        <td style="font-weight:500;">${it.category}</td>
+        <td style="color:var(--c-label-2);">${it.name}</td>
+        <td style="font-family:'SF Mono',ui-monospace,Menlo,monospace;font-size:12px;color:var(--c-label-2);">${it.model}</td>
+        <td style="color:var(--c-label-2);">${it.maker}</td>
+      </tr>
+    `).join('');
+  } catch (err) {
+    body.innerHTML = `<tr><td colspan="5" style="padding:var(--sp-32);text-align:center;color:var(--c-red);">목록을 불러오지 못했어요. ${err.message}</td></tr>`;
+  }
 }
 
 // toggleReveal 제거 (마스킹 미사용)
