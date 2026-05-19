@@ -70,10 +70,19 @@ button, input, select, textarea { font-family: inherit; }
   gap: var(--sp-32);
 }
 .navbar-brand {
+  display: inline-flex; align-items: center; gap: var(--sp-8);
   font-size: var(--t-headline); font-weight: 600;
   color: var(--c-accent); letter-spacing: -0.022em;
   cursor: pointer; flex-shrink: 0;
   text-decoration: none;
+}
+.navbar-brand-logo {
+  height: 22px; width: auto; display: block;
+  object-fit: contain;
+}
+.navbar-brand-divider {
+  width: 1px; height: 18px; background: var(--c-separator);
+  display: inline-block;
 }
 .navbar-links {
   display: flex; gap: var(--sp-24); align-items: center;
@@ -97,15 +106,30 @@ button, input, select, textarea { font-family: inherit; }
   border: none; border-radius: 980px;
   font-size: var(--t-caption); font-weight: 500;
   cursor: pointer; letter-spacing: -0.01em;
-  transition: background 0.2s var(--ease), transform 0.15s var(--ease);
+  transition: background 0.15s var(--ease), transform 0.1s var(--ease), box-shadow 0.15s var(--ease);
   white-space: nowrap;
 }
 .navbar-cta:hover { background: var(--c-accent-hover); transform: scale(1.02); }
+.navbar-cta:active {
+  background: var(--c-accent-hover);
+  transform: scale(0.96);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.18);
+}
 .navbar-admin {
-  font-size: 11px; color: var(--c-label-3);
-  text-decoration: none; cursor: pointer;
-  padding: 0 var(--sp-8); min-height: 44px;
-  display: flex; align-items: center;
+  min-height: 36px; padding: 0 var(--sp-16);
+  background: var(--c-fill); color: var(--c-label);
+  border: none; border-radius: 980px;
+  font-size: var(--t-caption); font-weight: 500;
+  cursor: pointer; letter-spacing: -0.01em;
+  text-decoration: none; white-space: nowrap;
+  display: inline-flex; align-items: center;
+  transition: background 0.15s var(--ease), color 0.15s var(--ease), transform 0.1s var(--ease), box-shadow 0.15s var(--ease);
+}
+.navbar-admin:hover { background: var(--c-fill-2); color: var(--c-accent); }
+.navbar-admin:active {
+  background: var(--c-fill-2);
+  transform: scale(0.96);
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.10);
 }
 
 /* ── Pages ───────────────────────────────────────────────── */
@@ -312,6 +336,47 @@ button, input, select, textarea { font-family: inherit; }
 .page-title {
   font-size: var(--t-title-1); font-weight: 600;
   letter-spacing: -0.028em; color: #fff;
+}
+
+/* 텍스트 전용 히어로 — 사진 대신 그라데이션·타이포그래피로 구성 */
+.page-hero.text-only {
+  background: var(--c-accent);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 12% 0%, rgba(255,255,255,0.10) 0%, transparent 60%),
+    radial-gradient(ellipse 60% 50% at 90% 100%, rgba(143,168,137,0.22) 0%, transparent 70%),
+    linear-gradient(135deg, #3a5035 0%, #2d3e2a 100%);
+  align-items: center;
+}
+.page-hero.text-only::after { display: none; }
+.page-hero.text-only::before {
+  content: attr(data-wordmark);
+  position: absolute;
+  right: max(24px, calc(50vw - 580px));
+  bottom: -56px;
+  font-size: clamp(180px, 26vw, 320px);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+  color: rgba(255,255,255,0.05);
+  line-height: 0.85;
+  pointer-events: none;
+  user-select: none;
+  white-space: nowrap;
+}
+.page-hero.text-only .page-hero-body { padding-block: var(--sp-48); max-width: 100%; }
+.page-hero-accent-line {
+  width: 48px; height: 2px; background: var(--c-accent-mid);
+  margin-bottom: var(--sp-24); border-radius: 1px;
+}
+.page-hero.text-only .label-overline { color: var(--c-accent-mid); }
+.page-hero.text-only .page-title {
+  font-size: clamp(40px, 6vw, 64px);
+  line-height: 1.05; letter-spacing: -0.032em;
+}
+.page-hero-kicker {
+  margin-top: var(--sp-20);
+  font-size: var(--t-body); color: rgba(255,255,255,0.78);
+  letter-spacing: -0.016em; line-height: 1.55;
+  max-width: 560px;
 }
 
 .fp-section {
@@ -538,7 +603,21 @@ button, input, select, textarea { font-family: inherit; }
   border-color: var(--c-accent); background: var(--c-bg);
 }
 .form-textarea { min-height: 88px; padding: var(--sp-12); resize: vertical; line-height: 1.5; }
-.form-select { appearance: none; cursor: pointer; }
+.form-select { appearance: none; cursor: pointer; padding-right: 40px; }
+.form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-12);
+}
+.form-select-wrap { position: relative; }
+.form-select-wrap::after {
+  content: ''; position: absolute;
+  right: 14px; top: 50%; width: 10px; height: 10px;
+  border-right: 2px solid var(--c-label-2);
+  border-bottom: 2px solid var(--c-label-2);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+  transition: border-color 0.15s var(--ease);
+}
+.form-select-wrap:focus-within::after { border-color: var(--c-accent); }
 .btn-submit {
   width: 100%; min-height: 50px; background: var(--c-accent); color: #fff;
   border: none; border-radius: var(--radius-md); cursor: pointer;
@@ -653,19 +732,19 @@ button, input, select, textarea { font-family: inherit; }
   border-bottom: 1px solid var(--c-separator);
 }
 .caution-cat {
-  font-size: var(--t-caption); font-weight: 600;
-  letter-spacing: 0.06em; text-transform: uppercase;
+  font-size: var(--t-headline); font-weight: 600;
+  letter-spacing: -0.022em;
   color: var(--c-accent);
 }
 .caution-cat-sub {
-  font-size: var(--t-footnote); color: var(--c-label-2);
-  letter-spacing: -0.008em;
+  font-size: var(--t-subhead); color: var(--c-label);
+  letter-spacing: -0.016em;
 }
 .caution-group ul {
   list-style: none; padding: var(--sp-12) var(--sp-20);
 }
 .caution-group ul li {
-  font-size: var(--t-subhead); color: var(--c-label-2);
+  font-size: var(--t-subhead); color: var(--c-label);
   padding: var(--sp-8) 0 var(--sp-8) var(--sp-16);
   position: relative; line-height: 1.55; letter-spacing: -0.016em;
 }
@@ -677,7 +756,7 @@ button, input, select, textarea { font-family: inherit; }
 }
 .caution-group ul li .note {
   display: block; margin-top: 2px;
-  font-size: var(--t-caption); color: var(--c-label-3);
+  font-size: var(--t-footnote); color: var(--c-label-2);
   letter-spacing: -0.008em;
 }
 
@@ -740,6 +819,8 @@ footer {
 @media (max-width: 900px) {
   .navbar { padding: 0 var(--sp-20); gap: var(--sp-16); }
   .navbar-links a { padding: 0 var(--sp-4); font-size: var(--t-caption); }
+  .navbar-brand-logo { height: 18px; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
   .stats-strip { grid-template-columns: repeat(2,1fr); gap: 0; }
   .split { grid-template-columns: 1fr; }
   .split-text { padding: var(--sp-48) var(--sp-24); }
@@ -764,7 +845,11 @@ footer {
 
 <!-- NAV -->
 <nav class="navbar" id="navbar">
-  <span class="navbar-brand" onclick="showPage('home')">ThinQ Real</span>
+  <span class="navbar-brand" onclick="showPage('home')">
+    <img src="https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/LG_AI_Home_logo.png" alt="LG AI Home" class="navbar-brand-logo">
+    <span class="navbar-brand-divider"></span>
+    <span>ThinQ Real</span>
+  </span>
   <div class="navbar-links">
     <a onclick="showPage('home')"    id="nav-home"    class="active">홈</a>
     <a onclick="showPage('space')"   id="nav-space">공간 소개</a>
@@ -864,10 +949,12 @@ footer {
 
 <!-- ══ SPACE ══ -->
 <div id="page-space" class="page">
-  <div class="page-hero" style="background-image:url('https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/thinqreal_space_hero.jpeg');">
+  <div class="page-hero text-only" data-wordmark="SPACE">
     <div class="page-hero-body">
-      <span class="label-overline" style="color:rgba(255,255,255,0.6);margin-bottom:var(--sp-8);">Space</span>
+      <div class="page-hero-accent-line"></div>
+      <span class="label-overline">Space</span>
       <h1 class="page-title">공간 소개</h1>
+      <p class="page-hero-kicker">30평형 정방형 공간에 거실·주방·침실·런드레스룸·욕실·현관까지 7개 공간을 구성했습니다. 난방을 제외한 모든 기기가 실제로 동작합니다.</p>
     </div>
   </div>
 
@@ -1034,9 +1121,15 @@ footer {
           <label class="form-label">방문자 이름 *</label>
           <input class="form-input" id="fName" type="text" placeholder="홍길동">
         </div>
-        <div class="form-group">
-          <label class="form-label">소속 / 부서 *</label>
-          <input class="form-input" id="fOrg" type="text" placeholder="HS플랫폼사업센터">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">소속 *</label>
+            <input class="form-input" id="fOrg" type="text" placeholder="HS플랫폼사업센터">
+          </div>
+          <div class="form-group">
+            <label class="form-label">부서 *</label>
+            <input class="form-input" id="fDept" type="text" placeholder="AI홈솔루션엔지니어링팀">
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">연락처 *</label>
@@ -1048,14 +1141,16 @@ footer {
         </div>
         <div class="form-group">
           <label class="form-label">방문 목적 *</label>
-          <select class="form-select" id="fPurpose">
-            <option value="">선택해 주세요</option>
-            <option>R&D 연구</option>
-            <option>B2B 파트너 시연</option>
-            <option>내부 행사</option>
-            <option>Press Tour</option>
-            <option>기타</option>
-          </select>
+          <div class="form-select-wrap">
+            <select class="form-select" id="fPurpose">
+              <option value="">선택해 주세요</option>
+              <option>R&D 연구</option>
+              <option>B2B 파트너 시연</option>
+              <option>내부 행사</option>
+              <option>Press Tour</option>
+              <option>기타</option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">방문 인원 *</label>
@@ -1502,11 +1597,13 @@ function updateSummary() {
 async function submitBooking() {
   if (!selectedDate || selectedSlots.size === 0) { toast('날짜와 시간대를 선택해 주세요.'); return; }
   const get = id => document.getElementById(id).value.trim();
-  const [name, org, phone, email, purpose, count, note] =
-    ['fName','fOrg','fPhone','fEmail','fPurpose','fCount','fNote'].map(get);
-  if (!name || !org || !phone || !email || !purpose || !count) {
+  const [name, orgCompany, orgDept, phone, email, purpose, count, note] =
+    ['fName','fOrg','fDept','fPhone','fEmail','fPurpose','fCount','fNote'].map(get);
+  if (!name || !orgCompany || !orgDept || !phone || !email || !purpose || !count) {
     toast('필수 항목을 모두 입력해 주세요.'); return;
   }
+  // 기존 Sheets 스키마(org 단일 컬럼)와 호환 유지 — "소속 · 부서" 형태로 합침
+  const org = orgCompany + ' · ' + orgDept;
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = '신청 중…';
   const dateStr = selectedDate.toISOString().slice(0,10);
@@ -1531,7 +1628,7 @@ async function submitBooking() {
 
 function resetForm() {
   selectedDate = null; selectedSlots = new Set();
-  ['fName','fOrg','fPhone','fEmail','fCount','fNote'].forEach(id =>
+  ['fName','fOrg','fDept','fPhone','fEmail','fCount','fNote'].forEach(id =>
     document.getElementById(id).value = '');
   document.getElementById('fPurpose').value = '';
   document.getElementById('formContent').style.display = 'block';
