@@ -1449,7 +1449,6 @@ function fmtDateOnly(v) {
   const s = String(v);
   if (s.includes('T')) return s.slice(0, 10);
   if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
-  // Date 객체가 문자열화되어 들어오는 경우 등 fallback
   const d = new Date(s);
   if (!isNaN(d.getTime())) {
     const pad = n => String(n).padStart(2, '0');
@@ -1458,18 +1457,40 @@ function fmtDateOnly(v) {
   return s;
 }
 
+// 한 예약 레코드를 정규화: id/date 정리 + slots를 항상 number[] 배열로 보장
+function normalizeRecord(b) {
+  let slotsArr = [];
+  if (b.slots) {
+    try {
+      const parsed = JSON.parse(b.slots);
+      if (Array.isArray(parsed)) slotsArr = parsed;
+    } catch(e) { /* 빈 값 또는 구형 데이터 */ }
+  }
+  if (!slotsArr.length && b.slot !== '' && b.slot != null) {
+    slotsArr = [b.slot];
+  }
+  slotsArr = slotsArr.map(n => Number(n)).filter(n => !isNaN(n));
+  return {
+    ...b,
+    id: b.id != null ? String(b.id) : '',
+    date: fmtDateOnly(b.date),
+    slotsArr,
+  };
+}
+
+// 회차 라벨 다중 표시 (예: "1회차  09:00–10:30 · 2회차  13:00–14:30")
+function fmtSlots(b) {
+  if (b.slotsArr && b.slotsArr.length) {
+    return b.slotsArr.map(n => SLOT_LABELS[String(n)] || String(n)).join(' · ');
+  }
+  return SLOT_LABELS[b.slot] || b.slot || '';
+}
+
 async function loadData() {
   try {
     const res = await fetch(SCRIPT_URL + '?type=bookings');
     allBookings = (await res.json()).records || [];
-    // Sheets가 date 컬럼을 Date 타입으로 자동변환해 ISO 문자열로 직렬화하는
-    // 경우(예: "2026-05-19T00:00:00.000Z"), 표시·필터·CSV 모두 일관되게
-    // 동작하도록 YYYY-MM-DD 10자리로 정규화. id도 String으로 통일해 비교 안전.
-    allBookings = allBookings.map(b => ({
-      ...b,
-      id: b.id != null ? String(b.id) : '',
-      date: fmtDateOnly(b.date),
-    }));
+    allBookings = allBookings.map(normalizeRecord);
     updateKPIs(); renderTable();
     toast('데이터를 불러왔습니다.');
   } catch(e) {
@@ -1480,6 +1501,7 @@ async function loadData() {
       {id:'4',date:'2026-05-23',slot:'1',name:'최유진',org:'Product팀',phone:'010-4567-8901',email:'yj.choi@lge.com',purpose:'내부 행사',count:'12',note:'',status:'확정',timestamp:'2026-05-12T16:00:00'},
       {id:'5',date:'2026-04-15',slot:'2',name:'정우성',org:'마케팅팀',phone:'010-5678-9012',email:'ws.jung@lge.com',purpose:'Press Tour',count:'5',note:'',status:'거절',timestamp:'2026-04-10T10:00:00'},
     ];
+    allBookings = allBookings.map(normalizeRecord);
     updateKPIs(); renderTable();
     toast('데모 데이터로 표시 중 — Apps Script 연결 필요');
   }
@@ -1505,7 +1527,7 @@ function renderTable() {
   const month  = document.getElementById('filterMonth').value;
   let data = [...allBookings];
   if (status) data = data.filter(b=>b.status===status);
-  if (slot)   data = data.filter(b=>String(b.slot)===slot);
+  if (slot)   data = data.filter(b => (b.slotsArr || []).includes(Number(slot)));
   if (month)  data = data.filter(b=>b.date&&b.date.startsWith(month));
   data.sort((a,b)=>new Date(b.timestamp)-new Date(a.timestamp));
   const tbody = document.getElementById('tableBody');
@@ -1521,7 +1543,7 @@ function renderTable() {
       : `<button class="btn-detail-sm" onclick="event.stopPropagation();openModal('${b.id}')">상세</button>`;
     return `<tr onclick="openModal('${b.id}')">
       <td><strong style="letter-spacing:-0.02em;">${b.date||''}</strong></td>
-      <td style="color:var(--c-label-2);font-size:var(--t-footnote);">${SLOT_LABELS[b.slot]||b.slot}</td>
+      <td style="color:var(--c-label-2);font-size:var(--t-footnote);">${fmtSlots(b)}</td>
       <td style="font-weight:500;">${b.name}</td>
       <td style="color:var(--c-label-2);font-size:var(--t-footnote);">${b.org}</td>
       <td>${b.purpose}</td>
@@ -1540,7 +1562,7 @@ function openModal(id) {
   const cls = b.status==='대기중'?'pending':b.status==='확정'?'confirmed':'rejected';
   document.getElementById('modalGrid').innerHTML = `
     <span class="detail-label">날짜</span>    <span class="detail-value">${b.date}</span>
-    <span class="detail-label">회차</span>    <span class="detail-value">${SLOT_LABELS[b.slot]||b.slot}</span>
+    <span class="detail-label">회차</span>    <span class="detail-value">${fmtSlots(b)}</span>
     <span class="detail-label">소속</span>    <span class="detail-value">${b.org}</span>
     <span class="detail-label">연락처</span>  <span class="detail-value">${b.phone}</span>
     <span class="detail-label">이메일</span>  <span class="detail-value" style="color:var(--c-accent);">${b.email}</span>
@@ -1564,7 +1586,7 @@ async function updateStatus(id, status) {
   b.status = status;
   try {
     await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({type:'update',id:String(id),status,email:b.email,name:b.name,date:b.date,slotLabel:SLOT_LABELS[b.slot]}) });
+      body: JSON.stringify({type:'update',id:String(id),status,email:b.email,name:b.name,date:b.date,slotLabel:fmtSlots(b)}) });
   } catch(e) {}
   updateKPIs(); renderTable();
   toast(status==='확정' ? '✓ 확정 처리 — 메일이 발송됩니다.' : '거절 처리되었습니다.');
@@ -1582,7 +1604,12 @@ function renderStats() {
     </div>`).join('') || '<p style="color:var(--c-label-3);font-size:var(--t-subhead);">데이터 없음</p>';
 
   const slots = {'1':0,'2':0,'3':0};
-  allBookings.forEach(b=>{ if(slots[b.slot]!==undefined) slots[b.slot]++; });
+  allBookings.forEach(b => {
+    (b.slotsArr || []).forEach(n => {
+      const k = String(n);
+      if (slots[k] !== undefined) slots[k]++;
+    });
+  });
   const maxS = Math.max(...Object.values(slots),1);
   document.getElementById('slotChart').innerHTML =
     Object.entries(slots).map(([k,v])=>`<div class="bar-item">
@@ -1609,7 +1636,7 @@ function renderStats() {
 
 function exportCSV() {
   const headers = ['날짜','회차','이름','소속','연락처','이메일','목적','인원','요청사항','상태','신청일시'];
-  const rows = allBookings.map(b=>[b.date,SLOT_LABELS[b.slot]||b.slot,b.name,b.org,b.phone,b.email,b.purpose,b.count,b.note||'',b.status,new Date(b.timestamp).toLocaleString('ko-KR')]);
+  const rows = allBookings.map(b=>[b.date,fmtSlots(b),b.name,b.org,b.phone,b.email,b.purpose,b.count,b.note||'',b.status,new Date(b.timestamp).toLocaleString('ko-KR')]);
   const csv = [headers,...rows].map(r=>r.map(c=>`"${c}"`).join(',')).join('\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8'}));
