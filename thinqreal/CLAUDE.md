@@ -51,6 +51,8 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 | `GET ?type=availability&date=YYYY-MM-DD` | 확정 슬롯 번호 배열 반환 |
 | `GET ?type=bookings` | 전체 예약 목록 (관리자용) |
 | `GET ?type=roi_snapshots` | ROI 시나리오 이력 목록 (최신순) |
+| `GET ?type=mail_status` | 메일 발송 설정 + 남은 일일 할당량 (메일 미발송, 진단용) |
+| `GET ?type=mail_test` | 테스트 메일 1통 발송 (실패 시 사유 응답) |
 | `POST type:booking` | Sheets 저장 + 담당자 알림 메일 |
 | `POST type:update` | 상태 변경 + 예약자 확정/거절 메일 |
 | `POST type:roi_snapshot` | ROI 시나리오 스냅샷 저장 (label/author/inputs/outputs) |

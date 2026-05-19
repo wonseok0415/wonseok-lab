@@ -37,6 +37,12 @@ function doGet(e) {
   if (type === 'roi_snapshots') {
     return handleGetRoiSnapshots();
   }
+  if (type === 'mail_test') {
+    return handleMailTest();
+  }
+  if (type === 'mail_status') {
+    return handleMailStatus();
+  }
 
   return jsonResponse({ error: 'Unknown type' });
 }
@@ -200,6 +206,7 @@ function sendAdminAlert(data, id) {
 
   try {
     MailApp.sendEmail({ to: ADMIN_EMAILS, cc: CC_EMAIL, subject, body });
+    Logger.log('Admin mail sent → ' + ADMIN_EMAILS + ' (CC: ' + CC_EMAIL + ')');
   } catch(err) {
     Logger.log('Admin mail error: ' + err.message);
   }
@@ -261,6 +268,47 @@ HS플랫폼사업센터 AI홈솔루션엔지니어링팀
 // ============================================================
 //  헬퍼 함수
 // ============================================================
+
+// ============================================================
+//  메일 발송 진단 엔드포인트
+//  - GET ?type=mail_status → 남은 할당량과 수신자 설정 반환 (메일은 보내지 않음)
+//  - GET ?type=mail_test   → ADMIN_EMAILS + CC_EMAIL로 테스트 메일 1통 발송
+// ============================================================
+
+function handleMailStatus() {
+  let quota = null;
+  let quotaErr = null;
+  try { quota = MailApp.getRemainingDailyQuota(); }
+  catch(err) { quotaErr = err.message; }
+  return jsonResponse({
+    success: true,
+    adminEmails: ADMIN_EMAILS,
+    ccEmail: CC_EMAIL,
+    remainingDailyQuota: quota,
+    quotaError: quotaErr,
+  });
+}
+
+function handleMailTest() {
+  const subject = '[ThinQ Real] 메일 발송 테스트';
+  const body = '이 메일이 도착했다면 알림 시스템이 정상 동작 중입니다.\n\n발송 시각: ' + new Date().toISOString();
+  try {
+    MailApp.sendEmail({ to: ADMIN_EMAILS, cc: CC_EMAIL, subject, body });
+    return jsonResponse({
+      success: true,
+      message: '테스트 메일을 발송했습니다.',
+      sentTo: ADMIN_EMAILS,
+      cc: CC_EMAIL,
+      remainingDailyQuota: MailApp.getRemainingDailyQuota(),
+    });
+  } catch(err) {
+    return jsonResponse({
+      success: false,
+      error: err.message,
+      hint: 'MailApp 권한이 미부여 상태일 가능성이 큽니다. Apps Script 에디터에서 sendAdminAlert 또는 handleMailTest 함수를 한 번 직접 실행해 권한 동의 다이얼로그를 통과해 주세요.',
+    });
+  }
+}
 
 function getSheet() {
   return SpreadsheetApp
