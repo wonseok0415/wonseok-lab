@@ -16,13 +16,13 @@
 ```
 thinqreal/
 ├── thinqreal.html              # 메인 사이트 (홈/공간소개/예약/이용안내)
-├── thinqreal_admin.html        # 관리자 대시보드 (6개 탭)
+├── thinqreal_admin.html        # 관리자 대시보드 (8개 탭)
 ├── ThinQReal_AppScript.gs      # Google Apps Script (배포 완료)
+├── ThinQ_Real_ROI_Tool.html    # ROI 분석 시뮬레이션 툴 (관리자 ROI 탭에서 iframe 임베드)
 ├── CLAUDE.md                   # 이 파일
 └── images/                     # 이미지 (GitHub Raw로 참조됨)
-│   ├── thinqreal_*.png/jpeg   # 메인 사이트 이미지 10개
-│   └── thinqreal_admin_*.png  # 관리자 페이지 이미지 2개
-└── ThinQ_Real_ROI_Tool.html   # ROI 분석 시뮬레이션 툴 (관리자 → 분석 → ROI 분석 탭에서 iframe으로 임베드)
+    ├── thinqreal_*.png/jpeg    # 메인 사이트 이미지 10개
+    └── thinqreal_admin_*.png   # 관리자 페이지 이미지 2개
 ```
 
 ## 이미지 경로 규칙
@@ -54,17 +54,18 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 | `GET ?type=mail_status` | 메일 발송 설정 + 남은 일일 할당량 (메일 미발송, 진단용) |
 | `GET ?type=mail_test` | 테스트 메일 1통 발송 (실패 시 사유 응답) |
 | `GET ?type=appliances` | 구비 가전 45개 목록 — `APPLIANCES` 상수의 단일 소스 |
-
-### 예약자 메일 (sendGuestMail)
-- **HTML + plain-text 동시 발송** — `MailApp.sendEmail({body, htmlBody})`
-- HTML은 인라인 스타일만 사용 (Gmail/아웃룩 호환)
-- R&D 연구 목적이면 구비 가전 표(HTML `<table>`)를 본문에 첨부 → 브라우저 폭 변화에도 정렬 유지
-- 확정 메일 카드형 레이아웃 (다크 올리브 헤더 + 라벨/값 그리드)
-- 거절 메일도 동일 디자인으로 정렬
 | `POST type:booking` | Sheets 저장 + 담당자 알림 메일 |
 | `POST type:update` | 상태 변경 + 예약자 확정/거절 메일 |
 | `POST type:roi_snapshot` | ROI 시나리오 스냅샷 저장 (label/author/inputs/outputs) |
 | `POST type:roi_delete` | ROI 시나리오 스냅샷 삭제 (id) |
+
+### 예약자 메일 (sendGuestMail)
+- **HTML + plain-text 동시 발송** — `MailApp.sendEmail({body, htmlBody})`로 두 버전을 함께 실음. HTML 클라이언트는 카드형 레이아웃, 평문 클라이언트는 평문을 받음.
+- HTML은 **인라인 스타일만** 사용 (Gmail/Outlook 호환). 외부 리소스·`<style>` 블록·CSS 변수 사용 금지.
+- 다크 올리브 헤더 + 라벨/값 그리드 카드형 디자인. 거절 메일도 동일 톤(헤더 색만 그레이).
+- 정보 섹션 이모지 헤더: 📅 일정 / 📍 위치 / 📶 무선 인터넷(2.4G·5G 분리) / ☎ 문의(3명) / 📖 방문 안내(`GUIDE_URL`).
+- **R&D 연구 목적이면** 구비 가전 표(HTML `<table>`)를 본문에 첨부 → 브라우저 폭이 좁아져도 칼럼 정렬 유지. 표 아래 안내 문구: "연구 목적의 방문에 도움이 되시도록 구비 가전 정보를 함께 안내드립니다. (R&D 연구 목적으로 예약하신 분께만 발송됩니다.)"
+- 빌더: `buildConfirmText` / `buildConfirmHtml` / `buildRejectText` / `buildRejectHtml` / `buildAppliancesText` / `buildAppliancesHtml` / `escapeHtml`
 
 ### Sheets 탭 구성
 - `bookings` (예약, 변경 금지)
@@ -91,17 +92,27 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 ## 관리자 대시보드 탭 (thinqreal_admin.html)
 **관리 섹션**
 1. 📋 예약 관리 (KPI 카드, 필터, 테이블, 승인/거절, CSV 내보내기)
-2. 📊 통계 (목적별/회차별/월별 바 차트)
+2. 📊 통계
+   - 방문 목적별 바 차트 — `PURPOSE_COLORS` 결정적 매핑으로 목적별 고정 색상 (R&D=올리브, B2B=오렌지, 내부 행사=퍼플, Press Tour=틸, 기타=올리브-mid). 막대 옆 컬러 도트로 시각 인식 보조.
+   - 회차별 바 차트
+   - 월별 방문 건수 **누적 세로 막대** — 목적별 세그먼트를 한 막대에 쌓음. 카드 상단에 색상 범례. 호버 시 `목적: N건` 툴팁.
 3. 🔐 연동 계정 정보 (마스킹 없이 직접 표시, 복사 버튼)
 4. 🎬 시연 시나리오 (9개 시나리오 카드)
 5. 💡 조명 스위치 안내 (공간별 카드)
 6. ⚙️ 시스템 구성 (조명/Homey/ThinQ/난방 카드)
-7. 📦 구비 가전 (45개 품목 — 관리자 전용, Apps Script `?type=appliances`에서 fetch)
+7. 📦 구비 가전 (45개 품목 — 관리자 전용, Apps Script `?type=appliances`에서 fetch 후 메모리 캐시)
 
 **분석 섹션**
 8. 📈 ROI 분석 — `ThinQ_Real_ROI_Tool.html`을 iframe으로 임베드 (지연 로드, "새 창에서 열기" 버튼 제공)
    - ROI 툴 내부에 **시나리오 스냅샷 저장/불러오기** 패널 포함 (Apps Script `roi_snapshots` 탭 연동)
-   - iframe 하단에 **분석 툴 동작 원리** 설명 패널: BEP/연간가치/ROI 산식, V_R&D·V_Sales·V_PR 카드별 정의, 해석 가이드
+   - iframe 하단에 **분석 툴 동작 원리** 설명 패널: BEP / 연간가치 / N년 ROI 산식 박스, V_R&D · V_Sales(A) · V_Sales(B) · V_PR · 비용 구조 · 해석 가이드 6개 카드. 수식 폰트는 Cambria Math 17px / 15.5px (첨자 0.7em baseline 보정).
+
+### 데이터 로딩 — Stale-while-revalidate
+`loadData()`는 첫 진입 시:
+1. localStorage의 마지막 응답(`thinqreal_bookings_v1`, TTL 30분)으로 **즉시 화면 렌더** — 빈 화면 시간 ≈ 0
+2. 동시에 백그라운드에서 `?type=bookings` fresh fetch → 응답 도착하면 캐시 갱신 + 활성 탭 재렌더 + toast 알림
+
+Apps Script 콜드 스타트(1~3초) 자체는 서버 측 제약이라 완전히 없앨 수 없음. 첫 방문(캐시 없음)에서 보이는 회전 스피너 + "Apps Script 콜드 스타트로 1~3초 걸릴 수 있습니다" 메시지가 정상 동작.
 
 ## 담당자
 | 이름 | 직급 | 이메일 |
@@ -183,8 +194,60 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 - 구비 가전 45개 순서는 PDF 슬라이드 7 그대로 유지 (재정렬 금지)
 - 유의사항 카테고리 5개 그룹 구조는 PDF 기준이므로 임의 통합·분리 금지
 
+## 작업 내역 (2026-05-19 세션)
+
+### A. 예약 확정 메일 개편 (Apps Script — 재배포 필요)
+- 평문 → **HTML + plain-text 동시 발송** 구조로 전환 (`htmlBody` + `body`)
+- 카드형 레이아웃, 정보 섹션을 이모지 헤더로 정렬 (📅 📍 📶 ☎ 📖 📦)
+- 무선 인터넷 **2.4 GHz / 5 GHz 분리** 표기 (PW `real2026`)
+- 문의 담당자 **3명 모두** 표기 + `mailto:` 링크
+- `GUIDE_URL` (이용 안내 페이지 `#page-guide` 앵커) 카드형 링크
+- **R&D 연구 목적** 예약자 한정으로 구비 가전 표(HTML `<table>`) 본문 첨부 — 좁은 화면에서도 칼럼 정렬 유지
+- 가전 표 아래 부드러운 안내 문구: "연구 목적의 방문에 도움이 되시도록 구비 가전 정보를 함께 안내드립니다."
+- 거절 메일도 동일 톤(헤더만 그레이)으로 정렬
+
+### B. 구비 가전 데이터 단일 소스 통합
+- 메인 사이트(`thinqreal.html`)의 구비 가전 테이블 **제거** — 일반 방문자 화면에서 빠짐
+- 관리자에 📦 구비 가전 탭 신설 (사이드바 "관리" 섹션)
+- Apps Script에 `APPLIANCES` 상수 신설 + `GET ?type=appliances` 엔드포인트 노출
+- 관리자 페이지는 첫 진입 시 엔드포인트 fetch + 메모리 캐시
+- → 가전 추가·변경 시 **Apps Script 한 곳만** 수정하면 메일·관리자 동시 갱신
+
+### C. 통계 차트 개선
+- `PURPOSE_COLORS` 결정적 매핑으로 목적별 고정 색상 (위 §관리자 §2 참조)
+- 막대 옆 컬러 도트(`::before` 의사 요소 + CSS 변수)
+- 월별 방문 건수: 단색 → **목적별 누적 세로 막대** + 색상 범례
+- `.month-bar-wrap` (영역) / `.month-bar` (실제 막대) / `.month-segment` (목적별 세그먼트) 3단 구조
+
+### D. ROI 분석 — 동작 원리 설명 패널
+- iframe 하단에 신설: BEP / 연간 창출 가치 / N년 ROI 산식 박스
+- 6개 카드: 비용 구조 · V_R&D · V_Sales(A) · V_Sales(B) · V_PR · 해석 가이드
+- 수식 폰트: SF Mono(12.5–14px) → **Cambria Math 17px / 15.5px**, 첨자 0.7em + baseline 보정으로 가독성 개선
+
+### E. 초기 로딩 — Stale-while-revalidate 캐시
+- localStorage 캐시(`thinqreal_bookings_v1`, TTL 30분) + 회전 스피너 UI (위 §관리자 §데이터 로딩 참조)
+
+### 관련 PR
+- #15 (8b958a8 — 메일 개편 초안 + 구비 가전 이관 + ROI 동작 원리 초안) — 머지 완료
+- #16 (968eb77 + 68c1806 + 22dc358 — 단일 소스 통합 / 폰트 가독성 / 메일 HTML + 통계 색상·누적 + 캐시) — PR #15가 첫 커밋만 머지된 채 닫혀 후속 3건이 누락되어 후속 PR로 분리. 머지 후 Apps Script 재배포 필요.
+
 ## 다중 기기 작업 환경
 - 이 프로젝트는 맥북 외부(iPhone/iPad/회사 PC)에서도 작업 필요
 - 권장 워크플로우: 로컬 수정 → GitHub push → 다른 기기는 `claude.ai/code`(웹)에서 같은 repo 연결하여 이어서 작업
 - 새 세션은 이 `CLAUDE.md`를 자동 로드 → 프로젝트 맥락은 유지되나, **개별 채팅 히스토리는 세션 간 이동되지 않음**
 - 중요한 결정/변경은 이 파일에 즉시 기록할 것
+
+### 구형 iPad + 셀룰러에서 Claude Code 웹을 쓸 때
+사용자 환경: 구형 iPad(Claude 앱 미지원) + 회사 셀룰러 데이터.
+
+**증상**: 타이머는 흘러가는데 응답 내용이 비어 있다가, 브라우저 새로고침을 하면 그동안의 출력이 한꺼번에 나타남.
+
+**원인 요지**: 이통사 미들박스의 유휴 연결 타임아웃 + 구형 Safari의 SSE/스트림 처리 한계로, 서버 측 출력은 계속 진행되지만 클라이언트로의 통로가 조용히 끊김. 새로고침으로 재접속하면 서버에 버퍼된 결과를 다시 받아오는 패턴.
+
+**대응(효과 순)**:
+1. **Wi-Fi 우선 사용** — 캐리어 미들박스 자체를 우회
+2. iOS 설정 → 셀룰러 → "데이터 절약 모드(Low Data Mode)" 끄기
+3. Claude Code 탭을 **포그라운드로 유지** (다른 앱 전환·잠금 금지)
+4. VPN (Cloudflare WARP 등) — 미들박스 우회 효과
+5. **새로고침을 정상 도구로 활용** — 세션은 서버에 보존되므로 진행 상황이 사라지지 않음. 응답이 오래 멈췄다 싶으면 새로고침하여 재접속
+6. 긴 작업은 **GitHub Actions** 트리거로 비동기 실행 (https://code.claude.com/docs/en/claude-code-on-the-web)
