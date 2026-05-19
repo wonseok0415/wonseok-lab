@@ -54,6 +54,13 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 | `GET ?type=mail_status` | 메일 발송 설정 + 남은 일일 할당량 (메일 미발송, 진단용) |
 | `GET ?type=mail_test` | 테스트 메일 1통 발송 (실패 시 사유 응답) |
 | `GET ?type=appliances` | 구비 가전 45개 목록 — `APPLIANCES` 상수의 단일 소스 |
+
+### 예약자 메일 (sendGuestMail)
+- **HTML + plain-text 동시 발송** — `MailApp.sendEmail({body, htmlBody})`
+- HTML은 인라인 스타일만 사용 (Gmail/아웃룩 호환)
+- R&D 연구 목적이면 구비 가전 표(HTML `<table>`)를 본문에 첨부 → 브라우저 폭 변화에도 정렬 유지
+- 확정 메일 카드형 레이아웃 (다크 올리브 헤더 + 라벨/값 그리드)
+- 거절 메일도 동일 디자인으로 정렬
 | `POST type:booking` | Sheets 저장 + 담당자 알림 메일 |
 | `POST type:update` | 상태 변경 + 예약자 확정/거절 메일 |
 | `POST type:roi_snapshot` | ROI 시나리오 스냅샷 저장 (label/author/inputs/outputs) |

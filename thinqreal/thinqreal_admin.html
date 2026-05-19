@@ -321,7 +321,13 @@ body {
 
 .empty-state { padding:64px var(--sp-24); text-align:center; }
 .empty-state-icon { font-size:40px; margin-bottom:var(--sp-12); }
-.empty-state-text { font-size:var(--t-subhead); color:var(--c-label-3); letter-spacing:-0.016em; }
+.empty-state-text { font-size:var(--t-subhead); color:var(--c-label-3); letter-spacing:-0.016em; line-height:1.6; }
+.empty-state-spinner {
+  width:32px; height:32px; margin:0 auto var(--sp-16);
+  border:3px solid var(--c-fill-2); border-top-color:var(--c-accent);
+  border-radius:50%; animation:spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform:rotate(360deg); } }
 
 /* ── Stats ── */
 .stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:var(--sp-16); }
@@ -330,21 +336,56 @@ body {
 .stats-card-title { font-size:var(--t-headline); font-weight:600; letter-spacing:-0.022em; margin-bottom:var(--sp-20); }
 .bar-item { margin-bottom:var(--sp-16); }
 .bar-item:last-child { margin-bottom:0; }
-.bar-meta { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:var(--sp-8); }
-.bar-name { font-size:var(--t-subhead); letter-spacing:-0.016em; }
+.bar-meta { display:flex; justify-content:space-between; align-items:baseline; margin-bottom:var(--sp-8); gap:var(--sp-8); }
+.bar-name { font-size:var(--t-subhead); letter-spacing:-0.016em; display:inline-flex; align-items:center; gap:var(--sp-8); }
+.bar-name::before {
+  content:''; width:10px; height:10px; border-radius:3px;
+  background:var(--bar-color, var(--c-accent)); flex-shrink:0;
+}
 .bar-count { font-size:var(--t-caption); color:var(--c-label-3); font-weight:500; }
-.bar-track { height:6px; background:var(--c-fill-2); border-radius:3px; overflow:hidden; }
-.bar-fill { height:100%; border-radius:3px; background:var(--c-accent); transition:width .7s var(--ease); }
-.bar-fill.orange { background:var(--c-orange); }
-.bar-fill.mid    { background:var(--c-accent-mid); }
+.bar-track { height:8px; background:var(--c-fill-2); border-radius:4px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:4px; background:var(--bar-color, var(--c-accent)); transition:width .7s var(--ease); }
 
-.month-chart { display:flex; align-items:flex-end; gap:var(--sp-12); height:140px; padding-top:var(--sp-8); }
-.month-col { flex:1; display:flex; flex-direction:column; align-items:center; gap:var(--sp-4); }
-.month-bar-wrap { flex:1; width:100%; display:flex; align-items:flex-end; }
-.month-bar { width:100%; background:var(--c-accent-light); border-radius:4px 4px 0 0; transition:height .7s var(--ease); }
-.month-bar:hover { background:var(--c-accent-mid); }
+/* 월별 누적 막대 — 목적별 색상으로 세그먼트 쌓기 */
+.month-chart {
+  display:flex; align-items:flex-end; gap:var(--sp-16);
+  height:260px; padding:var(--sp-8) 0;
+}
+.month-col {
+  flex:1; min-width:0; height:100%;
+  display:flex; flex-direction:column; align-items:center; gap:var(--sp-4);
+}
+.month-bar-wrap {
+  flex:1; width:100%; min-width:24px;
+  display:flex; align-items:flex-end; justify-content:center;
+}
+.month-bar {
+  width:100%; max-width:60px;
+  display:flex; flex-direction:column;
+  border-radius:5px 5px 0 0; overflow:hidden;
+  box-shadow:inset 0 0 0 1px rgba(0,0,0,0.04);
+  background:var(--c-fill-2);
+  transition:height .7s var(--ease);
+}
+.month-segment {
+  width:100%;
+  transition:filter .15s var(--ease);
+  cursor:default;
+}
+.month-segment:hover { filter:brightness(0.92); }
+.month-segment + .month-segment { border-top:1px solid rgba(255,255,255,0.55); }
 .month-label { font-size:11px; color:var(--c-label-3); }
-.month-val { font-size:11px; font-weight:600; color:var(--c-accent); }
+.month-val { font-size:11px; font-weight:600; color:var(--c-accent); font-variant-numeric:tabular-nums; }
+
+/* 차트 범례 (목적별 색상 표) */
+.chart-legend {
+  display:flex; flex-wrap:wrap; gap:var(--sp-8) var(--sp-16);
+  margin-bottom:var(--sp-16); padding-bottom:var(--sp-16);
+  border-bottom:1px solid var(--c-separator);
+}
+.chart-legend:empty, .chart-legend.hidden { display:none; }
+.legend-item { display:inline-flex; align-items:center; gap:6px; font-size:var(--t-caption); color:var(--c-label-2); }
+.legend-swatch { width:10px; height:10px; border-radius:3px; flex-shrink:0; }
 
 /* ── Modal ── */
 .modal-backdrop {
@@ -744,7 +785,7 @@ body {
             </tr>
           </thead>
           <tbody id="tableBody">
-            <tr><td colspan="9"><div class="empty-state"><div class="empty-state-icon">📭</div><div class="empty-state-text">데이터를 불러오는 중...</div></div></td></tr>
+            <tr><td colspan="9"><div class="empty-state"><div class="empty-state-spinner"></div><div class="empty-state-text">서버에서 예약 데이터를 가져오는 중…<br><span style="font-size:11px;color:var(--c-label-3);">첫 요청은 Apps Script 콜드 스타트로 1~3초 걸릴 수 있습니다.</span></div></div></td></tr>
           </tbody>
         </table>
       </div>
@@ -766,7 +807,8 @@ body {
           <div id="slotChart"></div>
         </div>
         <div class="stats-card wide">
-          <div class="stats-card-title">월별 방문 건수</div>
+          <div class="stats-card-title">월별 방문 건수 <span style="font-size:var(--t-caption);font-weight:400;color:var(--c-label-3);margin-left:var(--sp-8);">목적별 누적</span></div>
+          <div class="chart-legend" id="monthLegend"></div>
           <div class="month-chart" id="monthChart"></div>
         </div>
       </div>
@@ -1749,13 +1791,47 @@ function fmtSlotsCompact(b) {
   return fmtSlots(b);
 }
 
+// 캐시: stale-while-revalidate.
+// 첫 진입 시 localStorage의 마지막 응답을 즉시 그려 빈 화면 시간을 없애고,
+// 백그라운드에서 fresh fetch로 갱신한다. Apps Script 콜드 스타트(1~3초)는
+// 서버 측 제약이라 완전히 없앨 수 없지만, 체감 속도는 0초에 가까워진다.
+const CACHE_KEY = 'thinqreal_bookings_v1';
+const CACHE_TTL_MS = 1000 * 60 * 30; // 30분 — 너무 오래된 캐시는 폐기
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    const { ts, records } = JSON.parse(raw);
+    if (!records || (Date.now() - ts) > CACHE_TTL_MS) return null;
+    return { ts, records };
+  } catch { return null; }
+}
+function saveCache(records) {
+  try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), records })); }
+  catch { /* quota 초과 등 무시 */ }
+}
+
 async function loadData() {
+  // 1) 캐시가 있으면 즉시 표시
+  const cached = loadCache();
+  let usedCache = false;
+  if (cached) {
+    allBookings = cached.records.map(normalizeRecord);
+    updateKPIs(); renderTable();
+    usedCache = true;
+  }
+
+  // 2) 항상 fresh fetch로 갱신
   try {
     const res = await fetch(SCRIPT_URL + '?type=bookings');
-    allBookings = (await res.json()).records || [];
-    allBookings = allBookings.map(normalizeRecord);
+    const records = (await res.json()).records || [];
+    saveCache(records);
+    allBookings = records.map(normalizeRecord);
     updateKPIs(); renderTable();
-    toast('데이터를 불러왔습니다.');
+    // 활성 탭이 stats면 차트도 다시 그림
+    if (document.getElementById('tab-stats').classList.contains('active')) renderStats();
+    toast(usedCache ? '최신 데이터로 갱신했습니다.' : '데이터를 불러왔습니다.');
   } catch(e) {
     allBookings = [
       {id:'1',date:'2026-05-20',slot:'1',name:'김민준',org:'AI홈솔루션팀',phone:'010-1234-5678',email:'mj.kim@lge.com',purpose:'R&D 연구',count:'3',note:'',status:'대기중',timestamp:'2026-05-14T09:00:00'},
@@ -1893,17 +1969,39 @@ async function updateStatus(id, status) {
   }
 }
 
+// 목적별 색상 — 디자인 시스템에서 추출. 결정적 매핑이라 항상 같은
+// 목적은 같은 색으로 표시되어 인식이 쉽다.
+const PURPOSE_COLORS = {
+  'R&D 연구':       '#3a5035', // accent (다크 올리브)
+  'B2B 파트너 시연': '#ff9500', // orange
+  '내부 행사':       '#7f51e4', // purple
+  'Press Tour':    '#0a84a3', // teal
+  '기타':           '#8fa889', // accent-mid
+};
+const PURPOSE_FALLBACK = ['#3a5035','#ff9500','#7f51e4','#0a84a3','#8fa889','#cc7000','#5e7858','#a86bda'];
+function colorFor(purpose, fallbackIdx) {
+  return PURPOSE_COLORS[purpose] || PURPOSE_FALLBACK[fallbackIdx % PURPOSE_FALLBACK.length];
+}
+
 function renderStats() {
+  // 1) 방문 목적별 — 목적별 고정 색상으로 막대 채움
   const purposes = {};
   allBookings.forEach(b=>{ purposes[b.purpose]=(purposes[b.purpose]||0)+1; });
-  const maxP = Math.max(...Object.values(purposes),1);
-  const fills = ['','mid','orange','','mid'];
+  const purposeEntries = Object.entries(purposes).sort((a,b)=>b[1]-a[1]);
+  const maxP = Math.max(...purposeEntries.map(e=>e[1]),1);
   document.getElementById('purposeChart').innerHTML =
-    Object.entries(purposes).map(([k,v],i)=>`<div class="bar-item">
-      <div class="bar-meta"><span class="bar-name">${k}</span><span class="bar-count">${v}건</span></div>
-      <div class="bar-track"><div class="bar-fill ${fills[i%fills.length]}" style="width:${(v/maxP*100).toFixed(0)}%"></div></div>
-    </div>`).join('') || '<p style="color:var(--c-label-3);font-size:var(--t-subhead);">데이터 없음</p>';
+    purposeEntries.length
+      ? purposeEntries.map(([k,v],i)=>{
+          const color = colorFor(k, i);
+          const pct = (v/maxP*100).toFixed(0);
+          return `<div class="bar-item" style="--bar-color:${color};">
+            <div class="bar-meta"><span class="bar-name">${k}</span><span class="bar-count">${v}건</span></div>
+            <div class="bar-track"><div class="bar-fill" style="width:${pct}%"></div></div>
+          </div>`;
+        }).join('')
+      : '<p style="color:var(--c-label-3);font-size:var(--t-subhead);">데이터 없음</p>';
 
+  // 2) 회차별
   const slots = {'1':0,'2':0,'3':0};
   allBookings.forEach(b => {
     (b.slotsArr || []).forEach(n => {
@@ -1914,22 +2012,63 @@ function renderStats() {
   const maxS = Math.max(...Object.values(slots),1);
   document.getElementById('slotChart').innerHTML =
     Object.entries(slots).map(([k,v])=>`<div class="bar-item">
-      <div class="bar-meta"><span class="bar-name">${SLOT_LABELS[k]}</span><span class="bar-count">${v}건</span></div>
+      <div class="bar-meta"><span class="bar-name" style="--bar-color:var(--c-accent);">${SLOT_LABELS[k]}</span><span class="bar-count">${v}건</span></div>
       <div class="bar-track"><div class="bar-fill" style="width:${(v/maxS*100).toFixed(0)}%"></div></div>
     </div>`).join('');
 
+  // 3) 월별 방문 — 목적별 누적 세로 막대
+  // months[m][purpose] = count
   const months = {};
-  allBookings.forEach(b=>{ if(b.date){const m=b.date.slice(0,7); months[m]=(months[m]||0)+1;} });
-  const sorted = Object.entries(months).sort((a,b)=>a[0].localeCompare(b[0]));
-  const maxM = Math.max(...sorted.map(x=>x[1]),1);
+  allBookings.forEach(b => {
+    if (!b.date) return;
+    const m = b.date.slice(0,7);
+    if (!months[m]) months[m] = {};
+    months[m][b.purpose] = (months[m][b.purpose] || 0) + 1;
+  });
+  const sortedMonths = Object.keys(months).sort();
+  const maxTotal = Math.max(
+    ...sortedMonths.map(m => Object.values(months[m]).reduce((a,c)=>a+c,0)),
+    1
+  );
+
+  // 활성 목적 (예약 기록에 등장한 것만) — purposeEntries 정렬 순서 재사용
+  const activePurposes = purposeEntries.map(e => e[0]);
+  const colorMap = {};
+  activePurposes.forEach((p, i) => { colorMap[p] = colorFor(p, i); });
+
+  // 범례
+  const legend = document.getElementById('monthLegend');
+  legend.innerHTML = activePurposes.length
+    ? activePurposes.map(p =>
+        `<span class="legend-item"><span class="legend-swatch" style="background:${colorMap[p]};"></span>${p}</span>`
+      ).join('')
+    : '';
+  legend.classList.toggle('hidden', activePurposes.length === 0);
+
+  // 막대
   const container = document.getElementById('monthChart');
-  container.innerHTML = sorted.length
-    ? sorted.map(([k,v])=>{
-        const pct = Math.max((v/maxM*100).toFixed(0),8);
+  container.innerHTML = sortedMonths.length
+    ? sortedMonths.map(m => {
+        const monthPurposes = months[m];
+        const total = Object.values(monthPurposes).reduce((a,c)=>a+c,0);
+        const heightPct = Math.max((total/maxTotal*100), 4); // 최소 높이 4%
+
+        // 세그먼트는 activePurposes 순서대로 (아래→위)
+        const segments = activePurposes
+          .filter(p => monthPurposes[p])
+          .map(p => {
+            const segPct = (monthPurposes[p] / total * 100).toFixed(2);
+            return `<div class="month-segment" style="height:${segPct}%;background:${colorMap[p]};" title="${p}: ${monthPurposes[p]}건"></div>`;
+          })
+          .reverse() // CSS flex-direction column이라 위쪽이 첫 항목 — 역순으로 두면 첫 목적이 아래 쌓임
+          .join('');
+
         return `<div class="month-col">
-          <div class="month-bar-wrap"><div class="month-bar" style="height:${pct}%"></div></div>
-          <div class="month-val">${v}</div>
-          <div class="month-label">${k.slice(5)}월</div>
+          <div class="month-bar-wrap">
+            <div class="month-bar" style="height:${heightPct}%;" title="${m.slice(5)}월 총 ${total}건">${segments}</div>
+          </div>
+          <div class="month-val">${total}</div>
+          <div class="month-label">${m.slice(5)}월</div>
         </div>`;
       }).join('')
     : '<p style="color:var(--c-label-3);font-size:var(--t-subhead);">데이터 없음</p>';
