@@ -19,6 +19,59 @@ const ROI_SHEET_NAME = 'roi_snapshots';      // 시트 탭 이름 (ROI 시나리
 const ADMIN_EMAILS = 'ch275.lee@lge.com, moonsu.seo@lge.com, hj8462.kim@lge.com';
 const CC_EMAIL     = 'kang.wonseok@lge.com';  // 참조 수신자 (시스템 동작 모니터링)
 
+// 방문 전 이용 안내 페이지 URL (이용안내 탭으로 직접 이동)
+const GUIDE_URL = 'https://wonseok0415.github.io/wonseok-lab/thinqreal/thinqreal.html#page-guide';
+
+// R&D 연구 목적 예약자에게 함께 보내는 구비 가전 리스트 (총 45개)
+// [구분, 제품명, 모델명, 제조사]
+const APPLIANCES = [
+  ['시스템에어컨 (거실)',  '1Way 정온제습(콜드프리) 에어컨 (신제품)', '미출시',           'LG전자'],
+  ['시스템에어컨 (침실)',  '1Way 정온제습(콜드프리) 에어컨 (신제품)', '미출시',           'LG전자'],
+  ['욕실 환기',           '바스에어시스템 (듀얼배기)',                 'M-X0120BASV',     'LG전자'],
+  ['프리미엄 환기',        'LG 프리미엄 환기 PLUS',                    'Z-E0250L2AR',     'LG전자'],
+  ['스마트디퓨저 (배기)',  '환기 디퓨저',                              'PVD-R120TD.AKM',  'LG전자'],
+  ['스마트디퓨저 (급기)',  '환기 디퓨저',                              'PVD-S120AA.AKM',  'LG전자'],
+  ['시스템공청기',         '시스템 공청기',                            '미출시',           'LG전자'],
+  ['스탠바이미2',          'LG 스탠바이미2',                           '27LX6TPGAA',      'LG전자'],
+  ['TV',                  'LG QNED TV',                              '86QNED90KQA',     'LG전자'],
+  ['냉장고',              'LG 오브제컬렉션 무드업',                    'M624GNN0A2',      'LG전자'],
+  ['김치냉장고',           'LG 디오스 김치톡톡 무드업',                 'Z331GNN152',      'LG전자'],
+  ['와인셀러',             'LG 디오스 오브제컬렉션 와인셀러 (81병)',     'W0812GG',         'LG전자'],
+  ['세탁기',              'LG 트롬 AI 오브제컬렉션 워시타워 (세탁 25kg)', 'FA25GJFB',       'LG전자'],
+  ['건조기',              'LG 트롬 AI 오브제컬렉션 워시타워 (건조 25kg)', 'RA25GJFB',       'LG전자'],
+  ['제습기',              'LG 휘센 오브제컬렉션 제습기',                'DQ235MEGA',       'LG전자'],
+  ['공기청정기',           'LG 퓨리케어 AI 오브제컬렉션 360˚ 공기청정기', 'AS355NSNA',      'LG전자'],
+  ['하이드로타워',         'LG 퓨리케어 오브제컬렉션 하이드로타워',       'HY705RSUAB',      'LG전자'],
+  ['하이드로 에센셜',       'LG 퓨리케어 오브제컬렉션 하이드로 에센셜',    'HY505RWLAH',      'LG전자'],
+  ['에어로스피커',         'LG 퓨리케어 AI 오브제컬렉션 에어로스피커',    'AS065SWHA',       'LG전자'],
+  ['사운드바',             'LG 사운드바 스위트',                       'H7',              'LG전자'],
+  ['정수기',              'LG 퓨리케어 정수기 (듀얼, 냉온정)',         'WU923AS',         'LG전자'],
+  ['의류관리기',           'LG 스타일러 오브제컬렉션',                  'SC5GMR52C',       'LG전자'],
+  ['안마의자',             'LG 힐링미 오브제컬렉션 안마의자 (아르테UP)',  'MH21RRY',         'LG전자'],
+  ['로봇청소기',           '히든스테이션 로봇청소기',                   '미출시',           'LG전자'],
+  ['광파오븐',             'LG 디오스 오브제컬렉션 광파오븐',            'MLJ32ERS',        'LG전자'],
+  ['인덕션',              'LG 디오스 오브제컬렉션 인덕션 1등급',         'BEI3ANHLE',       'LG전자'],
+  ['식기세척기',           'LG 디오스 오브제컬렉션 식기세척기 (열풍+스팀)', 'DFBJ4ES',       'LG전자'],
+  ['식물생활가전',         '틔운 오브제컬렉션',                         'L123G1P',         'LG전자'],
+  ['스마트수전',           'LG 샤워 스테이션',                          '미출시',           'LG전자'],
+  ['ThinQ ON',           'LG AI Home',                              'HMAK4W.AKOR',     'LG전자'],
+  ['보이스 컨트롤러',       'LG AI Home',                              'HAAL3W.AKOR',     'LG전자'],
+  ['공기질 센서',          'LG 공기질 센서',                           'TMSA2A4W.AKOR',   'LG전자'],
+  ['온습도 센서',          'LG 온습도 센서',                           'TMSTAA4W.AKOR',   'LG전자'],
+  ['스마트 버튼 (1구)',    'LG 스마트 버튼',                           'TMCB1B4W.AKOR',   'LG전자'],
+  ['스마트 버튼 (2구)',    'LG 스마트 버튼',                           'TMCB2B4W.AKOR',   'LG전자'],
+  ['도어 센서',           'LG 도어 센서',                             'TMSDAA4W.AKOR',   'LG전자'],
+  ['모션 조도 센서',       'LG 모션 조도 센서',                         'TMSMAA4W.AKOR',   'LG전자'],
+  ['스마트 플러그',        'LG 스마트 플러그',                          'TMCP114W.AKOR',   'LG전자'],
+  ['스마트 도어락',        'LG 스마트 도어락',                          'TZCDP14B.AKOR',   'LG전자'],
+  ['전동창호 (분합창)',    'LX 하우시스 전동창호 분합창 (Sliding)',      '미출시',           'LX하우시스'],
+  ['전동창호 (주방창)',    'LX 하우시스 전동창호 주방창 (Outward)',      '미출시',           'LX하우시스'],
+  ['월패드',              '현대HT 월패드',                            'HNF-I7130',       '현대HT'],
+  ['온도조절기',           '시하스 온도조절기',                          '—',               '시하스'],
+  ['AP',                 'Unifi U7-Pro-XG',                          'U7-Pro-XG',       'Ubiquiti'],
+  ['전동커튼',             '마마바 (Matter over WiFi)',                '—',               '마마바'],
+];
+
 
 // ============================================================
 //  GET 요청 처리
@@ -177,11 +230,14 @@ function handleUpdateStatus(data) {
   const headers = rows[0];
   const idIdx     = headers.indexOf('id');
   const statusIdx = headers.indexOf('status');
+  const purposeIdx = headers.indexOf('purpose');
 
   let targetRow = -1;
+  let purposeFromSheet = '';
   for (let i = 1; i < rows.length; i++) {
     if (String(rows[i][idIdx]) === String(data.id)) {
       targetRow = i + 1; // Sheets는 1-based
+      if (purposeIdx >= 0) purposeFromSheet = String(rows[i][purposeIdx] || '');
       break;
     }
   }
@@ -191,8 +247,11 @@ function handleUpdateStatus(data) {
   // status 컬럼 값 변경
   sheet.getRange(targetRow, statusIdx + 1).setValue(data.status);
 
-  // 예약자에게 확정/거절 메일 발송
-  if (data.email) sendGuestMail(data);
+  // 예약자에게 확정/거절 메일 발송 (목적은 sheet에서 읽은 값을 우선 사용)
+  if (data.email) {
+    const mailData = Object.assign({}, data, { purpose: data.purpose || purposeFromSheet });
+    sendGuestMail(mailData);
+  }
 
   return jsonResponse({ success: true });
 }
@@ -233,6 +292,19 @@ function sendAdminAlert(data, id) {
   }
 }
 
+// 구비 가전 리스트를 메일 본문용 텍스트로 포맷 (R&D 연구 목적일 때 첨부)
+function buildAppliancesSection() {
+  const lines = APPLIANCES.map((row, i) => {
+    const idx = String(i + 1).padStart(2, '0');
+    return `   ${idx}. ${row[0]}  /  ${row[1]}  /  ${row[2]}  /  ${row[3]}`;
+  });
+  return [
+    '📦 구비 가전 및 품목 (총 ' + APPLIANCES.length + '개)',
+    '   (구분  /  제품명  /  모델명  /  제조사)',
+    '',
+  ].concat(lines).join('\n');
+}
+
 // 예약자 확정/거절 메일
 function sendGuestMail(data) {
   const isConfirmed = data.status === '확정';
@@ -240,55 +312,84 @@ function sendGuestMail(data) {
     ? `[ThinQ Real] 예약이 확정되었습니다 — ${data.date} ${data.slotLabel || ''}`
     : `[ThinQ Real] 예약 신청이 거절되었습니다`;
 
-  const body = isConfirmed ? `
-안녕하세요, ${data.name}님.
-
-ThinQ Real 방문 예약이 확정되었습니다.
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  날  짜 : ${data.date}
-  회  차 : ${data.slotLabel || ''}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-📍 위치: 마곡 LG사이언스파크 W6동 1층
-   보안게이트 출구 앞 / 주차장 엘리베이터 앞
-   (보안게이트 밖에 위치해 별도 보안 절차 없이 방문 가능합니다.)
-
-📶 Wi-Fi: LGE_AI_HOME_2.4G / LGE_AI_HOME  (PW: real2026)
-
-방문 전 이용 안내를 확인해 주세요:
-https://[배포된 URL]/thinqreal.html
-
-문의: ch275.lee@lge.com
-
-감사합니다.
-HS플랫폼사업센터 AI홈솔루션엔지니어링팀
-  `.trim() : `
-안녕하세요, ${data.name}님.
-
-아쉽게도 요청하신 일정에 ThinQ Real 예약이 어렵게 되었습니다.
-
-다른 일정으로 다시 신청해 주시거나, 아래 담당자에게 문의해 주세요.
-
-  이철호 책임 연구원: ch275.lee@lge.com
-  서문수 선임 연구원: moonsu.seo@lge.com
-  김현진 선임 연구원: hj8462.kim@lge.com
-
-감사합니다.
-HS플랫폼사업센터 AI홈솔루션엔지니어링팀
-  `.trim();
+  const body = isConfirmed
+    ? buildConfirmBody(data)
+    : buildRejectBody(data);
 
   try {
     MailApp.sendEmail({ to: data.email, cc: CC_EMAIL, subject, body });
+    Logger.log('Guest mail sent → ' + data.email + ' (' + data.status + ')');
   } catch(err) {
     Logger.log('Guest mail error: ' + err.message);
   }
 }
 
+function buildConfirmBody(data) {
+  const includeAppliances = (data.purpose || '').indexOf('R&D') >= 0;
 
-// ============================================================
-//  헬퍼 함수
-// ============================================================
+  const sections = [
+    `안녕하세요, ${data.name}님.`,
+    ``,
+    `ThinQ Real 방문 예약이 확정되었습니다.`,
+    ``,
+    `📅 일정`,
+    `   ${data.date}  /  ${data.slotLabel || ''}`,
+    ``,
+    `📍 위치`,
+    `   마곡 LG사이언스파크 W6동 1층`,
+    `   보안게이트 출구 앞 / 주차장 엘리베이터 앞`,
+    `   (보안게이트 밖에 위치해 별도 보안 절차 없이 방문 가능)`,
+    ``,
+    `📶 무선 인터넷`,
+    `   2.4 GHz : LGE_AI_HOME_2.4G`,
+    `   5 GHz   : LGE_AI_HOME`,
+    `   비밀번호 : real2026`,
+    ``,
+    `☎ 문의`,
+    `   이철호 책임 연구원 : ch275.lee@lge.com`,
+    `   서문수 선임 연구원 : moonsu.seo@lge.com`,
+    `   김현진 선임 연구원 : hj8462.kim@lge.com`,
+    ``,
+    `📖 방문 전 이용 안내`,
+    `   ${GUIDE_URL}`,
+    `   (운영 시간 · 유의사항 · 주차 등 자세한 내용 확인)`,
+  ];
+
+  if (includeAppliances) {
+    sections.push('');
+    sections.push('────────────────────────────────────────');
+    sections.push('');
+    sections.push(buildAppliancesSection());
+  }
+
+  sections.push('');
+  sections.push('감사합니다.');
+  sections.push('HS플랫폼사업센터 AI홈솔루션엔지니어링팀');
+
+  return sections.join('\n');
+}
+
+function buildRejectBody(data) {
+  return [
+    `안녕하세요, ${data.name}님.`,
+    ``,
+    `아쉽게도 요청하신 일정(${data.date} ${data.slotLabel || ''})에`,
+    `ThinQ Real 방문 예약이 어렵게 되었습니다.`,
+    ``,
+    `다른 일정으로 다시 신청해 주시거나, 아래 담당자에게 문의해 주세요.`,
+    ``,
+    `☎ 문의`,
+    `   이철호 책임 연구원 : ch275.lee@lge.com`,
+    `   서문수 선임 연구원 : moonsu.seo@lge.com`,
+    `   김현진 선임 연구원 : hj8462.kim@lge.com`,
+    ``,
+    `📖 방문 안내`,
+    `   ${GUIDE_URL}`,
+    ``,
+    `감사합니다.`,
+    `HS플랫폼사업센터 AI홈솔루션엔지니어링팀`,
+  ].join('\n');
+}
 
 // ============================================================
 //  메일 발송 진단 엔드포인트

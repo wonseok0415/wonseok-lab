@@ -77,7 +77,8 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 - **홈**: AI홈 쇼룸 지원 → 기술 연구 및 검증 → 데이터 축적 및 고도화 카드 (이 순서 유지)
 - **공간 소개**: 01 거실 → 02 주방 → 03 침실 → 04 런드레스룸 → 05 욕실 → 06 현관·복도
 - **예약하기**: 달력 → 슬롯 다중 선택(Set 방식 토글) → 폼 → Apps Script POST
-- **이용 안내**: 무선 인터넷 → 유의사항(5개 카테고리 그룹) → 기타 이용 안내 → 구비 가전 테이블(45개) → 주차 안내 → 담당자
+- **이용 안내**: 무선 인터넷 → 유의사항(5개 카테고리 그룹) → 기타 이용 안내 → 주차 안내 → 담당자
+  - 구비 가전 테이블은 관리자 전용으로 이관됨 (R&D 연구 목적 예약 확정 메일에는 별도로 첨부)
 
 ## 관리자 대시보드 탭 (thinqreal_admin.html)
 **관리 섹션**
@@ -87,12 +88,12 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 4. 🎬 시연 시나리오 (9개 시나리오 카드)
 5. 💡 조명 스위치 안내 (공간별 카드)
 6. ⚙️ 시스템 구성 (조명/Homey/ThinQ/난방 카드)
+7. 📦 구비 가전 (45개 품목 — 메인 사이트에서 이관, 관리자 전용)
 
 **분석 섹션**
-7. 📈 ROI 분석 — `ThinQ_Real_ROI_Tool.html`을 iframe으로 임베드 (지연 로드, "새 창에서 열기" 버튼 제공)
+8. 📈 ROI 분석 — `ThinQ_Real_ROI_Tool.html`을 iframe으로 임베드 (지연 로드, "새 창에서 열기" 버튼 제공)
    - ROI 툴 내부에 **시나리오 스냅샷 저장/불러오기** 패널 포함 (Apps Script `roi_snapshots` 탭 연동)
-   - 저장: 라벨 + 작성자 + 입력값/산출결과 JSON 저장
-   - 불러오기: 저장 시점의 모든 입력값 복원 → 차트 즉시 재계산
+   - iframe 하단에 **분석 툴 동작 원리** 설명 패널: BEP/연간가치/ROI 산식, V_R&D·V_Sales·V_PR 카드별 정의, 해석 가이드
 
 ## 담당자
 | 이름 | 직급 | 이메일 |
