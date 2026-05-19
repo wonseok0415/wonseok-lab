@@ -15,8 +15,9 @@
 const SHEET_ID   = '1-Z158TV46MtSEArir9bW4h4KQ438NCuhb3qaGyOooA0';  // ← Sheets URL의 /d/ 뒤 ID
 const SHEET_NAME = 'bookings';               // 시트 탭 이름 (예약)
 const ROI_SHEET_NAME = 'roi_snapshots';      // 시트 탭 이름 (ROI 시나리오 이력)
-const ADMIN_EMAIL = 'ch275.lee@lge.com';     // 신규 예약 알림 수신 담당자
-const CC_EMAIL    = 'kang.wonseok@lge.com';  // 참조 수신자 (시스템 동작 모니터링)
+// 신규 예약 알림을 받는 담당자들 (콤마로 구분, MailApp이 다중 수신 처리)
+const ADMIN_EMAILS = 'ch275.lee@lge.com, moonsu.seo@lge.com, hj8462.kim@lge.com';
+const CC_EMAIL     = 'kang.wonseok@lge.com';  // 참조 수신자 (시스템 동작 모니터링)
 
 
 // ============================================================
@@ -198,7 +199,7 @@ function sendAdminAlert(data, id) {
   `.trim();
 
   try {
-    MailApp.sendEmail({ to: ADMIN_EMAIL, cc: CC_EMAIL, subject, body });
+    MailApp.sendEmail({ to: ADMIN_EMAILS, cc: CC_EMAIL, subject, body });
   } catch(err) {
     Logger.log('Admin mail error: ' + err.message);
   }
