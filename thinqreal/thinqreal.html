@@ -413,7 +413,7 @@ button, input, select, textarea { font-family: inherit; }
   transition: all 0.15s var(--ease);
   position: relative;
 }
-.cal-day:not(.past):not(.sun):not(.empty):hover {
+.cal-day:not(.past):not(.closed):not(.empty):hover {
   background: var(--c-fill);
 }
 .cal-day.selected {
@@ -425,8 +425,9 @@ button, input, select, textarea { font-family: inherit; }
   transform:translateX(-50%);
   width:4px; height:4px; border-radius:50%; background:var(--c-accent);
 }
+.cal-day.today.selected { color:#fff; }
 .cal-day.today.selected::after { background:#fff; }
-.cal-day.past, .cal-day.sun { opacity:0.28; cursor:default; pointer-events:none; }
+.cal-day.past, .cal-day.closed { opacity:0.28; cursor:default; pointer-events:none; }
 
 /* Slots */
 .slots-card {
@@ -453,20 +454,37 @@ button, input, select, textarea { font-family: inherit; }
   border-color: var(--c-accent);
 }
 .slot-item.booked {
-  opacity: 0.38; pointer-events: none; cursor: not-allowed;
-  background: var(--c-fill);
+  pointer-events: none; cursor: not-allowed;
+  background: rgba(255, 59, 48, 0.06);
+  border-color: rgba(255, 59, 48, 0.25);
+}
+.slot-item.booked .slot-label-text,
+.slot-item.booked .slot-time-text {
+  color: var(--c-label-3);
+  text-decoration: line-through;
+  text-decoration-color: rgba(255, 59, 48, 0.45);
+}
+.slot-item.booked .slot-booked-label {
+  color: #c92419;
+  font-weight: 600;
+}
+.slot-item.booked .slot-badge {
+  background: #ff3b30;
+  color: #fff;
+  border-color: #ff3b30;
+  font-weight: 600;
 }
 .slot-item.loading {
-  opacity: 0.5; pointer-events: none;
-  animation: slotPulse 1.2s ease-in-out infinite;
+  opacity: 0.55; pointer-events: none;
+  animation: slotPulse 0.9s ease-in-out infinite;
 }
 @keyframes slotPulse {
-  0%, 100% { opacity: 0.5; }
-  50%       { opacity: 0.25; }
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 0.85; }
 }
 .slot-booked-label {
-  font-size: 10px; color: var(--c-label-3);
-  letter-spacing: 0.02em; margin-top: 2px;
+  font-size: 11px; color: var(--c-label-3);
+  letter-spacing: 0.01em; margin-top: 3px; font-weight: 500;
 }
 .slot-label-text {
   font-size: var(--t-subhead); font-weight: 500;
@@ -477,8 +495,9 @@ button, input, select, textarea { font-family: inherit; }
   margin-top: 2px; letter-spacing: -0.008em;
 }
 .slot-badge {
-  font-size: 11px; color: var(--c-label-3); border: 1px solid var(--c-fill-2);
-  padding: 3px 10px; border-radius: 980px;
+  font-size: 12px; color: var(--c-label-2); border: 1px solid var(--c-separator);
+  padding: 4px 12px; border-radius: 980px; font-weight: 500; letter-spacing: -0.005em;
+  background: var(--c-bg);
 }
 .slot-item.selected .slot-badge {
   background: var(--c-accent); color: #fff; border-color: var(--c-accent);
@@ -1102,7 +1121,7 @@ footer {
             <tr><td><strong>3회차</strong></td><td>15:00 – 16:30</td><td>90분</td></tr>
           </tbody>
         </table>
-        <p style="font-size:var(--t-caption);color:var(--c-label-3);margin-top:var(--sp-8);">* 일요일 및 공휴일 운영 없음</p>
+        <p style="font-size:var(--t-caption);color:var(--c-label-3);margin-top:var(--sp-8);">* 토요일·일요일 및 공휴일 운영 없음</p>
       </div>
 
       <div class="guide-section">
@@ -1347,6 +1366,9 @@ function showPage(id) {
   const n = document.getElementById('nav-' + id);
   if (n) n.classList.add('active');
   window.scrollTo({ top:0, behavior:'smooth' });
+  // 예약 페이지 진입 시점에 Apps Script를 깨워두면 첫 날짜 클릭 시
+  // 콜드 스타트 1~2초가 사라져 가용성 조회가 즉시 응답함.
+  if (id === 'book') warmupAppsScript();
 }
 
 // ── Toast ─────────────────────────────────────────────────
@@ -1394,11 +1416,12 @@ function renderCalendar() {
     el.className = 'cal-day';
     const dt = new Date(y, m, d);
     if (dt < today) el.classList.add('past');
-    if (dt.getDay() === 0) el.classList.add('sun');
+    const dow = dt.getDay();
+    if (dow === 0 || dow === 6) el.classList.add('closed'); // 일·토 휴무
     if (dt.toDateString() === today.toDateString()) el.classList.add('today');
     if (selectedDate && dt.toDateString() === selectedDate.toDateString()) el.classList.add('selected');
     el.textContent = d;
-    if (!el.classList.contains('past') && !el.classList.contains('sun'))
+    if (!el.classList.contains('past') && !el.classList.contains('closed'))
       el.onclick = () => selectDate(new Date(y, m, d));
     grid.appendChild(el);
   }
@@ -1434,9 +1457,54 @@ function resetSlotUI() {
   });
 }
 
+// 가용성 결과 캐시 — 같은 날짜 재클릭 시 즉시 표시 (15초 TTL).
+// 너무 길게 두면 다른 사람이 방금 예약한 슬롯이 가능으로 보여 충돌 가능.
+const availabilityCache = new Map();
+const AVAILABILITY_TTL = 15000;
+let appsScriptWarmedUp = false;
+
+// Apps Script는 첫 호출 시 콜드 스타트(~1.5초)가 있어 사용자가 처음 날짜를
+// 클릭할 때 체감이 느림. 가벼운 GET을 미리 한 번 보내 런타임을 깨워둔다.
+function warmupAppsScript() {
+  if (appsScriptWarmedUp || !SCRIPT_URL) return;
+  appsScriptWarmedUp = true;
+  // mail_status는 부수효과 없이 즉시 응답하는 가벼운 진단 엔드포인트
+  fetch(SCRIPT_URL + '?type=mail_status').catch(() => { appsScriptWarmedUp = false; });
+}
+
+function applyAvailability(booked) {
+  [1,2,3].forEach(i => {
+    const el     = document.getElementById('slot'+i);
+    const status = document.getElementById('slot'+i+'-status');
+    const badge  = document.getElementById('slot'+i+'-badge');
+    el.classList.remove('loading');
+    if (booked.has(i)) {
+      el.classList.add('booked');
+      el.onclick = null;
+      status.textContent = '예약 마감';
+      badge.textContent  = '마감';
+    } else {
+      el.classList.remove('booked');
+      el.onclick = () => selectSlot(i);
+      status.textContent = '';
+      badge.textContent  = i === 1 ? '오전' : '오후';
+    }
+  });
+}
+
 async function fetchAvailability(date) {
-  // Apps Script URL이 설정되지 않은 경우 스킵
   if (!SCRIPT_URL) return;
+
+  const dateStr = date.getFullYear() + '-'
+    + String(date.getMonth()+1).padStart(2,'0') + '-'
+    + String(date.getDate()).padStart(2,'0');
+
+  // 캐시 히트 → 즉시 적용, 네트워크 호출 없음
+  const cached = availabilityCache.get(dateStr);
+  if (cached && Date.now() - cached.t < AVAILABILITY_TTL) {
+    applyAvailability(cached.booked);
+    return;
+  }
 
   // 로딩 상태 표시
   [1,2,3].forEach(i => {
@@ -1445,28 +1513,11 @@ async function fetchAvailability(date) {
   });
 
   try {
-    const dateStr = date.getFullYear() + '-'
-      + String(date.getMonth()+1).padStart(2,'0') + '-'
-      + String(date.getDate()).padStart(2,'0');
     const res  = await fetch(SCRIPT_URL + '?type=availability&date=' + dateStr);
     const data = await res.json(); // { bookedSlots: [1, 3] }
     const booked = new Set(data.bookedSlots || []);
-
-    [1,2,3].forEach(i => {
-      const el     = document.getElementById('slot'+i);
-      const status = document.getElementById('slot'+i+'-status');
-      const badge  = document.getElementById('slot'+i+'-badge');
-      el.classList.remove('loading');
-      if (booked.has(i)) {
-        el.classList.add('booked');
-        el.onclick = null;
-        status.textContent = '예약 마감';
-        badge.textContent  = '마감';
-      } else {
-        status.textContent = '';
-        badge.textContent  = i === 1 ? '오전' : '오후';
-      }
-    });
+    availabilityCache.set(dateStr, { t: Date.now(), booked });
+    applyAvailability(booked);
   } catch(e) {
     // 조회 실패 시 로딩 해제 후 정상 상태 유지
     [1,2,3].forEach(i => {
