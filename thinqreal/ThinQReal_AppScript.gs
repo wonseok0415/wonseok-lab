@@ -58,14 +58,16 @@ function handleAvailability(date) {
   const rows  = sheet.getDataRange().getValues();
   const headers = rows[0];
   const dateIdx   = headers.indexOf('date');
-  const slotIdx   = headers.indexOf('slots');   // 복수 슬롯 (JSON 배열)
+  const slotIdx   = headers.indexOf('slots');
   const statusIdx = headers.indexOf('status');
 
   const booked = new Set();
 
   for (let i = 1; i < rows.length; i++) {
     const row = rows[i];
-    if (row[dateIdx] !== date) continue;
+    // Sheets가 date 컬럼을 Date 타입으로 자동 변환하는 경우가 있어
+    // 비교 전에 양쪽 모두 YYYY-MM-DD 문자열로 정규화한다.
+    if (normalizeDate(row[dateIdx]) !== normalizeDate(date)) continue;
     if (row[statusIdx] !== '확정') continue;
 
     // slots 컬럼은 "[1,2]" 형태의 JSON 문자열로 저장됨
@@ -84,6 +86,17 @@ function handleAvailability(date) {
   return jsonResponse({ bookedSlots: [...booked] });
 }
 
+// 날짜 값을 YYYY-MM-DD 문자열로 정규화 (Date 객체·ISO 문자열·일반 문자열 모두 처리)
+function normalizeDate(v) {
+  if (v == null || v === '') return '';
+  if (Object.prototype.toString.call(v) === '[object Date]') {
+    return Utilities.formatDate(v, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  const s = String(v);
+  if (s.indexOf('T') >= 0) return s.slice(0, 10);
+  return s.slice(0, 10);
+}
+
 
 // ── 전체 예약 목록 조회 (관리자) ────────────────────────────
 function handleGetBookings() {
@@ -93,9 +106,17 @@ function handleGetBookings() {
 
   const records = rows.slice(1).map((row, i) => {
     const obj = { id: String(i + 1) };
-    headers.forEach((h, j) => { obj[h] = row[j] ?? ''; });
-    // id 컬럼이 없으면 행 인덱스로 부여
-    if (!obj.id || obj.id === '') obj.id = String(i + 1);
+    headers.forEach((h, j) => {
+      let v = row[j];
+      // Sheets의 자동 타입 변환 정규화: 날짜는 YYYY-MM-DD, 그 외 Date는 ISO
+      if (Object.prototype.toString.call(v) === '[object Date]') {
+        v = (h === 'date') ? normalizeDate(v) : v.toISOString();
+      }
+      obj[h] = v == null ? '' : v;
+    });
+    // id를 항상 문자열로 (Sheets가 숫자로 자동 인식해 비교 깨지는 문제 방지)
+    if (obj.id != null && obj.id !== '') obj.id = String(obj.id);
+    else obj.id = String(i + 1);
     return obj;
   }).filter(r => r.date); // 빈 행 제외
 
