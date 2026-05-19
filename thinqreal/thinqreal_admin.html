@@ -1589,16 +1589,41 @@ function openModal(id) {
 function closeModal() { document.getElementById('modalBg').classList.remove('open'); currentModalId = null; }
 function updateStatusFromModal(s) { if (currentModalId) { updateStatus(currentModalId,s); closeModal(); } }
 
+// 처리 중인 예약 id 추적 — 같은 행의 버튼이 두 번 눌리는 것 방지
+const inflightUpdates = new Set();
+
 async function updateStatus(id, status) {
-  const b = allBookings.find(x => String(x.id) === String(id));
+  const sid = String(id);
+  if (inflightUpdates.has(sid)) return;  // 이미 처리 중
+  const b = allBookings.find(x => String(x.id) === sid);
   if (!b) { toast('해당 예약을 찾을 수 없습니다.'); return; }
+
+  // 1) 낙관적 UI — 사용자가 즉시 결과를 보도록 로컬 먼저 갱신
+  const prevStatus = b.status;
   b.status = status;
+  inflightUpdates.add(sid);
+  updateKPIs(); renderTable();
+
+  // 2) 진행 상태 토스트 — 메일 발송에 1~2초 걸리므로 길게 표시
+  toast(status === '확정'
+    ? '처리 중… 예약자에게 확정 메일을 발송하고 있습니다'
+    : '처리 중… 거절 메일을 발송하고 있습니다', 15000);
+
+  // 3) 서버 반영
   try {
     await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({type:'update',id:String(id),status,email:b.email,name:b.name,date:b.date,slotLabel:fmtSlots(b)}) });
-  } catch(e) {}
-  updateKPIs(); renderTable();
-  toast(status==='확정' ? '✓ 확정 처리 — 메일이 발송됩니다.' : '거절 처리되었습니다.');
+      body: JSON.stringify({type:'update',id:sid,status,email:b.email,name:b.name,date:b.date,slotLabel:fmtSlots(b)}) });
+    toast(status === '확정'
+      ? '✓ 확정 처리 — 예약자에게 메일이 발송됐습니다'
+      : '✓ 거절 처리 완료 — 예약자에게 안내 메일이 발송됐습니다');
+  } catch(e) {
+    // 4) 실패 시 롤백
+    b.status = prevStatus;
+    updateKPIs(); renderTable();
+    toast('처리 실패: ' + (e.message || '네트워크 오류') + ' — 잠시 후 다시 시도해 주세요');
+  } finally {
+    inflightUpdates.delete(sid);
+  }
 }
 
 function renderStats() {
