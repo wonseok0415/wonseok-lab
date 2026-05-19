@@ -16,6 +16,7 @@ const SHEET_ID   = '1-Z158TV46MtSEArir9bW4h4KQ438NCuhb3qaGyOooA0';  // ← Sheet
 const SHEET_NAME = 'bookings';               // 시트 탭 이름 (예약)
 const ROI_SHEET_NAME = 'roi_snapshots';      // 시트 탭 이름 (ROI 시나리오 이력)
 const ADMIN_EMAIL = 'ch275.lee@lge.com';     // 신규 예약 알림 수신 담당자
+const CC_EMAIL    = 'kang.wonseok@lge.com';  // 참조 수신자 (시스템 동작 모니터링)
 
 
 // ============================================================
@@ -197,7 +198,7 @@ function sendAdminAlert(data, id) {
   `.trim();
 
   try {
-    MailApp.sendEmail({ to: ADMIN_EMAIL, subject, body });
+    MailApp.sendEmail({ to: ADMIN_EMAIL, cc: CC_EMAIL, subject, body });
   } catch(err) {
     Logger.log('Admin mail error: ' + err.message);
   }
@@ -249,7 +250,7 @@ HS플랫폼사업센터 AI홈솔루션엔지니어링팀
   `.trim();
 
   try {
-    MailApp.sendEmail({ to: data.email, subject, body });
+    MailApp.sendEmail({ to: data.email, cc: CC_EMAIL, subject, body });
   } catch(err) {
     Logger.log('Guest mail error: ' + err.message);
   }

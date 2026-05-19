@@ -42,6 +42,7 @@ https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/
 | 시트 탭명 | `bookings` (변경 금지) |
 | Apps Script URL | `https://script.google.com/macros/s/AKfycbxqmzxbm99Fi9vrKgLxCslUwwEl8TxiyUN6LPMwimf04yjQjIO1s2tjC2jWKnR7iCSrSQ/exec` |
 | 관리자 비밀번호 | `thinqreal2026` |
+| CC 수신자 | `kang.wonseok@lge.com` (담당자 알림·예약자 메일 모두에 CC) |
 
 ### Apps Script 처리 엔드포인트
 | 요청 | 처리 |
