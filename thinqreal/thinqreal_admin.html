@@ -1442,10 +1442,34 @@ function copyVal(id) {
   });
 }
 
+// 날짜 문자열을 YYYY-MM-DD 10자리로 정규화. Sheets가 Date 타입으로 자동변환한
+// 경우의 ISO 문자열("2026-05-19T00:00:00.000Z")도 깔끔하게 처리한다.
+function fmtDateOnly(v) {
+  if (v == null || v === '') return '';
+  const s = String(v);
+  if (s.includes('T')) return s.slice(0, 10);
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10);
+  // Date 객체가 문자열화되어 들어오는 경우 등 fallback
+  const d = new Date(s);
+  if (!isNaN(d.getTime())) {
+    const pad = n => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+  }
+  return s;
+}
+
 async function loadData() {
   try {
     const res = await fetch(SCRIPT_URL + '?type=bookings');
     allBookings = (await res.json()).records || [];
+    // Sheets가 date 컬럼을 Date 타입으로 자동변환해 ISO 문자열로 직렬화하는
+    // 경우(예: "2026-05-19T00:00:00.000Z"), 표시·필터·CSV 모두 일관되게
+    // 동작하도록 YYYY-MM-DD 10자리로 정규화. id도 String으로 통일해 비교 안전.
+    allBookings = allBookings.map(b => ({
+      ...b,
+      id: b.id != null ? String(b.id) : '',
+      date: fmtDateOnly(b.date),
+    }));
     updateKPIs(); renderTable();
     toast('데이터를 불러왔습니다.');
   } catch(e) {
@@ -1535,11 +1559,12 @@ function closeModal() { document.getElementById('modalBg').classList.remove('ope
 function updateStatusFromModal(s) { if (currentModalId) { updateStatus(currentModalId,s); closeModal(); } }
 
 async function updateStatus(id, status) {
-  const b = allBookings.find(x=>x.id===id); if (!b) return;
+  const b = allBookings.find(x => String(x.id) === String(id));
+  if (!b) { toast('해당 예약을 찾을 수 없습니다.'); return; }
   b.status = status;
   try {
     await fetch(SCRIPT_URL, { method:'POST', mode:'no-cors', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({type:'update',id,status,email:b.email,name:b.name,date:b.date,slotLabel:SLOT_LABELS[b.slot]}) });
+      body: JSON.stringify({type:'update',id:String(id),status,email:b.email,name:b.name,date:b.date,slotLabel:SLOT_LABELS[b.slot]}) });
   } catch(e) {}
   updateKPIs(); renderTable();
   toast(status==='확정' ? '✓ 확정 처리 — 메일이 발송됩니다.' : '거절 처리되었습니다.');
