@@ -70,10 +70,19 @@ button, input, select, textarea { font-family: inherit; }
   gap: var(--sp-32);
 }
 .navbar-brand {
+  display: inline-flex; align-items: center; gap: var(--sp-8);
   font-size: var(--t-headline); font-weight: 600;
   color: var(--c-accent); letter-spacing: -0.022em;
   cursor: pointer; flex-shrink: 0;
   text-decoration: none;
+}
+.navbar-brand-logo {
+  height: 22px; width: auto; display: block;
+  object-fit: contain;
+}
+.navbar-brand-divider {
+  width: 1px; height: 18px; background: var(--c-separator);
+  display: inline-block;
 }
 .navbar-links {
   display: flex; gap: var(--sp-24); align-items: center;
@@ -579,7 +588,21 @@ button, input, select, textarea { font-family: inherit; }
   border-color: var(--c-accent); background: var(--c-bg);
 }
 .form-textarea { min-height: 88px; padding: var(--sp-12); resize: vertical; line-height: 1.5; }
-.form-select { appearance: none; cursor: pointer; }
+.form-select { appearance: none; cursor: pointer; padding-right: 40px; }
+.form-row {
+  display: grid; grid-template-columns: 1fr 1fr; gap: var(--sp-12);
+}
+.form-select-wrap { position: relative; }
+.form-select-wrap::after {
+  content: ''; position: absolute;
+  right: 14px; top: 50%; width: 10px; height: 10px;
+  border-right: 2px solid var(--c-label-2);
+  border-bottom: 2px solid var(--c-label-2);
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+  transition: border-color 0.15s var(--ease);
+}
+.form-select-wrap:focus-within::after { border-color: var(--c-accent); }
 .btn-submit {
   width: 100%; min-height: 50px; background: var(--c-accent); color: #fff;
   border: none; border-radius: var(--radius-md); cursor: pointer;
@@ -781,6 +804,8 @@ footer {
 @media (max-width: 900px) {
   .navbar { padding: 0 var(--sp-20); gap: var(--sp-16); }
   .navbar-links a { padding: 0 var(--sp-4); font-size: var(--t-caption); }
+  .navbar-brand-logo { height: 18px; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
   .stats-strip { grid-template-columns: repeat(2,1fr); gap: 0; }
   .split { grid-template-columns: 1fr; }
   .split-text { padding: var(--sp-48) var(--sp-24); }
@@ -805,7 +830,11 @@ footer {
 
 <!-- NAV -->
 <nav class="navbar" id="navbar">
-  <span class="navbar-brand" onclick="showPage('home')">ThinQ Real</span>
+  <span class="navbar-brand" onclick="showPage('home')">
+    <img src="https://raw.githubusercontent.com/wonseok0415/wonseok-lab/main/thinqreal/images/LG_AI_Home_logo.png" alt="LG AI Home" class="navbar-brand-logo">
+    <span class="navbar-brand-divider"></span>
+    <span>ThinQ Real</span>
+  </span>
   <div class="navbar-links">
     <a onclick="showPage('home')"    id="nav-home"    class="active">홈</a>
     <a onclick="showPage('space')"   id="nav-space">공간 소개</a>
@@ -1077,9 +1106,15 @@ footer {
           <label class="form-label">방문자 이름 *</label>
           <input class="form-input" id="fName" type="text" placeholder="홍길동">
         </div>
-        <div class="form-group">
-          <label class="form-label">소속 / 부서 *</label>
-          <input class="form-input" id="fOrg" type="text" placeholder="HS플랫폼사업센터">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">소속 *</label>
+            <input class="form-input" id="fOrg" type="text" placeholder="HS플랫폼사업센터">
+          </div>
+          <div class="form-group">
+            <label class="form-label">부서 *</label>
+            <input class="form-input" id="fDept" type="text" placeholder="AI홈솔루션엔지니어링팀">
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">연락처 *</label>
@@ -1091,14 +1126,16 @@ footer {
         </div>
         <div class="form-group">
           <label class="form-label">방문 목적 *</label>
-          <select class="form-select" id="fPurpose">
-            <option value="">선택해 주세요</option>
-            <option>R&D 연구</option>
-            <option>B2B 파트너 시연</option>
-            <option>내부 행사</option>
-            <option>Press Tour</option>
-            <option>기타</option>
-          </select>
+          <div class="form-select-wrap">
+            <select class="form-select" id="fPurpose">
+              <option value="">선택해 주세요</option>
+              <option>R&D 연구</option>
+              <option>B2B 파트너 시연</option>
+              <option>내부 행사</option>
+              <option>Press Tour</option>
+              <option>기타</option>
+            </select>
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">방문 인원 *</label>
@@ -1545,11 +1582,13 @@ function updateSummary() {
 async function submitBooking() {
   if (!selectedDate || selectedSlots.size === 0) { toast('날짜와 시간대를 선택해 주세요.'); return; }
   const get = id => document.getElementById(id).value.trim();
-  const [name, org, phone, email, purpose, count, note] =
-    ['fName','fOrg','fPhone','fEmail','fPurpose','fCount','fNote'].map(get);
-  if (!name || !org || !phone || !email || !purpose || !count) {
+  const [name, orgCompany, orgDept, phone, email, purpose, count, note] =
+    ['fName','fOrg','fDept','fPhone','fEmail','fPurpose','fCount','fNote'].map(get);
+  if (!name || !orgCompany || !orgDept || !phone || !email || !purpose || !count) {
     toast('필수 항목을 모두 입력해 주세요.'); return;
   }
+  // 기존 Sheets 스키마(org 단일 컬럼)와 호환 유지 — "소속 · 부서" 형태로 합침
+  const org = orgCompany + ' · ' + orgDept;
   const btn = document.getElementById('submitBtn');
   btn.disabled = true; btn.textContent = '신청 중…';
   const dateStr = selectedDate.toISOString().slice(0,10);
@@ -1574,7 +1613,7 @@ async function submitBooking() {
 
 function resetForm() {
   selectedDate = null; selectedSlots = new Set();
-  ['fName','fOrg','fPhone','fEmail','fCount','fNote'].forEach(id =>
+  ['fName','fOrg','fDept','fPhone','fEmail','fCount','fNote'].forEach(id =>
     document.getElementById(id).value = '');
   document.getElementById('fPurpose').value = '';
   document.getElementById('formContent').style.display = 'block';
