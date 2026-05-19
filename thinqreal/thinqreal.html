@@ -379,68 +379,17 @@ button, input, select, textarea { font-family: inherit; }
   max-width: 560px;
 }
 
+/* Floor Plan — 텍스트 단독 섹션. 히어로 영역이 없는 예약 페이지와
+   같은 톤(올리브-light 배경)으로 시각 위계 통일. */
 .fp-section {
   padding: var(--sp-64) max(24px, calc(50vw - 580px));
-  display: grid; grid-template-columns: 1fr 1fr;
-  gap: var(--sp-64); align-items: center;
-}
-
-/* 텍스트 기반 평면도 비주얼 — 사진 없이 공간 구성을 셀 그리드로 표현 */
-.fp-visual {
-  position: relative;
   background: var(--c-accent-light);
-  border-radius: var(--radius-lg);
-  padding: var(--sp-32);
-  box-shadow: 0 8px 40px rgba(58,80,53,0.10);
-  overflow: hidden;
+  text-align: center;
 }
-.fp-visual::before {
-  content: ''; position: absolute; inset: 0;
-  background-image:
-    linear-gradient(rgba(58,80,53,0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(58,80,53,0.045) 1px, transparent 1px);
-  background-size: 24px 24px;
-  pointer-events: none;
+.fp-section > div {
+  max-width: 720px; margin: 0 auto;
 }
-.fp-visual-tag {
-  position: relative; z-index: 1;
-  display: inline-block;
-  background: var(--c-bg);
-  color: var(--c-accent);
-  font-size: var(--t-caption); font-weight: 600;
-  letter-spacing: 0.04em;
-  padding: 6px 14px; border-radius: 980px;
-  margin-bottom: var(--sp-20);
-}
-.fp-visual-grid {
-  position: relative; z-index: 1;
-  display: grid; grid-template-columns: repeat(3, 1fr);
-  gap: var(--sp-8);
-}
-.fp-visual-cell {
-  background: var(--c-bg);
-  border: 1px solid rgba(58,80,53,0.15);
-  border-radius: var(--radius-sm);
-  padding: var(--sp-16) var(--sp-12);
-  display: flex; flex-direction: column; gap: 4px;
-  min-height: 84px;
-  transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease);
-}
-.fp-visual-cell:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(58,80,53,0.15);
-}
-.fp-cell-num {
-  font-size: 11px; font-weight: 600; letter-spacing: 0.06em;
-  color: var(--c-accent-mid); font-variant-numeric: tabular-nums;
-}
-.fp-cell-name {
-  font-size: var(--t-subhead); font-weight: 600;
-  color: var(--c-label); letter-spacing: -0.016em;
-}
-.fp-cell-name-en {
-  font-size: 11px; color: var(--c-label-2); letter-spacing: -0.008em;
-}
+.fp-section .tag-row { justify-content: center; }
 .tag-row { display:flex; flex-wrap:wrap; gap: var(--sp-8); margin-top: var(--sp-20); }
 .tag {
   background: var(--c-accent-light); color: var(--c-accent);
@@ -891,7 +840,7 @@ footer {
   .split-text { padding: var(--sp-48) var(--sp-24); }
   .split-media { min-height: 300px; }
   .cards-grid { grid-template-columns: 1fr; }
-  .fp-section { grid-template-columns: 1fr; padding: var(--sp-48) var(--sp-24); gap: var(--sp-32); }
+  .fp-section { padding: var(--sp-48) var(--sp-24); }
   .room-row, .room-row:nth-child(even) { grid-template-columns: 1fr; }
   .room-row:nth-child(even) .room-media { order: 0; }
   .room-info { padding: var(--sp-32) var(--sp-24); }
@@ -1022,45 +971,10 @@ footer {
   </div>
 
   <div class="fp-section">
-    <div class="fp-visual" aria-label="공간 구성도">
-      <span class="fp-visual-tag">30평형 · 정방형</span>
-      <div class="fp-visual-grid">
-        <div class="fp-visual-cell">
-          <span class="fp-cell-num">01</span>
-          <span class="fp-cell-name">거실</span>
-          <span class="fp-cell-name-en">Living · LDK</span>
-        </div>
-        <div class="fp-visual-cell">
-          <span class="fp-cell-num">02</span>
-          <span class="fp-cell-name">주방</span>
-          <span class="fp-cell-name-en">Kitchen</span>
-        </div>
-        <div class="fp-visual-cell">
-          <span class="fp-cell-num">03</span>
-          <span class="fp-cell-name">침실</span>
-          <span class="fp-cell-name-en">Bedroom</span>
-        </div>
-        <div class="fp-visual-cell">
-          <span class="fp-cell-num">04</span>
-          <span class="fp-cell-name">런드레스룸</span>
-          <span class="fp-cell-name-en">Laundress</span>
-        </div>
-        <div class="fp-visual-cell">
-          <span class="fp-cell-num">05</span>
-          <span class="fp-cell-name">욕실</span>
-          <span class="fp-cell-name-en">Bathroom</span>
-        </div>
-        <div class="fp-visual-cell">
-          <span class="fp-cell-num">06</span>
-          <span class="fp-cell-name">현관·복도</span>
-          <span class="fp-cell-name-en">Entrance</span>
-        </div>
-      </div>
-    </div>
     <div>
       <span class="label-overline">Floor Plan</span>
       <h2 class="section-title">완전한<br>주거 공간 구성</h2>
-      <p class="section-body">30평형 정방형 공간에 7개 공간을 구성했습니다. 난방을 제외한 모든 기기가 실제 동작하며 주요 벽면 하단의 히든 콘센트로 전원선이 노출되지 않습니다.</p>
+      <p class="section-body" style="margin-left:auto;margin-right:auto;">30평형 정방형 공간에 7개 공간을 구성했습니다. 난방을 제외한 모든 기기가 실제 동작하며 주요 벽면 하단의 히든 콘센트로 전원선이 노출되지 않습니다.</p>
       <div class="tag-row">
         <span class="tag">현관</span><span class="tag">거실</span><span class="tag">주방</span>
         <span class="tag">침실</span><span class="tag">런드레스룸</span><span class="tag">욕실</span><span class="tag">복도</span>
