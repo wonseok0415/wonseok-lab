@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>스테이빌리티 양평 (어나더빌라 2호점) — AI 홈솔루션 논의정리 v2</title>
+<style>
+  :root{
+    --navy:#1F4E78;      /* 주 브랜드 */
+    --wine:#A50034;      /* 양평 가전 뱃지 */
+    --darkred:#8B0000;   /* G-IoT */
+    --accent:#C00000;
+    --info:#DEEBF7;      /* 정보 박스 */
+    --warn:#FFF2CC;      /* 미확정 행 */
+    --danger:#FCE4E4;    /* SKS 경고 */
+    --success:#E8F5E9;   /* 핵심 메시지 */
+    --line:#dcdcdc;
+    --ink:#222;
+    --muted:#666;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:#eef1f4;
+    color:var(--ink);
+    font-family:-apple-system,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",sans-serif;
+    line-height:1.6;
+    font-size:15px;
+  }
+  .container{max-width:1200px;margin:0 auto;background:#fff;padding:50px;}
+  header.doc{border-bottom:4px solid var(--navy);padding-bottom:18px;margin-bottom:8px;}
+  header.doc h1{color:var(--navy);font-size:26px;margin:0 0 6px;}
+  header.doc .sub{color:var(--muted);font-size:14px;}
+  .meta{margin:14px 0 0;font-size:13px;color:var(--muted);}
+  .meta b{color:var(--ink);}
+
+  .banner{border-radius:8px;padding:14px 18px;margin:16px 0;font-size:14px;}
+  .banner.sks{background:var(--danger);border:1px solid #e3a3a3;color:#7a0000;}
+  .banner.g1{background:var(--warn);border:1px solid #d8c36a;color:#6b5400;}
+  .banner b{font-weight:700;}
+
+  h2{color:var(--navy);font-size:20px;margin:38px 0 6px;padding-bottom:6px;border-bottom:2px solid var(--navy);}
+  h3{color:var(--navy);font-size:16px;margin:22px 0 8px;}
+  h4{color:var(--darkred);font-size:14px;margin:16px 0 6px;}
+  .sec-icon{margin-right:6px;}
+
+  table{border-collapse:collapse;width:100%;margin:10px 0 6px;font-size:14px;}
+  th,td{border:1px solid var(--line);padding:8px 10px;text-align:left;vertical-align:top;}
+  th{background:var(--navy);color:#fff;font-weight:600;}
+  tbody tr:nth-child(even){background:#f7f9fb;}
+  td.code{font-weight:700;color:var(--navy);white-space:nowrap;}
+  tr.warning-row{background:var(--warn) !important;}
+  tr.warning-row td:first-child{border-left:4px solid #e0b400;}
+
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media(max-width:820px){.grid2{grid-template-columns:1fr;} .container{padding:24px;}}
+
+  .box{border-radius:8px;padding:14px 18px;margin:12px 0;}
+  .box.info{background:var(--info);border:1px solid #b9d3ee;}
+  .box.success{background:var(--success);border:1px solid #b6dcc0;}
+  .tag{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px;color:#fff;}
+  .tag.giot{background:var(--darkred);}
+  .tag.iot{background:var(--navy);}
+  .tag.appl{background:var(--wine);}
+  .tag.third{background:#555;}
+  .warn-ic{color:#c89b00;font-weight:700;}
+
+  .legend{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:13px;margin:8px 0;}
+  .legend span{display:flex;align-items:center;gap:7px;}
+  .swatch{width:14px;height:14px;border-radius:3px;display:inline-block;border:1px solid #999;}
+  .dot{width:13px;height:13px;border-radius:50%;display:inline-block;border:1px solid #999;}
+
+  ul.tight{margin:6px 0;padding-left:20px;}
+  ul.tight li{margin:3px 0;}
+  .footnote{font-size:12px;color:var(--muted);margin-top:4px;}
+  footer.doc{margin-top:40px;padding-top:16px;border-top:1px solid var(--line);font-size:12px;color:var(--muted);}
+  a{color:var(--navy);}
+  .pill{display:inline-block;background:#eef3f8;border:1px solid #cdddec;border-radius:6px;padding:2px 8px;font-size:12px;margin:2px 4px 2px 0;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header class="doc">
+    <h1>스테이빌리티 양평 (어나더빌라 2호점) — AI 홈솔루션 논의정리</h1>
+    <div class="sub">[가동]-숙박동 · IoT / G-IoT + 양평 출품 가전 통합 자동화 설계</div>
+    <div class="meta">
+      <b>버전</b> v2 (도면 v8 기준) &nbsp;·&nbsp;
+      <b>작성일</b> 2026.05.27 &nbsp;·&nbsp;
+      <b>작성</b> 강원석 책임 / AI홈솔루션엔지니어링팀 &nbsp;·&nbsp;
+      <b>운영 파트너</b> 스테이빌리티(Staybility)
+    </div>
+  </header>
+
+  <!-- §5.5 SKS 제한 빨간 배너 (모든 산출물 상단 의무) -->
+  <div class="banner sks">
+    <b>⚠️ SKS 자동화 제한 안내</b> — SKS(Signature Kitchen Suite / LG SIGNATURE 2세대) 라인업은
+    <b>ThinQ 연동·스마트루틴이 제한될 가능성</b>이 있습니다. 적용 범위는 <b>HS사업부 확답 전까지 "가능성"으로만</b> 표기합니다.
+  </div>
+  <div class="banner g1">
+    <b>⚠️ 진행 가부 1순위</b> — 써모스탯(G1)은 <b>KC 미인증</b> 제품으로, <b>브랜드커뮤니케이션팀의 전파법 적용 가능 여부 확답</b>이 전체 진행의 선결 조건입니다.
+  </div>
+
+  <!-- 1. 개요 -->
+  <h2><span class="sec-icon">📋</span>1. 프로젝트 개요</h2>
+  <table>
+    <tbody>
+      <tr><th style="width:160px">공식 명칭</th><td><b>어나더빌라 양평</b> (어나더빌라 시리즈 2호점)</td></tr>
+      <tr><th>위치 / 오픈</th><td>경기도 양평 · 2026년 8~9월 예정</td></tr>
+      <tr><th>설계 컨셉</th><td>Zen 스타일 / 명상</td></tr>
+      <tr><th>객실 구성</th><td><b>1객실</b> 장방형 (도면 명시) · 마스터 베드룸 2개</td></tr>
+      <tr><th>운영 모델</th><td>공유 별장(오너 30박/년) + 호텔 단기 판매 혼합 · 예약 millionground.com</td></tr>
+      <tr><th>미션</th><td>LG전자 AI 홈 솔루션(IoT+G-IoT+AI 가전)을 초프리미엄 공유 별장에 통합 → 관리자 / 장기 투숙객(오너) / 단기 투숙객(게스트) 3주체 차별화 자동화</td></tr>
+    </tbody>
+  </table>
+
+  <h3>도면 공간 구성 ([가동]-숙박동, 좌→우)</h3>
+  <table>
+    <thead><tr><th style="width:120px">구역</th><th>공간</th><th>매핑 / 비고</th></tr></thead>
+    <tbody>
+      <tr><td class="code">좌측 (~37%)</td><td>생활숙박시설 (거실·주방·다이닝)</td><td>키친 / 리빙</td></tr>
+      <tr><td class="code">중앙 좌</td><td>다도공간, 화장실-1, 보일러실</td><td>화장실-1 = 내욕실</td></tr>
+      <tr><td class="code">중앙</td><td>침실-1, 중정 1</td><td>침실-1 = 마스터 베드룸1</td></tr>
+      <tr><td class="code">중앙 우</td><td>침실-2, 중정-2</td><td>침실-2 = 마스터 베드룸2</td></tr>
+      <tr><td class="code">우측</td><td>화장실-2, 현관, 주출입구(외부 데크)</td><td>화장실-2 = 외욕실</td></tr>
+      <tr class="warning-row"><td class="code">별도</td><td><b>팬트리</b></td><td><span class="warn-ic">⚠️</span> 도면 안 / 상세 위치 미정</td></tr>
+      <tr class="warning-row"><td class="code">검토 외</td><td><b>관리실</b></td><td>외부 위치 → 본 검토 범위 외</td></tr>
+    </tbody>
+  </table>
+  <div class="footnote">도면 마커: <b>A 마커</b> = 고정형 취사시설 / 객실별 욕실설치(샤워실) / 환기 창문 · <b>E 마커</b> = 객실관리(제어)시스템 CCTV·도어락(기존 시스템, 자사 연동 가능 여부 확인 필요)</div>
+
+  <!-- 2. 디바이스 -->
+  <h2><span class="sec-icon">🔌</span>2. 디바이스 / 제품 분류</h2>
+
+  <h3><span class="tag giot">G-IoT</span> PPT 논의 디바이스</h3>
+  <table>
+    <thead><tr><th style="width:60px">코드</th><th>디바이스</th><th style="width:110px">구분</th><th>비고</th></tr></thead>
+    <tbody>
+      <tr class="warning-row"><td class="code">G1</td><td>써모스탯 (24V AC 우회, <b>보일러 제어 통합</b>)</td><td>자체/IoT랩</td><td><span class="warn-ic">⚠️</span> KC 미인증, 구글 네스트 유사</td></tr>
+      <tr><td class="code">G2</td><td>아웃도어 카메라</td><td>자사</td><td>KT 텔레캄 연계 시 적용 불가</td></tr>
+      <tr><td class="code">G3</td><td>인도어 카메라</td><td>자사</td><td>게스트 체류 시 OFF</td></tr>
+      <tr><td class="code">G4</td><td>도어벨</td><td>자사</td><td>월패드 여부 확인</td></tr>
+      <tr class="warning-row"><td class="code">G5</td><td>도어락</td><td>자사</td><td>국내향 모델 협의 · <span class="warn-ic">⚠️</span> 기존 객실관리(E마커) 도어락과 분류 중복 검토 필요</td></tr>
+      <tr><td class="code">G6</td><td>전동 샷시 (LX하우시스)</td><td><span class="tag third">3rd 파티</span></td><td>Lock 미지원</td></tr>
+      <tr><td class="code">G7</td><td>전동 커튼 (마마바-Matter)</td><td><span class="tag third">3rd 파티</span></td><td>전원 유선 / 통신 무선</td></tr>
+    </tbody>
+  </table>
+  <div class="footnote">⚠️ <b>G8(보일러 연동 모듈)은 G1으로 통합</b> — 별도 행/마커 사용 금지. &nbsp; 디바이스 종수 표기(6종/7종)는 도어락 분류 확정 후 통일 예정.</div>
+
+  <div class="grid2">
+    <div>
+      <h3><span class="tag iot">LG 출시 IoT</span> 홈IoT 라인업 — 11종</h3>
+      <table>
+        <thead><tr><th style="width:50px">코드</th><th>디바이스</th><th>마커</th></tr></thead>
+        <tbody>
+          <tr><td class="code">I1</td><td>ThinQ ON AI (허브)</td><td><span class="swatch" style="background:#1F4E78"></span></td></tr>
+          <tr><td class="code">I2</td><td>스마트 도어락</td><td><span class="dot" style="background:#163a8a"></span></td></tr>
+          <tr><td class="code">I3</td><td>도어 센서</td><td><span class="dot" style="background:#000"></span></td></tr>
+          <tr><td class="code">I4</td><td>모션/조도 센서</td><td><span class="dot" style="background:#2E8B57"></span></td></tr>
+          <tr><td class="code">I5</td><td>온습도 센서</td><td><span class="dot" style="background:#FFC400"></span></td></tr>
+          <tr><td class="code">I6</td><td>공기질 센서</td><td><span class="dot" style="background:#8B5CF6"></span></td></tr>
+          <tr><td class="code">I7</td><td>스마트 조명 스위치 2구</td><td><span class="swatch" style="background:#FF8C00"></span></td></tr>
+          <tr><td class="code">I8</td><td>스마트 버튼 2구</td><td><span class="swatch" style="background:#FF8C00;transform:rotate(45deg)"></span></td></tr>
+          <tr><td class="code">I9</td><td>스마트 플러그</td><td><span class="swatch" style="background:#000"></span></td></tr>
+          <tr><td class="code">I10</td><td>보이스 컨트롤러</td><td><span class="dot" style="background:#D62728"></span></td></tr>
+          <tr><td class="code">I11</td><td>헤이홈 무드등</td><td><span class="dot" style="background:#FF69B4"></span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3><span class="tag appl">양평 출품 가전</span> 16종 (모델명 추후)</h3>
+      <h4>SKS 가전 — 자동화 제한 가능성 ⚠️</h4>
+      <table>
+        <tbody>
+          <tr class="warning-row"><td class="code">S1~S4</td><td>냉장고 · 와인셀러 · 광파오븐 · 식기세척기 (키친)</td></tr>
+          <tr class="warning-row"><td class="code">S5</td><td>후드일체형 인덕션 <span class="warn-ic">⚠️</span> 다운드래프트/국내 수급 확인 (키친)</td></tr>
+        </tbody>
+      </table>
+      <h4>ThinQ 연동 가능 가전</h4>
+      <table>
+        <tbody>
+          <tr><td class="code">E1</td><td>LG SIGNATURE OLED M (리빙)</td></tr>
+          <tr><td class="code">E2</td><td>시스템 에어컨 (전체)</td></tr>
+          <tr><td class="code">E3</td><td>가습공청기 하이드로타워 (리빙)</td></tr>
+          <tr><td class="code">E4</td><td>바스에어시스템 프리미엄 듀얼 (MX0120BASV) — 외욕실·내욕실</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <h4>양평 가전 도면 마커 (A 시리즈)</h4>
+  <div>
+    <span class="pill">A1~A5 키친(냉장고/와인셀러/광파오븐/식기세척기/인덕션)</span>
+    <span class="pill">A6 시스템 에어컨(전체)</span>
+    <span class="pill">A7 프리미엄 환기 시스템(전체)</span>
+    <span class="pill">A8 OLED M TV</span>
+    <span class="pill">A9 무선 스피커</span>
+    <span class="pill">A10 가습공청기(리빙)</span>
+    <span class="pill">A11 베드룸 공청기(베드룸1·2)</span>
+    <span class="pill">A12 세탁/건조기(팬트리)</span>
+    <span class="pill">A13 청소기(팬트리)</span>
+    <span class="pill">A14 키오스크(팬트리) ⚠️</span>
+    <span class="pill">A15 바스에어시스템(외·내욕실)</span>
+    <span class="pill" style="opacity:.5;text-decoration:line-through">A16 사이니지/관리실 → 범위 외</span>
+    <span class="pill">A17 스타일러(베드룸1·2)</span>
+  </div>
+
+  <!-- 3. 시나리오 -->
+  <h2><span class="sec-icon">🎯</span>3. 시나리오 프레임워크 (8개)</h2>
+  <div class="grid2">
+    <div>
+      <h3>우선순위 4종</h3>
+      <table>
+        <thead><tr><th>시나리오</th><th>트리거</th></tr></thead>
+        <tbody>
+          <tr><td>★ <b>웰컴 모드</b></td><td>도어락 해제 / 도착 30분 전</td></tr>
+          <tr><td>★ <b>외출 모드</b></td><td>도어락 잠금 + 무재실 5분</td></tr>
+          <tr><td>취침 모드</td><td>스마트 버튼 / "굿나잇" 음성</td></tr>
+          <tr><td>공실(체크아웃) 모드</td><td>청소 완료 → 관리자 앱</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div>
+      <h3>신규 4종 (가전 연계)</h3>
+      <table>
+        <thead><tr><th>시나리오</th><th>핵심 가전</th></tr></thead>
+        <tbody>
+          <tr><td>와인 다이닝 모드</td><td>와인셀러 · OLED M TV · 식기세척기</td></tr>
+          <tr><td>키친 쿠킹 모드</td><td>광파오븐 · 식기세척기 · 냉장고 · 인덕션</td></tr>
+          <tr><td>스파/바스 모드</td><td>바스에어시스템 · OLED M TV</td></tr>
+          <tr><td>모닝 루틴</td><td>시스템 에어컨 · OLED M TV · 공청기 · 바스에어시스템</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="box info">
+    <b>운영 관점별 차별화 (모든 시나리오 공통 적용)</b>
+    <ul class="tight">
+      <li>🔧 <b>관리자 (스테이빌리티)</b> — 공실 보안·관제, 청소·유지보수 효율화</li>
+      <li>🏠 <b>장기 투숙객 (오너)</b> — 개인 프리셋, 사전 예열, 분기별 사용 패턴 반영</li>
+      <li>🛎️ <b>단기 투숙객 (게스트)</b> — 자동 발동, 1회용 코드, 프라이버시 우선</li>
+    </ul>
+  </div>
+
+  <!-- 4. 미해결 이슈 -->
+  <h2><span class="sec-icon">⏳</span>4. 미해결 이슈 (회신 필요)</h2>
+  <h3>우선순위 1 · 브랜드커뮤니케이션팀</h3>
+  <table>
+    <tbody>
+      <tr class="warning-row"><td class="code" style="width:40px">1</td><td><b>써모스탯(G1) KC 미인증 제품의 전파법 적용 가능 여부</b></td><td style="width:160px">⏳ 회신 대기 (진행 가부 결정)</td></tr>
+    </tbody>
+  </table>
+  <h3>우선순위 2 · HS사업부</h3>
+  <table>
+    <tbody>
+      <tr class="warning-row"><td class="code" style="width:40px">1</td><td><b>SKS 라인 자동화 / ThinQ 연동 가능 범위</b></td><td style="width:160px">⏳ 회신 대기</td></tr>
+      <tr class="warning-row"><td class="code">2</td><td>후드일체형 인덕션 — 다운드래프트 여부 / 국내 수급</td><td>⏳ 회신 대기</td></tr>
+    </tbody>
+  </table>
+  <h3>우선순위 3 · 스테이빌리티 (10건)</h3>
+  <table>
+    <thead><tr><th style="width:40px">#</th><th>항목</th><th style="width:200px">영향</th></tr></thead>
+    <tbody>
+      <tr><td class="code">1</td><td>체크인-아웃 플로우 (비대면/키 전달)</td><td>도어락 / 웰컴</td></tr>
+      <tr><td class="code">2</td><td>청소·유지보수 인력 출입 권한</td><td>관리자 모드</td></tr>
+      <tr><td class="code">3</td><td>객실관리 제어시스템(E마커) 사양</td><td>자사 연동 가능성</td></tr>
+      <tr><td class="code">4</td><td>보일러 사양 · 각방제어 여부</td><td>G1 적용</td></tr>
+      <tr><td class="code">5</td><td>중정 1·2 창 유무</td><td>전동 샷시</td></tr>
+      <tr class="warning-row"><td class="code">6</td><td>★ 팬트리 상세 위치</td><td>팬트리 가전 배치</td></tr>
+      <tr><td class="code">7</td><td>환기 시스템 적용 의사</td><td>환기 사이클 시나리오</td></tr>
+      <tr><td class="code">8</td><td>팬트리 청소기 (일반/로봇)</td><td>외출·공실 자동 청소</td></tr>
+      <tr class="warning-row"><td class="code">9</td><td>팬트리 키오스크 정체</td><td>AI 솔루션 편입</td></tr>
+      <tr class="warning-row"><td class="code">10</td><td>양평 가전 모델명 최종 확정</td><td>시나리오 AI 정확도</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 5. 핵심 메시지 -->
+  <h2><span class="sec-icon">📌</span>5. 핵심 메시지</h2>
+  <div class="box success">
+    <ol class="tight">
+      <li><b>양평은 1객실 장방형 빌라</b> — 침실 2 / 화장실 2 / 중정 2 / 팬트리(내부 위치 미정) / 외부 데크 / 외부 관리실(검토 제외)</li>
+      <li><b>G-IoT + LG 출시 IoT(11종) + 양평 출품 가전(16종)</b>을 결합한 <b>8개 시나리오</b>로 자동화 설계</li>
+      <li><b>진행 가부 1순위는 브컴 법무 확답</b>(G1 KC 미인증 전파법), <b>2순위는 HS사업부 SKS 자동화 가능 범위</b> 회신</li>
+    </ol>
+  </div>
+
+  <footer class="doc">
+    참고 링크 · 운영 계정: jjiwon.lee@lge.com / randy.lee@lge.com (PW 보안상 마스킹, 별도 보관)<br>
+    1호점(홍천) 운영 패턴은 참고용이며 <b>양평 가전 추정에는 사용 금지</b>. 미확정 항목(<span class="warn-ic">⚠️</span> / 노란 행)은 회신 수령 후 갱신.<br>
+    본 문서는 도면 v8 기준 v2 정리본이며, 외부 의존성 없이 단독 실행됩니다.
+  </footer>
+
+</div>
+</body>
+</html>
