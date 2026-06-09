@@ -34,6 +34,7 @@ no distortion, no warped geometry, no extra fingers, no watermark, no flicker
 ## 오프닝 (0:00 – 1:00) — 빛이 깨어난다
 
 > **첫 10~15초 FAST 훅:** S01–S02에서 "공간=지능" 한 방. 추상 서사는 그 뒤에.
+> ▷ **인터타이틀**(후반 합성, S05 부근): 타이틀 "경계를 넘는 지능 / *Borderless Intelligence*" + 슬로건 *Innovation in Tune with You*
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
@@ -47,7 +48,8 @@ no distortion, no warped geometry, no extra fingers, no watermark, no flicker
 
 ## Ch.1 집 (1:00 – 5:30) — The Home that Cares
 
-> 룩: 새벽 블루 → 아침 웜톤. 모티프: **보이지 않는 안무** (천장·벽·바닥이 거주자를 향해 반응).
+> ▷ **인터타이틀**(후반 합성): "공간이, 당신을 돌본다 / *The home that cares*"
+> 룩: 새벽 블루 → 아침 웜톤. 모티프: **보이지 않는 안무** (천장·벽·바닥이 거주자를 향해 반응 = LG 액추에이터의 정신).
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
@@ -67,45 +69,50 @@ no distortion, no warped geometry, no extra fingers, no watermark, no flicker
 
 ---
 
-## Ch.2 이동 (5:30 – 10:00) — The Space that Moves
+## Ch.2 이동 (5:30 – 10:00) — The Space that Moves (슈필라움)
 
-> 룩: 실내 웜 + 창밖 흐르는 풍경광. 모티프: **이동조차 거실** (차량 실내 = 생활공간).
+> ▷ **인터타이틀**(후반 합성): "머무름이 곧, 이동이 된다 / *The space that moves*"
+> 룩: 실내 웜 + 창밖 흐르는 풍경광. 모티프: **슈필라움** — LG×기아 PV5형 가변 모빌리티 라운지(차량=거실).
+> ⚠️ 스포츠카 아님. 프리미엄 전기 밴/PBV 형태의 '움직이는 생활공간'.
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
-| S19 | 5:30–5:42 | 전환 | Light flows from house threshold into a futuristic vehicle interior, doors breathing open, no driver, smooth approach | whoosh, soft tone | ☐ |
-| S20 | 5:42–6:00 | | Spacious lounge-like vehicle cabin, warm fabric seats, panoramic glass, ambient interface glow, slow interior pan | calm BGM | ☐ |
+| S19 | 5:30–5:42 | 전환 | Light flows from the home threshold into the interior of a sleek modern electric van, sliding door breathing open, no driver, smooth approach | whoosh, soft tone | ☐ |
+| S20 | 5:42–6:00 | | Spacious modular lounge cabin of a premium electric van, warm fabric seats facing each other, wood and soft textile, panoramic glass roof, ambient hub glow, slow interior pan | calm BGM | ☐ |
 | S21 | 6:00–6:25 | ★ | Through panoramic windows, landscape flows by in soft motion blur, cabin light shifting warm with the scenery, dolly | gentle motion pad | ☐ |
-| S22 | 6:25–6:50 | | Cabin surfaces reconfigure subtly — a table glows into being, light anticipating need, macro detail | soft transform tone | ☐ |
-| S23 | 6:50–7:15 | | Backlit passenger silhouette relaxes as ambient light wraps around them, the space adapting, slow arc | warm strings | ☐ |
-| S24 | 7:15–7:45 | | Exterior cinematic shot: sleek vehicle gliding along a coastal road at golden hour, light trail behind, aerial tracking | sweeping BGM | ☐ |
-| S25 | 7:45–8:15 | ★ | Interior: window glass transitions to a soft display of flowing data/landscape blend, ambient and dreamlike, push-in | shimmer | ☐ |
-| S26 | 8:15–8:45 | | The vehicle's cyan light signature connects to passing infrastructure light nodes, subtle network lines, side tracking | connective pulse | ☐ |
-| S27 | 8:45–9:15 | | Time-of-day shifts to dusk through the glass, cabin glow deepening amber, serene, slow orbit | evening pad | ☐ |
-| S28 | 9:15–10:00 | 전환 | Vehicle arrives at a luminous building, light bridging from car to architecture, camera rises toward the structure | transition riser | ☐ |
+| S22 | 6:25–6:50 | | A compact built-in galley awakens — fridge and warm cabinet glowing softly to life, no hands, macro detail | soft transform tone | ☐ |
+| S23 | 6:50–7:15 | | Cabin reconfigures itself: seats and a low table glide into a new layout (lounge transforming to studio mode), light anticipating, wide | mechanical hush | ☐ |
+| S24 | 7:15–7:45 | | Exterior cinematic shot: a sleek premium electric van (boxy PBV silhouette) gliding along a coastal road at golden hour, light trail behind, aerial tracking | sweeping BGM | ☐ |
+| S25 | 7:45–8:15 | ★ | Backlit passenger silhouette relaxes as ambient cabin light wraps around them, the moving space adapting like a living room, slow arc | warm strings | ☐ |
+| S26 | 8:15–8:45 | | Window glass transitions to a soft ambient display blending landscape and gentle data light, dreamlike, push-in | shimmer | ☐ |
+| S27 | 8:45–9:15 | | The van's cyan light signature connects to passing infrastructure nodes, subtle network lines, the boundary between home and road dissolving, side tracking | connective pulse | ☐ |
+| S28 | 9:15–10:00 | 전환 | Van arrives at a luminous building complex at dusk, light bridging from vehicle to architecture, camera rises toward the structures | transition riser | ☐ |
 
 ---
 
-## Ch.3 일터 (10:00 – 14:30) — The Place that Works
+## Ch.3 관리 (10:00 – 14:30) — The Spaces in Concert (ThinQ Pro)
 
-> 룩: 클린 화이트 + 자연광 + 그린 액센트. 모티프: **사람의 흐름에 반응하는 빌딩**.
+> ▷ **인터타이틀**(후반 합성): "하나의 집에서, 수많은 공간으로 / *From one home to many*"
+> 룩: 클린 화이트 + 자연광 + 그린 액센트. 모티프: **여러 공간이 한 호흡으로** — ThinQ Pro로
+> 빌딩·단지의 수많은 공간이 하나의 지능에 조율. 관제 = '빛의 별자리'(추상, 리터럴 UI 아님).
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
-| S29 | 10:00–10:15 | | Grand light-filled atrium of a smart office building, clean white surfaces, vertical garden, slow rising shot | bright ambient | ☐ |
-| S30 | 10:15–10:40 | ★ | As light flows across the floor, glass partitions softly reconfigure space, anticipating the day, wide tracking | architectural pad | ☐ |
-| S31 | 10:40–11:05 | | Ceiling light arrays shift warmth zone by zone following an unseen flow of people, overhead descending shot | subtle motion | ☐ |
-| S32 | 11:05–11:35 | | Backlit silhouettes move through corridors; surfaces and air respond, soft light orienting toward them, slow arc | warm pulse | ☐ |
-| S33 | 11:35–12:00 | | Macro of a living interface surface breathing with cyan-amber light, data gently flowing beneath glass | delicate texture | ☐ |
-| S34 | 12:00–12:30 | ★ | Building facade at golden hour, energy/light flowing through its veins like a calm circulatory system, exterior orbit | swelling BGM | ☐ |
-| S35 | 12:30–13:00 | | Green terraces and natural light integrate with the architecture, sustainable warm-tech harmony, slow crane up | airy strings | ☐ |
-| S36 | 13:00–13:30 | | Night falls; the building glows softly, light signature pulsing in calm rhythm, wide establishing | evening hum | ☐ |
-| S37 | 13:30–14:30 | 전환 | Camera pulls back and up from the single building to reveal it as one node among many city lights, scale reveal | epic riser | ☐ |
+| S29 | 10:00–10:15 | | Pull back to reveal a complex of many residential and office buildings at early morning, each window softly lit, slow aerial establishing | bright ambient | ☐ |
+| S30 | 10:15–10:40 | ★ | Hundreds of windows across the buildings pulse warm light in gentle coordinated waves, like one breath shared across many spaces, high aerial | architectural pad | ☐ |
+| S31 | 10:40–11:05 | | Cut inside a clean light-filled building atrium, glass partitions softly reconfiguring the space, anticipating the day, wide tracking | subtle motion | ☐ |
+| S32 | 11:05–11:35 | | Macro of a calm constellation of light points drifting and connecting into a living map (abstract asset map as light, NOT literal UI), shallow focus | delicate texture | ☐ |
+| S33 | 11:35–12:00 | | Ceiling light arrays across a shared workspace shift warmth zone by zone, following an unseen flow of people, overhead descending shot | warm pulse | ☐ |
+| S34 | 12:00–12:30 | ★ | Energy flowing through a building's veins like a calm circulatory system; a faint pulse gently heals a dim node back to warm light (predictive care), exterior orbit | swelling BGM | ☐ |
+| S35 | 12:30–13:00 | | Backlit silhouettes move through a corridor; many doors and surfaces orient toward them in sequence, slow arc | airy strings | ☐ |
+| S36 | 13:00–13:30 | | Green terraces and natural light integrate across the building cluster, sustainable warm-tech harmony, slow crane up | bright pad | ☐ |
+| S37 | 13:30–14:30 | 전환 | Camera pulls back and up; the building cluster becomes a constellation of light nodes within a larger city grid, scale reveal | epic riser | ☐ |
 
 ---
 
 ## Ch.4 도시 (14:30 – 19:00) — The City in Tune
 
+> ▷ **인터타이틀**(후반 합성): "지능이, 도시가 된다 / *The city in tune*"
 > 룩: 골든아워→블루아워 시네마틱 + 친환경 그린. 모티프: **지능이 도시 스케일로**.
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
