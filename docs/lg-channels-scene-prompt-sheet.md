@@ -104,7 +104,7 @@ no extra fingers, no crowd artifacts, no watermark, no flicker
 
 > ▷ **인터타이틀:** "하나의 집에서, 수많은 공간으로 / *From one home to many*"
 > 📝 **설명 자막(영어):** "One intelligence, countless spaces"
-> 룩: 클린 화이트 + 자연광 + 그린 액센트. **주거단지(ThinQ Pro)→오피스→환대(레스토랑·서비스 로봇)**. 사람은 원경 실루엣 + 주인공.
+> 룩: 클린 화이트 + 자연광→황혼 웜. **주거단지(ThinQ Pro)→오피스(낮)→환대(저녁·가족 레스토랑 식사)**. 시간이 낮→황혼으로 흐른다.
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
@@ -112,12 +112,12 @@ no extra fingers, no crowd artifacts, no watermark, no flicker
 | S30 | 9:45–10:10 | ★ | Hundreds of apartment windows pulse warm light in gentle coordinated waves, like one breath shared across many homes, high aerial | architectural pad | ☐ |
 | S31 | 10:10–10:30 | 人 | Inside a residential lobby, distant silhouettes moving, surfaces and glass softly reconfiguring, wide tracking | subtle motion | ☐ |
 | S32 | 10:30–10:55 | | Macro of a calm constellation of light points connecting into a living map of many managed homes (abstract, NOT literal UI), shallow focus | delicate texture | ☐ |
-| S33 | 10:55–11:25 | 전환人 | The intelligence extends into a commercial office — a light-filled workspace where ceiling arrays shift warmth zone by zone following an unseen flow of people; the protagonist's silhouette walks to a desk that warms to greet them | warm pulse | ☐ |
+| S33 | 10:55–11:25 | 전환人 | The intelligence extends into a commercial office — a light-filled workspace where ceiling arrays shift warmth zone by zone following an unseen flow of people; the protagonist's silhouette works at a desk as daylight slowly turns to late afternoon gold | warm pulse | ☐ |
 | ⚙A3 | 11:25–11:33 | ⚙ | Macro: a precise actuator smoothly swinging a glass partition, the same elegant joint repeated across many rooms | refined servo | ☐ |
-| S34 | 11:33–12:05 | ★人 | Midday: a warm restaurant inside a hotel — a graceful service robot glides between tables, delivering a plate to the protagonist (seated, back/silhouette), human-facing hospitality | gentle bell tone | ☐ |
-| S35 | 12:05–12:30 | 人 | Close: the protagonist's hands receive a warm dish as the table surface softly glows in welcome, ambient care in a public space, no face | warm texture | ☐ |
-| S36 | 12:30–13:00 | | Energy flowing through a building's veins like a calm circulatory system; a faint pulse gently heals a dim node back to warm light (predictive care), exterior orbit | swelling BGM | ☐ |
-| S37 | 13:00–13:30 | 전환 | Green terraces across the building cluster; camera pulls back and up — homes, offices and hotels become a constellation of light nodes within a larger city grid, scale reveal | epic riser | ☐ |
+| S34 | 11:33–12:05 | ★人 | Evening reunion — a warm restaurant inside a hotel at dusk: the spouse and child (silhouettes) arrive and join the protagonist at the table as a graceful service robot glides over, delivering warm dishes to the family | gentle bell tone | ☐ |
+| S35 | 12:05–12:30 | 人 | Close: family hands sharing warm dishes, the child's small hand reaching for bread, the table surface softly glowing in welcome, no faces | warm texture | ☐ |
+| S36 | 12:30–13:00 | | Dusk: energy flowing through the hotel and building veins like a calm circulatory system; a faint pulse gently heals a dim node back to warm light (predictive care), exterior orbit | swelling BGM | ☐ |
+| S37 | 13:00–13:30 | 전환 | Camera pulls back and up at blue hour — homes, offices and the glowing restaurant become a constellation of light nodes within a larger city grid, scale reveal | epic riser | ☐ |
 
 ---
 
@@ -129,11 +129,11 @@ no extra fingers, no crowd artifacts, no watermark, no flicker
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
-| S38 | 13:30–13:55 | ★ | Sweeping aerial of a future city at golden hour, buildings linked by faint flowing light lines, cinematic drone shot | grand BGM | ☐ |
+| S38 | 13:30–13:55 | ★ | Sweeping aerial of a future city at deep dusk, buildings linked by faint flowing light lines, cinematic drone shot | grand BGM | ☐ |
 | S39 | 13:55–14:25 | | Energy flows visualized as soft light rivers between districts, calm and orchestrated, high aerial tracking | flowing pad | ☐ |
 | S40 | 14:25–14:55 | | Wind turbines and solar fields glowing with cyan energy accents, sustainable infrastructure feeding the city, slow aerial orbit | airy swell | ☐ |
 | S41 | 14:55–15:25 | | Streets below: ambient public light gently adjusting to the flow of life, human-scale warmth, slow descending shot | tender motion | ☐ |
-| S42 | 15:25–16:00 | ★人 | The protagonist stands on a high terrace overlooking the vast luminous city at dusk (silhouette/back), the city breathing in light below | reverent pad | ☐ |
+| S42 | 15:25–16:00 | ★人 | After dinner, the protagonist steps onto the hotel's high terrace overlooking the vast luminous city (silhouette/back), spouse and child soft-focus in the warm doorway behind, the city breathing in light below | reverent pad | ☐ |
 | S43 | 16:00–16:35 | | Transition to blue hour, the whole city breathing in a slow pulse of light, ultra-wide aerial | building BGM | ☐ |
 | S44 | 16:35–17:10 | | Light lines from homes, vehicles and buildings converging into the city network, macro-to-macro flow | orchestral build | ☐ |
 | S45 | 17:10–17:35 | 👤 | HERO — the protagonist's face lit by the city glow, calm awe, the light network softly reflected in their eyes *(fixed character ref)* | swell | ☐ |
@@ -144,16 +144,16 @@ no extra fingers, no crowd artifacts, no watermark, no flicker
 ## 연결 + 엔딩 (18:00 – 20:40) — Borderless & 귀가  [⚙리빌 → 몽타주 → 귀가 resolve]
 
 > 📝 **설명 자막(영어):** ⚙AR 위에 "Every motion begins with an actuator" → 4영역 라벨 "Home · Hospitality · Logistics · Manufacturing" (후반 합성)
-> 👤 앵커 #3 (귀가). 아이가 달려와 안기며 아크가 닫힌다.
+> 👤 앵커 #3 (귀가). **가족이 함께 귀가** — 잠든 아이를 안고 들어오며 아크가 닫힌다.
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
 | ⚙AR | 18:00–18:30 | ⚙리빌 | A single glowing node in the city network pulls focus and morphs into one elegant actuator joint rotating in beautiful precision macro (city→joint bridge); around it four worlds bloom in quadrant montage — a home robot's arm, a restaurant service robot, a warehouse mobile robot, a factory collaborative arm — all moved by the same joint, warm key light *(official AXIUM imagery as i2v ref)* | reveal motif swell | ☐ |
 | S47 | 18:30–18:55 | ★빠름 | Rapid elegant montage morph: home glow → vehicle light → many-space constellation → city network, all one continuous light, seamless, faster tempo | montage swell | ☐ |
 | S48 | 18:55–19:20 | | All scales unite into a single breathing web of warm light against deep navy, the boundaries dissolving, slow pull-back | resolve to calm | ☐ |
-| S49 | 19:20–19:50 | 전환人 | Match-cut back to the home at night — the front door opens, warm light spills out, the home waking to welcome (full circle) | warm return | ☐ |
-| S50 | 19:50–20:10 | ★人 | A small backlit silhouette runs down the hallway and leaps into the protagonist's arms, light gathering around the embrace, no faces, pure warmth | emotional peak | ☐ |
-| S51 | 20:10–20:25 | 👤 | HERO — the protagonist's face over the child's shoulder (child's face hidden), eyes closing content; a warm point of light rests beside the family like an unseen companion *(fixed character ref)* | tender chord | ☐ |
+| S49 | 19:20–19:50 | 전환人 | Match-cut back to the home at night — the front door opens before they reach it, warm light spilling out to greet the returning family silhouettes (full circle) | warm return | ☐ |
+| S50 | 19:50–20:10 | ★人 | The protagonist carries the sleeping child down the hallway (backlit silhouettes), lights dimming gently ahead of each step, the spouse's hand resting on the protagonist's shoulder, pure warmth | emotional peak | ☐ |
+| S51 | 20:10–20:25 | 👤 | HERO — the protagonist's face over the sleeping child's shoulder (child's face hidden), eyes closing content; a warm point of light rests beside the family like an unseen companion *(fixed character ref)* | tender chord | ☐ |
 | S52 | 20:25–20:40 | 엔딩 | The light network softens to a single warm point, then a gentle fade (closing copy + slogan added in post) | final warm chord | ☐ |
 
 > **엔딩 카피(후반 합성, 택1 — 마스터 문서 9번 후보):**
