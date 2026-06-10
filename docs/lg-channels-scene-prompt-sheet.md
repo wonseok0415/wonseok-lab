@@ -104,7 +104,7 @@ no extra fingers, no crowd artifacts, no watermark, no flicker
 
 > ▷ **인터타이틀:** "하나의 집에서, 수많은 공간으로 / *From one home to many*"
 > 📝 **설명 자막(영어):** "One intelligence, countless spaces"
-> 룩: 클린 화이트 + 자연광 + 그린 액센트. **주거단지(ThinQ Pro)→오피스→호텔(Hospitality)**. 사람은 원경 실루엣.
+> 룩: 클린 화이트 + 자연광 + 그린 액센트. **주거단지(ThinQ Pro)→오피스→환대(레스토랑·서비스 로봇)**. 사람은 원경 실루엣 + 주인공.
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
@@ -114,31 +114,30 @@ no extra fingers, no crowd artifacts, no watermark, no flicker
 | S32 | 10:30–10:55 | | Macro of a calm constellation of light points connecting into a living map of many managed homes (abstract, NOT literal UI), shallow focus | delicate texture | ☐ |
 | S33 | 10:55–11:25 | 전환人 | The intelligence extends into a commercial office — a light-filled workspace where ceiling arrays shift warmth zone by zone following an unseen flow of people; the protagonist's silhouette walks to a desk that warms to greet them | warm pulse | ☐ |
 | ⚙A3 | 11:25–11:33 | ⚙ | Macro: a precise actuator smoothly swinging a glass partition, the same elegant joint repeated across many rooms | refined servo | ☐ |
-| S34 | 11:33–12:05 | ★ | A serene hotel lobby at dusk — a rounded service robot glides between warm pools of light, delivering quietly to a guest's silhouette, hospitality calm | gentle bell tone | ☐ |
-| S35 | 12:05–12:30 | 人 | A hotel room prepares itself before the door opens: lights warming, curtains parting, air stirring — the unseen welcome | anticipation pad | ☐ |
+| S34 | 11:33–12:05 | ★人 | Midday: a warm restaurant inside a hotel — a graceful service robot glides between tables, delivering a plate to the protagonist (seated, back/silhouette), human-facing hospitality | gentle bell tone | ☐ |
+| S35 | 12:05–12:30 | 人 | Close: the protagonist's hands receive a warm dish as the table surface softly glows in welcome, ambient care in a public space, no face | warm texture | ☐ |
 | S36 | 12:30–13:00 | | Energy flowing through a building's veins like a calm circulatory system; a faint pulse gently heals a dim node back to warm light (predictive care), exterior orbit | swelling BGM | ☐ |
 | S37 | 13:00–13:30 | 전환 | Green terraces across the building cluster; camera pulls back and up — homes, offices and hotels become a constellation of light nodes within a larger city grid, scale reveal | epic riser | ☐ |
 
 ---
 
-## Ch.4 도시 (13:30 – 18:00) — The City in Tune  [광활 항공 · 클라이맥스 + 무대 뒤]
+## Ch.4 도시 (13:30 – 18:00) — The City in Tune  [광활 항공 · 순수 감정 클라이맥스]
 
 > ▷ **인터타이틀:** "지능이, 도시가 된다 / *The city in tune*"
-> 📝 **설명 자막(영어):** "When intelligence becomes a city" / 무대 뒤 구간에 "The unseen hands of the city"
-> 룩: 골든아워→블루아워 + 친환경 그린. **물류·제조 = 도시의 '보이지 않는 무대 뒤'** 리듬 몽타주. 👤 앵커 #2.
+> 📝 **설명 자막(영어):** "When intelligence becomes a city"
+> 룩: 골든아워→블루아워 + 친환경 그린. **물류·제조는 여기서 빼고 엔딩 ⚙AR 리빌에 집중**(climax 온기 보호). 👤 앵커 #2.
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
-| S38 | 13:30–13:48 | ★ | Sweeping aerial of a future city at golden hour, buildings linked by faint flowing light lines, cinematic drone shot | grand BGM | ☐ |
-| S39 | 13:48–14:15 | | Energy flows visualized as soft light rivers between districts, calm and orchestrated, high aerial tracking | flowing pad | ☐ |
-| S40 | 14:15–14:45 | 무대뒤 | BACKSTAGE — a vast quiet logistics hub at dusk: mobile robots glide in choreographed lanes between glowing shelves, rhythmic and geometric, elevated tracking | rhythmic pulse | ☐ |
-| S41 | 14:45–15:15 | 무대뒤★ | BACKSTAGE — a clean future manufacturing line: collaborative robotic arms move in graceful unison like an orchestra, sparks of warm light, slow dolly | mechanical symphony | ☐ |
-| ⚙A4 | 15:15–15:25 | ⚙ | Cinematic close-up: the same elegant actuator joint flexing inside a warehouse robot and a robotic arm — one joint, many bodies, golden key light | deep mechanism | ☐ |
-| S42 | 15:25–15:50 | | Wind turbines and solar fields glowing with cyan energy accents, sustainable infrastructure feeding the city, slow aerial orbit | airy swell | ☐ |
-| S43 | 15:50–16:20 | ★人 | The protagonist stands on a high terrace overlooking the vast luminous city at dusk (silhouette/back), the city breathing in light below | reverent pad | ☐ |
-| S44 | 16:20–16:50 | | Transition to blue hour, the whole city breathing in a slow pulse of light — homes, hotels, warehouses, factories in one rhythm, ultra-wide aerial | building BGM | ☐ |
-| S45 | 16:50–17:20 | 👤 | HERO — the protagonist's face lit by the city glow, calm awe, the light network softly reflected in their eyes *(fixed character ref)* | swell | ☐ |
-| S46 | 17:20–18:00 | | Cinematic night cityscape fully alive with calm coordinated light, slow majestic orbit, awe and warmth | full orchestral | ☐ |
+| S38 | 13:30–13:55 | ★ | Sweeping aerial of a future city at golden hour, buildings linked by faint flowing light lines, cinematic drone shot | grand BGM | ☐ |
+| S39 | 13:55–14:25 | | Energy flows visualized as soft light rivers between districts, calm and orchestrated, high aerial tracking | flowing pad | ☐ |
+| S40 | 14:25–14:55 | | Wind turbines and solar fields glowing with cyan energy accents, sustainable infrastructure feeding the city, slow aerial orbit | airy swell | ☐ |
+| S41 | 14:55–15:25 | | Streets below: ambient public light gently adjusting to the flow of life, human-scale warmth, slow descending shot | tender motion | ☐ |
+| S42 | 15:25–16:00 | ★人 | The protagonist stands on a high terrace overlooking the vast luminous city at dusk (silhouette/back), the city breathing in light below | reverent pad | ☐ |
+| S43 | 16:00–16:35 | | Transition to blue hour, the whole city breathing in a slow pulse of light, ultra-wide aerial | building BGM | ☐ |
+| S44 | 16:35–17:10 | | Light lines from homes, vehicles and buildings converging into the city network, macro-to-macro flow | orchestral build | ☐ |
+| S45 | 17:10–17:35 | 👤 | HERO — the protagonist's face lit by the city glow, calm awe, the light network softly reflected in their eyes *(fixed character ref)* | swell | ☐ |
+| S46 | 17:35–18:00 | | Cinematic night cityscape fully alive with calm coordinated light, slow majestic orbit, awe and warmth | full orchestral | ☐ |
 
 ---
 
@@ -149,7 +148,7 @@ no extra fingers, no crowd artifacts, no watermark, no flicker
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
-| ⚙AR | 18:00–18:30 | ⚙리빌 | HERO REVEAL — one elegant actuator joint rotates in beautiful precision macro; around it, four worlds bloom in quadrant montage: a home robot's arm, a hotel service robot, a warehouse mobile robot, a factory collaborative arm — all moved by the same joint, warm key light *(use official AXIUM page imagery as i2v reference)* | reveal motif swell | ☐ |
+| ⚙AR | 18:00–18:30 | ⚙리빌 | A single glowing node in the city network pulls focus and morphs into one elegant actuator joint rotating in beautiful precision macro (city→joint bridge); around it four worlds bloom in quadrant montage — a home robot's arm, a restaurant service robot, a warehouse mobile robot, a factory collaborative arm — all moved by the same joint, warm key light *(official AXIUM imagery as i2v ref)* | reveal motif swell | ☐ |
 | S47 | 18:30–18:55 | ★빠름 | Rapid elegant montage morph: home glow → vehicle light → many-space constellation → city network, all one continuous light, seamless, faster tempo | montage swell | ☐ |
 | S48 | 18:55–19:20 | | All scales unite into a single breathing web of warm light against deep navy, the boundaries dissolving, slow pull-back | resolve to calm | ☐ |
 | S49 | 19:20–19:50 | 전환人 | Match-cut back to the home at night — the front door opens, warm light spills out, the home waking to welcome (full circle) | warm return | ☐ |
