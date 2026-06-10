@@ -77,18 +77,38 @@ ultra-detailed, consistent identity across all views --ar 16:9
 
 ---
 
-## 오프닝 (0:00 – 1:00) — 빛이 깨어난다
+## 0.6 보이지 않는 동반자 "the Presence" 정의 (✅ 핵심 인지장치)
 
-> **첫 10~15초 FAST 훅:** S01–S02에서 "공간=지능" 한 방.
+> 목표: 관객이 **"저 빛 = 가족을 돌보는 지능"** 임을 즉시 읽게 한다. (자비스의 본질 = 목소리가 아니라 **행위성**)
+> "예쁜 입자"가 아니라 **행위성·일관성·소리·캡션·리빌** 5개 장치로 '캐릭터'로 만든다.
+
+| 요소 | 정의 |
+|------|------|
+| **형태** | **따뜻한 앰버 빛 한 점**(미세한 시안 코어), 움직일 때 짧은 빛 궤적(wisp). 흩어진 입자 아님 — *하나의 점*. 전 챕터 동일 형태 |
+| **톤** | 절제된 볼류메트릭 글로우. ⚠️ 요정·스프라이트(만화적) 금지 — 마법이 아니라 '존재의 시선' |
+| **행위성(★핵심)** | 늘 **인지→의도→돌봄**의 3박. 빛이 *알아채고(미세 펄스) → 향하고(살짝 기울임) → 공간이 응답한다(표면 데움·길 밝힘·수면 시 어두워짐)*. 행동의 주체는 빛, 효과는 공간 |
+| **소리(목소리 대체)** | 빛이 행동할 때마다 **고유 2~3음 따뜻한 모티프 차임**. = 무음성 영화의 '목소리'. **이 모티프가 곧 메인 BGM 테마의 씨앗**(음악 아크와 연결) |
+| **일관성** | 같은 형태 + 같은 차임 + 같은 3박 행동을 집·차·식당·도시 **모든 공간에서** 반복 → "같은 존재가 어디든 함께" |
+| **오프닝 학습** | 첫 60~90초에 빛이 **인지→돌봄을 또렷이 1회 시연** + 캡션으로 정체 각인 (관객에게 '규칙'을 가르침) |
+| **엔딩 리빌** | ⚙AR에서 그 빛 = **LG의 지능·움직임(액추에이터)** 으로 정체 회수. S51에서 가족 곁에 머묾 |
+
+**📝 인지용 캡션(영어, 후반 합성):** 오프닝 "It wakes when you wake." / 중반 1회 "Always here. In every space." / 리빌 "Every motion begins with an actuator."
+
+---
+
+## 오프닝 (0:00 – 1:00) — the Presence가 깨어난다
+
+> **첫 10~15초 FAST 훅 + 동반자 '학습' 구간:** 빛이 *인지→돌봄*을 또렷이 시연해 정체를 각인.
 > ▷ **인터타이틀**(후반): 타이틀 "경계를 넘는 지능 / *Borderless Intelligence*" + 슬로건 *Innovation in Tune with You*
+> 📝 **캡션:** "It wakes when you wake."
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
-| S01 | 0:00–0:06 | ★훅 | Total darkness, a single warm filament of light ignites and breathes, thousands of cyan data particles awaken around it, slow push-in | sub-bass swell | ☐ |
-| S02 | 0:06–0:14 | 훅 | Glowing particles flow through dark space, tracing the wireframe contour of a family living room, elegant orbital camera | crystalline chime | ☐ |
-| S03 | 0:14–0:30 | | Particle wireframe solidifies into soft architectural surfaces, warm light pooling on the floor, slow dolly forward | rising pad | ☐ |
-| S04 | 0:30–0:45 | | The room exhales a wave of warm amber light across walls and ceiling, a child's small toy on the floor catching the glow | warm tone | ☐ |
-| S05 | 0:45–1:00 | 人 | Camera drifts to a bedroom at dawn; an adult hand stirs softly under light sheets, morning light gathering toward it (title in post) | quiet breath, BGM intro | ☐ |
+| S01 | 0:00–0:08 | ★훅 | Total darkness; a single warm amber point of light (faint cyan core) ignites and gently breathes, alive and aware, slow push-in | motif chime (first note) | ☐ |
+| S02 | 0:08–0:16 | 훅 | The light point drifts forward with intent, a soft wisp trailing; as it passes, the wireframe contour of a family living room blooms into being around it | motif chime resolves | ☐ |
+| S03 | 0:16–0:30 | | The room solidifies into soft warm surfaces; the light point hovers, *perceives* (a subtle pulse), then turns toward a darkened hallway | rising pad | ☐ |
+| S04 | 0:30–0:45 | 학습 | CARE DEMO — the light point flows ahead down the hall and, a beat before, gently warms a glow across a child's bedroom door; the space responds to its intent | warm tone + chime | ☐ |
+| S05 | 0:45–1:00 | 人 | The light settles by the family bed at dawn; an adult hand stirs into the gathering morning light, the point resting nearby like a quiet guardian (title in post) | quiet breath, BGM intro | ☐ |
 
 ---
 
@@ -103,13 +123,13 @@ ultra-detailed, consistent identity across all views --ar 16:9
 | S06 | 1:00–1:12 | 人 | Dawn bedroom: the father rises slowly into the soft light, sitting at the bed's edge (back to camera) as the room's glow gently lifts with him, static wide | low hum | ☐ |
 | S07 | 1:12–1:24 | | Ceiling panels subtly tilt and breathe, a ripple of soft light travels across the ceiling, slow upward tracking | soft whisper | ☐ |
 | ⚙A1 | 1:24–1:32 | ⚙ | Macro: a slender elegant robotic joint smoothly rotating a ceiling/blind panel, exposed precision actuator gleaming softly | refined servo | ☐ |
-| S08 | 1:32–1:44 | ★ | Warm amber glow spreads across the floor toward a child's bedroom door (warmth proxy), low tracking shot near floor | warm chime | ☐ |
+| S08 | 1:32–1:44 | ★ | The light point drifts to the kitchen and warms the counter a beat before the family arrives, warm amber glow blooming across the surface (warmth proxy), low tracking | warm chime | ☐ |
 | S09 | 1:44–2:00 | 人 | A little girl's bedroom: curtains breathe open on their own, morning light flooding over a small sleeping silhouette with soft bobbed hair (face hidden in pillow), air particles drifting | airy swell | ☐ |
 | S10 | 2:00–2:20 | 人 | Close on a little girl's small hand reaching into morning light, her father's hand gently meeting it, no faces, macro backlit | tender piano | ☐ |
 | S11 | 2:20–2:45 | 👤 | HERO — the protagonist parent's face catches the first morning light, calm smile, child soft-focus in foreground, the warm room orienting around them *(fixed character ref)* | tender pad | ☐ |
 | S12 | 2:45–3:05 | | Kitchen surfaces awaken with subtle glow, water gently begins to flow, breakfast warmth rising (no hands), close macro | water trickle, BGM build | ☐ |
 | S13 | 3:05–3:25 | 人 | A low rounded domestic robot form (NOT humanoid) glides silently past the child's feet, light trailing, low side tracking | smooth whirr | ☐ |
-| S14 | 3:25–3:45 | | Light gently flows ahead across the floor toward the kitchen, anticipating the family's path (predictive proxy) | soft motion | ☐ |
+| S14 | 3:25–3:45 | | The light point flows ahead across the floor toward the kitchen, lighting the family's path a step before they walk it (anticipatory care) | soft motion | ☐ |
 | S15 | 3:45–4:10 | ★人 | Backlit family silhouettes at the breakfast table in golden morning light, surfaces softly orienting toward them, slow arc | warm resolve | ☐ |
 | S16 | 4:10–4:35 | | Hundreds of micro light points across walls pulse once in unison like a calm breath, wide symmetrical | unison chime | ☐ |
 | S17 | 4:35–5:00 | 人 | The spouse's hands pack a small lunchbox as cabinet surfaces glow helpfully; the child's silhouette runs past, soft focus | delicate texture | ☐ |
@@ -121,18 +141,19 @@ ultra-detailed, consistent identity across all views --ar 16:9
 ## Ch.2 이동 (6:00 – 9:30) — The Space that Moves (슈필라움)  [흐르는 모션]
 
 > ▷ **인터타이틀:** "머무름이 곧, 이동이 된다 / *The space that moves*"
-> 📝 **설명 자막(영어):** "Spielraum — your living room, in motion"
+> 📝 **설명 자막(영어):** "Spielraum — your living room, in motion" / 🔆 동반자 캡션 "Always here. In every space."
 > 룩: 실내 웜 + 창밖 흐르는 풍경광. 주인공+아이의 이동. ⚠️ 스포츠카 아님 — 프리미엄 전기 밴/PBV.
+> 🔆 **the Presence:** 빛의 점이 차 안까지 따라옴(같은 형태·차임) → '어디든 함께'를 증명하는 핵심 구간.
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
-| S20 | 6:00–6:12 | 전환人 | Light flows from the home threshold into a sleek electric van interior, sliding door breathing open, parent and child stepping in (backs), no driver | whoosh | ☐ |
+| S20 | 6:00–6:12 | 전환人 | The light point drifts from the home threshold into a sleek electric van interior ahead of them (proving it follows), sliding door breathing open, father and daughter stepping in (backs), no driver | whoosh + motif chime | ☐ |
 | S21 | 6:12–6:30 | 人 | Spacious modular lounge cabin, warm fabric seats facing, wood + textile, panoramic glass roof; the child kneels at the window (back), parent beside, slow pan | calm BGM | ☐ |
 | S22 | 6:30–6:55 | ★人 | Through panoramic windows, landscape flows by in soft motion blur; the little girl's small silhouette (mustard hoodie) traces it with a finger, cabin light shifting warm | motion pad | ☐ |
 | ⚙A2 | 6:55–7:03 | ⚙ | Macro: refined linear actuators silently gliding the cabin seats and a small table into family layout, elegant exposed mechanism | smooth servo | ☐ |
 | S23 | 7:03–7:25 | | A compact built-in galley awakens — a warm cabinet glowing to life with a child's snack, macro detail | transform tone | ☐ |
 | S24 | 7:25–7:50 | | Exterior cinematic: a sleek premium electric van (boxy PBV) gliding along a tree-lined riverside road at morning gold, light trail, aerial tracking | sweeping BGM | ☐ |
-| S25 | 7:50–8:15 | 人 | Cabin wraps the parent and child in ambient light, the moving space adapting like a living room, slow arc from behind | warm strings | ☐ |
+| S25 | 7:50–8:15 | 人 | The light point hovers between the father and daughter, the cabin warming in response, the moving space adapting like a living room, slow arc from behind | warm strings + chime | ☐ |
 | S26 | 8:15–8:40 | | Window glass transitions to a soft ambient display blending landscape and gentle data light, dreamlike, push-in | shimmer | ☐ |
 | S27 | 8:40–9:00 | | The van's cyan light signature connects to passing infrastructure nodes, the boundary between home and road dissolving, side tracking | connective pulse | ☐ |
 | S28 | 9:00–9:30 | 전환人 | The van pauses; the little girl's silhouette (mustard hoodie) hops off toward a school gate in morning light, her father watching from the doorway of the van, then the van glides on toward glowing towers | transition riser | ☐ |
@@ -153,7 +174,7 @@ ultra-detailed, consistent identity across all views --ar 16:9
 | S32 | 10:30–10:55 | | Macro of a calm constellation of light points connecting into a living map of many managed homes (abstract, NOT literal UI), shallow focus | delicate texture | ☐ |
 | S33 | 10:55–11:25 | 전환人 | The intelligence extends into a commercial office — a light-filled workspace where ceiling arrays shift warmth zone by zone following an unseen flow of people; the protagonist's silhouette works at a desk as daylight slowly turns to late afternoon gold | warm pulse | ☐ |
 | ⚙A3 | 11:25–11:33 | ⚙ | Macro: a precise actuator smoothly swinging a glass partition, the same elegant joint repeated across many rooms | refined servo | ☐ |
-| S34 | 11:33–12:05 | ★人 | Evening reunion — a warm restaurant inside a hotel at dusk: the spouse and child (silhouettes) arrive and join the protagonist at the table as a graceful service robot glides over, delivering warm dishes to the family | gentle bell tone | ☐ |
+| S34 | 11:33–12:05 | ★人 | Evening reunion — a warm restaurant inside a hotel at dusk: the spouse and daughter (silhouettes) arrive and join the father at the table as a graceful service robot glides over with warm dishes; the same light point hovers softly above the family table | gentle bell tone + chime | ☐ |
 | S35 | 12:05–12:30 | 人 | Close: family hands sharing warm dishes, the little girl's small hand reaching for bread, the table surface softly glowing in welcome, no faces | warm texture | ☐ |
 | S36 | 12:30–13:00 | | Dusk: energy flowing through the hotel and building veins like a calm circulatory system; a faint pulse gently heals a dim node back to warm light (predictive care), exterior orbit | swelling BGM | ☐ |
 | S37 | 13:00–13:30 | 전환 | Camera pulls back and up at blue hour — homes, offices and the glowing restaurant become a constellation of light nodes within a larger city grid, scale reveal | epic riser | ☐ |
@@ -172,7 +193,7 @@ ultra-detailed, consistent identity across all views --ar 16:9
 | S39 | 13:55–14:25 | | Energy flows visualized as soft light rivers between districts, calm and orchestrated, high aerial tracking | flowing pad | ☐ |
 | S40 | 14:25–14:55 | | Wind turbines and solar fields glowing with cyan energy accents, sustainable infrastructure feeding the city, slow aerial orbit | airy swell | ☐ |
 | S41 | 14:55–15:25 | | Streets below: ambient public light gently adjusting to the flow of life, human-scale warmth, slow descending shot | tender motion | ☐ |
-| S42 | 15:25–16:00 | ★人 | After dinner, the protagonist steps onto the hotel's high terrace overlooking the vast luminous city (silhouette/back), spouse and child soft-focus in the warm doorway behind, the city breathing in light below | reverent pad | ☐ |
+| S42 | 15:25–16:00 | ★人 | After dinner, the father steps onto the hotel's high terrace overlooking the vast luminous city (silhouette/back), the light point resting at his side, spouse and daughter soft-focus in the warm doorway behind, the city breathing in light below | reverent pad | ☐ |
 | S43 | 16:00–16:35 | | Transition to blue hour, the whole city breathing in a slow pulse of light, ultra-wide aerial | building BGM | ☐ |
 | S44 | 16:35–17:10 | | Light lines from homes, vehicles and buildings converging into the city network, macro-to-macro flow | orchestral build | ☐ |
 | S45 | 17:10–17:35 | 👤 | HERO — the protagonist's face lit by the city glow, calm awe, the light network softly reflected in their eyes *(fixed character ref)* | swell | ☐ |
@@ -187,12 +208,12 @@ ultra-detailed, consistent identity across all views --ar 16:9
 
 | 씬# | 길이 | 비트 | [P] 변동 프롬프트 (영문) | 사운드 | 상태 |
 |-----|------|------|--------------------------|--------|------|
-| ⚙AR | 18:00–18:30 | ⚙리빌 | A single glowing node in the city network pulls focus and morphs into one elegant actuator joint rotating in beautiful precision macro (city→joint bridge); around it four worlds bloom in quadrant montage — a home robot's arm, a restaurant service robot, a warehouse mobile robot, a factory collaborative arm — all moved by the same joint, warm key light *(official AXIUM imagery as i2v ref)* | reveal motif swell | ☐ |
+| ⚙AR | 18:00–18:30 | ⚙리빌 | The same warm light point (the Presence) drifts to the center of the city network and opens to reveal, at its core, one elegant actuator joint rotating in precision macro (companion→intelligence reveal); around it four worlds bloom in quadrant montage — a home robot's arm, a restaurant service robot, a warehouse mobile robot, a factory collaborative arm — all moved by the same joint, warm key light *(official AXIUM imagery as i2v ref)* | reveal: full motif swell | ☐ |
 | S47 | 18:30–18:55 | ★빠름 | Rapid elegant montage morph: home glow → vehicle light → many-space constellation → city network, all one continuous light, seamless, faster tempo | montage swell | ☐ |
 | S48 | 18:55–19:20 | | All scales unite into a single breathing web of warm light against deep navy, the boundaries dissolving, slow pull-back | resolve to calm | ☐ |
 | S49 | 19:20–19:50 | 전환人 | Match-cut back to the home at night — the front door opens before they reach it, warm light spilling out to greet the returning family silhouettes (full circle) | warm return | ☐ |
 | S50 | 19:50–20:10 | ★人 | The father carries his sleeping daughter down the hallway (backlit silhouettes), lights dimming gently ahead of each step, the spouse's hand resting on his shoulder, pure warmth | emotional peak | ☐ |
-| S51 | 20:10–20:25 | 👤 | HERO — the father's face over his sleeping daughter's shoulder (her face hidden), eyes closing content; a warm point of light rests beside the family like an unseen companion *(fixed character ref)* | tender chord | ☐ |
+| S51 | 20:10–20:25 | 👤 | HERO — the father's face over his sleeping daughter's shoulder (her face hidden), eyes closing content; the same warm light point (the Presence) settles beside the family and softly pulses its motif one last time *(fixed character ref)* | tender chord (final motif) | ☐ |
 | S52 | 20:25–20:40 | 엔딩 | The light network softens to a single warm point, then a gentle fade (closing copy + slogan added in post) | final warm chord | ☐ |
 
 > **엔딩 카피(후반 합성, 택1 — 마스터 문서 9번 후보):**
