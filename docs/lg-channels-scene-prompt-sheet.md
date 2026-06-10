@@ -30,9 +30,48 @@ no text, no captions, no logos, no distortion, no warped geometry,
 no extra fingers, no crowd artifacts, no watermark, no flicker
 ```
 ### 👤 캐릭터 일관성 규칙 (가장 중요)
-- **주인공(30대 부모)**: 단 하나의 고정 캐릭터 레퍼런스 이미지에서 👤 3컷(S11·S45·S52) 생성. 의상·헤어 통일, 여러 테이크 후 베스트.
+- **주인공**: 단 하나의 고정 캐릭터 레퍼런스 세트에서 👤 3컷(S11·S45·S51) 생성. 아래 **캐릭터 레퍼런스 정의** 참조.
 - **배우자·아이**: 얼굴 절대 노출 금지 — 손·뒷모습·실루엣·소프트포커스만. (아이 얼굴은 AI 왜곡 빈발 + 글로벌 방영 민감성)
 - 가족 와이드 컷은 **역광 실루엣**으로 통일하면 일관성 부담 0.
+
+---
+
+## 0.5 캐릭터 레퍼런스 정의 (✅ 확정)
+
+### 주인공 — "JUN" (워킹네임)
+| 항목 | 정의 | 근거 |
+|------|------|------|
+| 정체성 | **30대 중반 한국인 아버지**, 따뜻하고 차분한 인상 | '가전=엄마' 클리셰 회피·신선함, 엔딩(잠든 아이 안기)과 정합, K-브랜드 정체성. *여성 버전 필요 시 [CHAR] 블록 한 줄만 교체* |
+| 외형 | 짧고 단정한 검은 머리, 면도한 깔끔한 얼굴, 부드러운 눈매, 보통 체격. **안경·수염·문신 등 변동 잦은 디테일 배제**(AI 일관성) | 단순할수록 컷 간 동일성 유지 쉬움 |
+| 의상 (**하루 단일 복장**) | **웜 베이지 니트(이너 화이트 티) + 네이비 팬츠** | 의상=일관성의 절반. 아침 집·오피스·레스토랑·테라스 모두 성립. 팔레트(앰버+네이비) 정합 |
+
+**[CHAR] 고정 블록 (👤 컷 + 주인공 등장 人 컷 프롬프트 앞에 부착):**
+```
+A Korean man in his mid-30s, short neat black hair, clean-shaven, gentle warm
+eyes, medium build, wearing a warm beige knit sweater over a white tee and
+navy trousers
+```
+
+### 가족 (얼굴 금지 — 실루엣·의상 일관성용)
+**[SPOUSE] 블록:** `a Korean woman in her mid-30s, shoulder-length dark hair softly tied, ivory cardigan and sage-green pants (face never visible)`
+**[CHILD] 블록:** `a 5-year-old child, short dark hair, mustard-yellow hoodie and grey pants (face never visible)`
+> 아이의 **머스터드 옐로 후드** = 얼굴 없이도 실루엣만으로 '같은 아이'임을 색으로 추적시키는 장치(전 챕터 시각 앵커).
+
+### 마스터 레퍼런스 생성 (본 제작 1단계)
+Midjourney로 아래 1장을 먼저 확정(여러 테이크 → 베스트 1세트 고정):
+```
+character reference sheet of [CHAR], front view + three-quarter view + profile
+view, neutral soft studio light, plain warm grey background, photorealistic,
+ultra-detailed, consistent identity across all views --ar 16:9
+```
++ 감정 변형 스틸 3장(같은 세트에서): ① calm morning smile in soft window light (S11용)
+② quiet awe, face lit by distant city glow at night (S45용) ③ content, eyes closing, holding a sleeping child over the shoulder (S51용)
+
+### 워크플로우 (얼굴 컷 절대 규칙)
+1. 마스터 시트 + 감정 스틸 3장을 **캐릭터 레퍼런스 기능**(MJ --cref 등)으로 생성·확정
+2. **확정 스틸을 i2v 소스로** Kling/Veo에 입력해 👤 영상 생성 (텍스트만으로 얼굴 재생성 금지)
+3. 수용 기준: 3컷을 나란히 놓고 ① 동일인 식별 가능 ② 의상 동일 ③ 눈·치아·손 아티팩트 없음 ④ 과도한 미화/언캐니 없음 — 하나라도 실패 시 재생성
+4. 人 컷도 주인공 등장 시 [CHAR] 블록 부착(실루엣에서도 의상 색·체형이 일관성을 만든다)
 
 > ★ = 마이크로 비트(~90초 페이오프), [ ] = 챕터 시각 문법.
 
