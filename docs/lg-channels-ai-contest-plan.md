@@ -289,12 +289,9 @@ no distortion, no warped geometry, no extra fingers, no watermark, no flicker
 
 ## 9. 미해결 / TODO
 
-- [ ] **클로징 카피 확정** (엔딩 한 줄 — 가장 중요). 후보:
-  1. "삶의 모든 공간이, 당신을 향합니다." / *Every space, in tune with you.*
-  2. "집에서 시작해, 세상을 잇다." / *From home to the world — intelligence that cares.*
-  3. "경계를 넘어, 공감으로." / *Beyond every boundary, into care.*
-  4. "공간이 곧, 지능이다." / *The space itself is the intelligence.*
-  5. "보이지 않아도, 늘 곁에." / *Unseen, always with you.*
+- [x] **클로징 카피 확정 ✅** → **"Unseen, always with you."** (화면 영어 단독 / 참고 한글: 보이지 않아도, 늘 곁에)
+  - 시퀀스: 빛이 한 점으로 잦아듦 → 카피 → 슬로건 *Innovation in Tune with You* + LG 로고 (모두 후반 합성)
+  - 선정 사유: 동반자(the Presence) 정체를 봉인 + 슬로건과 비중복 + 가족·경계없는 지능을 한 줄로
 - [ ] 챕터별 무드보드 키비주얼 (Midjourney 등)
 - [ ] 음악 방향/라이선스 확정
 - [ ] STUDIO341 제출용 영상 요약 양식 작성

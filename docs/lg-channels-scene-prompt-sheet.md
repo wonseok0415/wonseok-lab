@@ -214,10 +214,11 @@ ultra-detailed, consistent identity across all views --ar 16:9
 | S49 | 19:20–19:50 | 전환人 | Match-cut back to the home at night — the front door opens before they reach it, warm light spilling out to greet the returning family silhouettes (full circle) | warm return | ☐ |
 | S50 | 19:50–20:10 | ★人 | The father carries his sleeping daughter down the hallway (backlit silhouettes), lights dimming gently ahead of each step, the spouse's hand resting on his shoulder, pure warmth | emotional peak | ☐ |
 | S51 | 20:10–20:25 | 👤 | HERO — the father's face over his sleeping daughter's shoulder (her face hidden), eyes closing content; the same warm light point (the Presence) settles beside the family and softly pulses its motif one last time *(fixed character ref)* | tender chord (final motif) | ☐ |
-| S52 | 20:25–20:40 | 엔딩 | The light network softens to a single warm point, then a gentle fade (closing copy + slogan added in post) | final warm chord | ☐ |
+| S52 | 20:25–20:40 | 엔딩 | The light network softens to a single warm point, then a gentle fade → closing copy **"Unseen, always with you."** then slogan + LG logo (all in post) | final warm chord | ☐ |
 
-> **엔딩 카피(후반 합성, 택1 — 마스터 문서 9번 후보):**
-> "삶의 모든 공간이, 당신을 향합니다. / *Every space, in tune with you.*" + *Innovation in Tune with You*
+> **엔딩 카피(✅ 확정 — 화면 영어 단독, 후반 합성):**
+> **"Unseen, always with you."** (참고 한글: 보이지 않아도, 늘 곁에)
+> 시퀀스: 빛이 한 점으로 잦아듦 → 카피 페이드인 → 슬로건 *Innovation in Tune with You* + LG 로고
 
 ---
 
