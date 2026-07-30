@@ -20,6 +20,9 @@ thinqreal/
 ├── ThinQReal_AppScript.gs      # Google Apps Script (배포 완료)
 ├── ThinQ_Real_ROI_Tool.html    # ROI 분석 시뮬레이션 툴 (관리자 ROI 탭에서 iframe 임베드)
 ├── CLAUDE.md                   # 이 파일
+├── fieldcheck/                 # ⚠️ 별도 시스템: ThinQ ON Field 자동 점검 (FieldCheck)
+│   ├── DESIGN.md               # 설계 문서 (배경/구조/판정 3단계/이관 대비 원칙/로드맵)
+│   └── DAILY_CHECKLIST.md      # 시스템 가동 전 운영자 수동 일일 점검 체크리스트
 └── images/                     # 이미지 (GitHub Raw로 참조됨)
     ├── thinqreal_*.png/jpeg    # 메인 사이트 이미지 10개
     └── thinqreal_admin_*.png   # 관리자 페이지 이미지 2개
@@ -148,6 +151,14 @@ Apps Script 콜드 스타트(1~3초) 자체는 서버 측 제약이라 완전히
 | `thinqreal_guide_hero.png` | 이용 안내 페이지 히어로 |
 | `thinqreal_admin_lighting.png` | 관리자 — 조명 스위치 안내 슬라이드 |
 | `thinqreal_admin_system.png` | 관리자 — 시스템 구성 슬라이드 |
+
+## FieldCheck — ThinQ ON Field 자동 점검 시스템 (설계 단계)
+
+`fieldcheck/` 폴더는 **기존 예약 관리 웹사이트와 별도의 시스템**이다. 2026-07 ATOM TTS 서버 장애(ThinQ ON 무응답 → 시연 불가)를 계기로, ThinQ ON에게 주기적으로 말을 걸어 응답을 자동 판정·기록·알림하는 점검 리그(남는 노트북 활용)를 설계함. 상세는 `fieldcheck/DESIGN.md` 참조.
+
+- 기존 파일과의 접점은 계획된 연동뿐: Apps Script `health_check` 엔드포인트 추가, Sheets `health_checks` 탭, 관리자 🩺 탭 (모두 미구현)
+- 시스템 가동 전까지는 `fieldcheck/DAILY_CHECKLIST.md`의 수동 점검으로 운영
+- 사내 이관 대비 원칙(엔드포인트/인증/저장소를 설정으로 분리)은 DESIGN.md §10 — 구현 시 필수 준수
 
 ## 작업 시 주의사항
 - 이미지는 절대 base64로 HTML에 삽입하지 말 것 (반드시 별도 파일 + GitHub URL)
