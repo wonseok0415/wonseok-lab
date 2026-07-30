@@ -2,6 +2,8 @@
 
 > 처음 해보는 사람 기준으로 쓴 가이드입니다. 순서대로 따라 하면 됩니다.
 > 이 프로그램이 하는 일: **저장된 점검 음성을 스피커로 재생 → ThinQ ON의 응답을 마이크로 녹음 → 응답이 왔는지/몇 초 걸렸는지 자동 판정 → 결과를 Google Sheets에 기록, 실패 시 담당자 메일.**
+>
+> **Windows와 맥 모두 지원**합니다. 최초 점검(개발자 작업 PC = 맥북)은 아래 [맥에서 실행하기]를 참고하고, 상주 리그(Windows 노트북)는 본문 순서대로 진행하세요.
 
 ## 0. 준비물
 
@@ -79,6 +81,29 @@ python fieldcheck.py --loop
 1. 설정 → 시스템 → 전원: "덮개를 닫으면" → **아무 것도 안 함**
 2. 같은 화면에서: 전원 연결 시 절전 모드 → **안 함**
 3. Windows 업데이트 → 사용 시간 설정: 점검 시간대(07~19시)를 사용 시간으로 지정
+
+## 맥에서 실행하기 (최초 점검용)
+
+맥북에서 먼저 테스트할 때는 위 1~7번 대신 이렇게 하면 됩니다:
+
+1. **Python**: 맥에는 `python3`가 이미 있습니다. 터미널에서 `python3 --version`으로 확인 (없으면 실행 시 설치 안내가 뜹니다)
+2. **설치**: 저장소 클론 후
+   ```
+   cd wonseok-lab/thinqreal/fieldcheck/rig
+   pip3 install sounddevice numpy
+   ```
+3. **한국어 음성 준비 (권장)**: 시스템 설정 → 손쉬운 사용 → 콘텐츠 말하기 → 시스템 음성 → 한국어 **Yuna** 다운로드
+4. **점검 음성 생성**: Windows와 동일한 명령을 `python3`로 실행
+   ```
+   python3 synthesize_phrases.py "하이 엘지" phrases/wake.wav
+   python3 synthesize_phrases.py "지금 몇 시야?" phrases/ask_time.wav
+   python3 synthesize_phrases.py "요즘 볼만한 영화 추천해줘" phrases/smalltalk.wav
+   python3 synthesize_phrases.py "오늘 날씨 어때?" phrases/ask_weather.wav
+   ```
+5. **설정·소음 측정·점검**: 본문 3, 5, 6번과 동일 (`python` 대신 `python3`)
+6. **마이크 권한**: 첫 녹음 시 "터미널(또는 VS Code)이 마이크에 접근하려고 합니다" 창이 뜨면 **허용**. 지나쳤다면 시스템 설정 → 개인정보 보호 및 보안 → 마이크에서 터미널/VS Code를 켜기
+
+맥에서 만든 `phrases/*.wav`는 Windows 리그에서도 그대로 재생됩니다. 다만 **재현성 원칙**상, 상주 리그를 Windows 노트북으로 옮기는 시점에 어느 파일 세트를 최종본으로 쓸지 정하고 이후에는 바꾸지 마세요.
 
 ## 문제 해결
 
