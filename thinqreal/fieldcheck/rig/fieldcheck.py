@@ -133,6 +133,34 @@ def audio():
         sys.exit('[오류] sounddevice가 설치되지 않았습니다. 명령창에서:  pip install sounddevice numpy')
 
 
+def wait_for_quiet(cfg, sd):
+    """앞 시나리오의 응답(생성형 AI라 길이가 크게 변동)이 끝날 때까지 대기.
+
+    마이크를 0.5초 단위로 살피다가 post_silence_seconds(기본 2초) 동안
+    조용하면 응답이 끝난 것으로 보고 반환한다. 무한 대기를 막기 위해
+    max_response_wait_seconds(기본 60초)에서 강제 종료한다.
+    """
+    sr = int(cfg.get('samplerate', 16000))
+    thr = float(cfg.get('voice_threshold_dbfs', -45))
+    quiet_needed = float(cfg.get('post_silence_seconds', 2.0))
+    max_wait = float(cfg.get('max_response_wait_seconds', 60))
+    chunk = 0.5
+    waited = 0.0
+    quiet = 0.0
+    while waited < max_wait and quiet < quiet_needed:
+        rec = sd.rec(int(chunk * sr), samplerate=sr, channels=1, dtype='int16',
+                     device=cfg.get('input_device'))
+        sd.wait()
+        if frame_dbfs(rec[:, 0]) < thr:
+            quiet += chunk
+        else:
+            quiet = 0.0
+        waited += chunk
+    if waited >= max_wait:
+        print(f'  [주의] {max_wait:.0f}초가 지나도 소리가 이어져 대기를 종료합니다 (다음 점검에 영향 가능).')
+    return waited
+
+
 def run_scenario(cfg, scenario):
     sd = audio()
     sr = int(cfg.get('samplerate', 16000))
@@ -166,6 +194,12 @@ def run_scenario(cfg, scenario):
         float(cfg.get('voice_threshold_dbfs', -45)),
         int(cfg.get('min_voice_ms', 300)),
     )
+
+    # 생성형 답변은 녹음 창보다 길 수 있음 — 응답이 완전히 끝난 뒤에
+    # 다음 시나리오로 넘어가야 기동어가 씹히지 않는다.
+    if verdict['responded']:
+        print('  응답 종료 대기 중...')
+        wait_for_quiet(cfg, sd)
 
     result = {
         'type': 'health_check',

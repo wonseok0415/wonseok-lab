@@ -6,6 +6,8 @@
   "voice_threshold_dbfs": -45,
   "min_voice_ms": 300,
   "wake_gap_seconds": 1.2,
+  "post_silence_seconds": 2.0,
+  "max_response_wait_seconds": 60,
 
   "consecutive_fails_for_alert": 1,
   "loop_interval_minutes": 30,
