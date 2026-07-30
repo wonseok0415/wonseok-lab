@@ -4,9 +4,10 @@
 
   "samplerate": 16000,
   "voice_threshold_dbfs": -45,
+  "voice_over_floor_db": 8,
   "speech_window_seconds": 1.0,
   "speech_voiced_ratio": 0.7,
-  "wake_gap_seconds": 1.2,
+  "wake_gap_seconds": 1.5,
   "post_silence_seconds": 2.0,
   "max_response_wait_seconds": 60,
 

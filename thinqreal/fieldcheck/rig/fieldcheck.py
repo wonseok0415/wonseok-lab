@@ -31,7 +31,9 @@ STATE_PATH = os.path.join(BASE_DIR, 'state.json')
 LOG_PATH = os.path.join(BASE_DIR, 'results.jsonl')
 REC_DIR = os.path.join(BASE_DIR, 'recordings')
 
-FRAME_MS = 30  # 판정 프레임 길이 (ms)
+FRAME_MS = 30       # 판정 프레임 길이 (ms)
+BAND_LOW_HZ = 250   # 음성 대역 하한 — 에어컨/선풍기 저주파 소음 배제
+BAND_HIGH_HZ = 4000 # 음성 대역 상한
 
 
 # ── 설정/상태 파일 ──────────────────────────────────────────
@@ -89,13 +91,27 @@ def frame_dbfs(seg):
     return 20 * math.log10(rms / 32768.0) if rms > 0 else -120.0
 
 
-def analyze_recording(samples, samplerate, threshold_dbfs,
-                      window_s=1.0, voiced_ratio=0.7):
-    """녹음에서 '음성 응답'의 시작 시점을 찾는다.
+def frame_band_db(seg, samplerate):
+    """음성 대역(250~4000Hz)의 에너지만 측정 — 팬/에어컨 저주파 소음 배제."""
+    x = seg.astype(np.float64) / 32768.0
+    spec = np.fft.rfft(x * np.hanning(len(x)))
+    freqs = np.fft.rfftfreq(len(x), 1.0 / samplerate)
+    band = (freqs >= BAND_LOW_HZ) & (freqs <= BAND_HIGH_HZ)
+    e = float(np.mean(np.abs(spec[band]) ** 2)) if band.any() else 0.0
+    return 10 * math.log10(e) if e > 0 else -120.0
 
-    30ms 프레임 단위로 음량(dBFS)을 잰 뒤, 길이 window_s(기본 1초)의
-    구간 안에서 임계값 이상인 프레임 비율이 voiced_ratio(기본 70%) 이상이면
-    음성 응답으로 판정한다.
+
+def analyze_recording(samples, samplerate, over_floor_db=8.0,
+                      window_s=1.0, voiced_ratio=0.7):
+    """녹음에서 '음성 응답'의 시작 시점을 찾는다. (적응형 판정)
+
+    1) 30ms 프레임마다 음성 대역(250~4000Hz) 에너지를 잰다
+       — 에어컨/선풍기 저주파 소음은 애초에 측정에서 빠진다.
+    2) 프레임 값들의 하위 10퍼센타일을 '소음 바닥'으로 삼는다
+       — 환경마다 다른 소음 수준에 자동 적응 (절대 임계값 불필요).
+    3) 바닥보다 over_floor_db(기본 8dB) 이상 솟은 프레임을 발성으로 보고,
+       1초 구간(window_s) 안에서 발성 비율이 voiced_ratio(70%) 이상이면
+       음성 응답으로 판정한다.
 
     비율 방식을 쓰는 이유: ThinQ ON의 연산 대기음('띵띵띵…', 짧은 효과음 +
     간격의 반복)은 발성 비율이 낮아 걸러지고, 사람 말(연속 발성)만 잡힌다.
@@ -103,12 +119,18 @@ def analyze_recording(samples, samplerate, threshold_dbfs,
     L1의 핵심이므로, 효과음을 응답으로 인정하면 안 된다.
     """
     frame = max(1, int(samplerate * FRAME_MS / 1000))
-    voiced = []
-    peak = -120.0
+    dbs = []
     for i in range(0, len(samples) - frame + 1, frame):
-        db = frame_dbfs(samples[i:i + frame])
-        peak = max(peak, db)
-        voiced.append(db >= threshold_dbfs)
+        dbs.append(frame_band_db(samples[i:i + frame], samplerate))
+    if not dbs:
+        return {'responded': False, 'latency_ms': None, 'floor_db': None, 'peak_db': None}
+
+    # 하위 10퍼센타일 = 소음 바닥. 완전 무음(-120) 구간이 바닥을 비현실적으로
+    # 끌어내리지 않도록 하한을 둔다 (실제 마이크 환경엔 완전 무음이 없음).
+    floor = max(float(np.percentile(dbs, 10)), -85.0)
+    thr = floor + over_floor_db
+    peak = max(dbs)
+    voiced = [d >= thr for d in dbs]
 
     win = max(1, int(round(window_s * 1000 / FRAME_MS)))
     for s in range(0, len(voiced) - win + 1):
@@ -118,9 +140,11 @@ def analyze_recording(samples, samplerate, threshold_dbfs,
             return {
                 'responded': True,
                 'latency_ms': int(first * FRAME_MS),
-                'peak_dbfs': round(peak, 1),
+                'floor_db': round(floor, 1),
+                'peak_db': round(peak, 1),
             }
-    return {'responded': False, 'latency_ms': None, 'peak_dbfs': round(peak, 1)}
+    return {'responded': False, 'latency_ms': None,
+            'floor_db': round(floor, 1), 'peak_db': round(peak, 1)}
 
 
 # ── 오디오 재생/녹음 (sounddevice는 필요할 때만 import) ────
@@ -191,10 +215,12 @@ def run_scenario(cfg, scenario):
 
     verdict = analyze_recording(
         samples, sr,
-        float(cfg.get('voice_threshold_dbfs', -45)),
+        float(cfg.get('voice_over_floor_db', 8.0)),
         float(cfg.get('speech_window_seconds', 1.0)),
         float(cfg.get('speech_voiced_ratio', 0.7)),
     )
+    print(f'  판정 참고: 소음 바닥 {verdict["floor_db"]}dB / 최고 {verdict["peak_db"]}dB '
+          f'(음성 인정 기준: 바닥+{cfg.get("voice_over_floor_db", 8.0)}dB)')
 
     # 생성형 답변은 녹음 창보다 길 수 있고, 무응답 '판정'이라도 실제 답변이
     # 창이 끝난 뒤 늦게 시작될 수 있다 (현장 관측: 영화 질문 — 긴 연산 후 답변,
@@ -212,8 +238,9 @@ def run_scenario(cfg, scenario):
         'scenario_label': scenario['label'],
         'result': 'pass' if verdict['responded'] else 'fail',
         'latency_ms': verdict['latency_ms'],
-        'detail': json.dumps({'peak_dbfs': verdict['peak_dbfs'],
-                              'threshold_dbfs': cfg.get('voice_threshold_dbfs', -45),
+        'detail': json.dumps({'floor_db': verdict['floor_db'],
+                              'peak_db': verdict['peak_db'],
+                              'over_floor_db': cfg.get('voice_over_floor_db', 8.0),
                               'voiced_ratio': cfg.get('speech_voiced_ratio', 0.7)},
                              ensure_ascii=False),
         'media_ref': rec_name,
@@ -325,9 +352,14 @@ def cmd_selftest():
     """오디오 장치 없이 판정 로직만 검증한다 (합성 신호 사용)."""
     sr = 16000
     t = np.arange(sr * 2) / sr
-    tone = (np.sin(2 * np.pi * 440 * t) * 32768 * 0.1).astype(np.int16)  # -20dBFS 근처 2초 톤
+    tone = (np.sin(2 * np.pi * 440 * t) * 32768 * 0.1).astype(np.int16)  # 음성 대역 2초 톤
     silence = np.zeros(sr, dtype=np.int16)
     noise = (np.random.default_rng(0).normal(0, 30, sr * 3)).astype(np.int16)  # 아주 작은 잡음 3초
+
+    # 선풍기/에어컨 흉내 — 저주파(70·110·170Hz) 정상 소음, 꽤 큰 소리 (5초)
+    tf = np.arange(sr * 5) / sr
+    fan = ((np.sin(2 * np.pi * 70 * tf) + np.sin(2 * np.pi * 110 * tf)
+            + np.sin(2 * np.pi * 170 * tf)) * 32768 * 0.08).astype(np.int16)
 
     beep = tone[:int(sr * 0.25)]                     # 0.25초 '띵'
     gap = np.zeros(int(sr * 0.75), dtype=np.int16)   # 0.75초 간격
@@ -339,31 +371,46 @@ def cmd_selftest():
 
     ok = True
 
-    v = analyze_recording(np.concatenate([silence, tone, silence]), sr, -45)
+    v = analyze_recording(np.concatenate([silence, tone, silence]), sr)
     good = v['responded'] and abs(v['latency_ms'] - 1000) <= FRAME_MS * 3
-    print(f'  [1] 1초 침묵 후 응답     → responded={v["responded"]}, latency={v["latency_ms"]}ms '
+    print(f'  [1] 1초 침묵 후 응답        → responded={v["responded"]}, latency={v["latency_ms"]}ms '
           + ('OK' if good else 'FAIL (기대: 약 1000ms)'))
     ok &= good
 
-    v = analyze_recording(noise, sr, -45)
+    v = analyze_recording(noise, sr)
     good = not v['responded']
-    print(f'  [2] 무응답(잡음만)       → responded={v["responded"]} ' + ('OK' if good else 'FAIL'))
+    print(f'  [2] 무응답(잡음만)          → responded={v["responded"]} ' + ('OK' if good else 'FAIL'))
     ok &= good
 
-    v = analyze_recording(np.concatenate([silence, tone[:int(sr * 0.1)], noise]), sr, -45)
+    v = analyze_recording(np.concatenate([noise[:sr], tone[:int(sr * 0.1)], noise]), sr)
     good = not v['responded']
-    print(f'  [3] 0.1초 순간 소음      → responded={v["responded"]} ' + ('OK (짧은 소음은 무시)' if good else 'FAIL'))
+    print(f'  [3] 잡음 속 0.1초 순간 소음 → responded={v["responded"]} ' + ('OK (짧은 소음은 무시)' if good else 'FAIL'))
     ok &= good
 
-    v = analyze_recording(np.concatenate([silence, chime]), sr, -45)
+    v = analyze_recording(np.concatenate([silence, chime]), sr)
     good = not v['responded']
-    print(f'  [4] 연산 대기음(띵띵띵)  → responded={v["responded"]} ' + ('OK (효과음은 응답 아님)' if good else 'FAIL'))
+    print(f'  [4] 연산 대기음(띵띵띵)     → responded={v["responded"]} ' + ('OK (효과음은 응답 아님)' if good else 'FAIL'))
     ok &= good
 
-    v = analyze_recording(np.concatenate([silence, speech]), sr, -45)
+    v = analyze_recording(np.concatenate([silence, speech]), sr)
     good = v['responded']
-    print(f'  [5] 어절 쉼 있는 말소리  → responded={v["responded"]}, latency={v["latency_ms"]}ms '
+    print(f'  [5] 어절 쉼 있는 말소리     → responded={v["responded"]}, latency={v["latency_ms"]}ms '
           + ('OK' if good else 'FAIL (말소리는 잡아야 함)'))
+    ok &= good
+
+    v = analyze_recording(fan, sr)
+    good = not v['responded']
+    print(f'  [6] 선풍기 소음만(5초)      → responded={v["responded"]} ' + ('OK (정상 소음은 무응답)' if good else 'FAIL'))
+    ok &= good
+
+    mixed = fan.copy()
+    mixed[sr:sr + len(speech)] = np.clip(
+        mixed[sr:sr + len(speech)].astype(np.int32) + speech.astype(np.int32),
+        -32768, 32767).astype(np.int16)
+    v = analyze_recording(mixed, sr)
+    good = v['responded'] and abs(v['latency_ms'] - 1000) <= FRAME_MS * 4
+    print(f'  [7] 선풍기 소음 위 말소리   → responded={v["responded"]}, latency={v["latency_ms"]}ms '
+          + ('OK (소음 속에서도 감지)' if good else 'FAIL'))
     ok &= good
 
     print('\n[selftest] ' + ('모두 통과' if ok else '실패 있음'))

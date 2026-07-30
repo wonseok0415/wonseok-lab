@@ -112,8 +112,9 @@ python fieldcheck.py --loop
 |------|------|
 | `python` 명령이 없다고 나옴 | Python 재설치하며 "Add to PATH" 체크 |
 | 소리가 안 나옴 / 녹음이 안 됨 | `python fieldcheck.py --list-devices`로 장치 번호 확인 → `config.json`의 `output_device`/`input_device`에 번호 입력 |
-| 항상 FAIL (응답하는데도) | 임계값이 너무 높음 → `voice_threshold_dbfs`를 5씩 낮춰보기 (예: -45 → -50) |
-| 항상 OK (응답 없는데도) | 임계값이 너무 낮아 주변 소음을 응답으로 오인 → 5씩 올려보기, `--calibrate` 재실행 |
+| 항상 FAIL (응답하는데도) | 응답 판정은 소음 바닥 대비 상대 기준(`voice_over_floor_db`, 기본 8) — 8→5로 낮추거나, 노트북을 ThinQ ON에 더 가까이 배치. 실행 시 출력되는 "판정 참고: 소음 바닥/최고" 값에서 최고가 바닥+8을 넘는지 확인 |
+| 항상 OK (응답 없는데도) | `voice_over_floor_db`를 8→12로 올려보기 |
+| 에어컨·선풍기 소음 환경 | 자동 대응됨 — 음성 대역(250~4000Hz)만 측정하고 소음 바닥에 자동 적응. `voice_threshold_dbfs`(`--calibrate`)는 '응답 종료 대기'에만 사용 |
 | 서버 전송 실패 표시 | Wi-Fi 확인. 전송이 실패해도 `results.jsonl`에 로컬 기록은 남습니다 |
 | 판정 로직이 의심될 때 | `python fieldcheck.py --selftest` (오디오 장치 없이 검증) |
 
