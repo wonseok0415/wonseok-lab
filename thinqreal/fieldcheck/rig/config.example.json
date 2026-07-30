@@ -5,7 +5,7 @@
   "samplerate": 16000,
   "voice_threshold_dbfs": -45,
   "min_voice_ms": 300,
-  "wake_gap_seconds": 0.8,
+  "wake_gap_seconds": 1.2,
 
   "consecutive_fails_for_alert": 1,
   "loop_interval_minutes": 30,

@@ -46,6 +46,7 @@ python synthesize_phrases.py "요즘 볼만한 영화 추천해줘" phrases/smal
 python synthesize_phrases.py "오늘 날씨 어때?" phrases/ask_weather.wav
 ```
 - 기동어("하이 엘지" 부분)는 **실제 ThinQ ON 기동어**로 바꿔서 만드세요.
+- **명령 문장 앞에 기동어를 붙이지 마세요.** 프로그램이 기동어 파일을 먼저 재생하고, ThinQ ON이 '띵' 하고 반응할 시간(`wake_gap_seconds`, 기본 1.2초)을 기다린 뒤 명령을 재생합니다. 명령이 앞부분부터 씹히면 이 값을 1.5~2.0으로 올려보세요 (config.json).
 - 합성 음성을 ThinQ ON이 인식하지 못하면: Windows **녹음기 앱**으로 사람 목소리를 직접 녹음해서 같은 파일명(`phrases/wake.wav` 등)으로 저장하면 됩니다.
 - **중요**: 한 번 만든 파일은 바꾸지 마세요. 매번 같은 음성이 재생되어야 "오늘 실패가 ThinQ ON 문제"라고 말할 수 있습니다.
 
