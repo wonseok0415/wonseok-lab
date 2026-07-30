@@ -89,38 +89,38 @@ def frame_dbfs(seg):
     return 20 * math.log10(rms / 32768.0) if rms > 0 else -120.0
 
 
-def analyze_recording(samples, samplerate, threshold_dbfs, min_voice_ms):
-    """녹음에서 '지속적인 소리(=응답)'의 시작 시점을 찾는다.
+def analyze_recording(samples, samplerate, threshold_dbfs,
+                      window_s=1.0, voiced_ratio=0.7):
+    """녹음에서 '음성 응답'의 시작 시점을 찾는다.
 
-    30ms 프레임 단위로 음량(dBFS)을 재고, 임계값 이상이
-    min_voice_ms 이상 연속되면 응답으로 판정한다.
+    30ms 프레임 단위로 음량(dBFS)을 잰 뒤, 길이 window_s(기본 1초)의
+    구간 안에서 임계값 이상인 프레임 비율이 voiced_ratio(기본 70%) 이상이면
+    음성 응답으로 판정한다.
+
+    비율 방식을 쓰는 이유: ThinQ ON의 연산 대기음('띵띵띵…', 짧은 효과음 +
+    간격의 반복)은 발성 비율이 낮아 걸러지고, 사람 말(연속 발성)만 잡힌다.
+    TTS 장애로 '듣고 연산음은 내지만 말을 못 하는' 상태를 FAIL로 잡는 것이
+    L1의 핵심이므로, 효과음을 응답으로 인정하면 안 된다.
     """
     frame = max(1, int(samplerate * FRAME_MS / 1000))
-    need = max(1, int(round(min_voice_ms / FRAME_MS)))
-    run = 0
-    candidate = 0
-    start_sample = None
+    voiced = []
     peak = -120.0
-
     for i in range(0, len(samples) - frame + 1, frame):
         db = frame_dbfs(samples[i:i + frame])
         peak = max(peak, db)
-        if db >= threshold_dbfs:
-            if run == 0:
-                candidate = i
-            run += 1
-            if run >= need and start_sample is None:
-                start_sample = candidate
-        else:
-            run = 0
+        voiced.append(db >= threshold_dbfs)
 
-    if start_sample is None:
-        return {'responded': False, 'latency_ms': None, 'peak_dbfs': round(peak, 1)}
-    return {
-        'responded': True,
-        'latency_ms': int(start_sample / samplerate * 1000),
-        'peak_dbfs': round(peak, 1),
-    }
+    win = max(1, int(round(window_s * 1000 / FRAME_MS)))
+    for s in range(0, len(voiced) - win + 1):
+        seg = voiced[s:s + win]
+        if sum(seg) / win >= voiced_ratio:
+            first = s + seg.index(True)
+            return {
+                'responded': True,
+                'latency_ms': int(first * FRAME_MS),
+                'peak_dbfs': round(peak, 1),
+            }
+    return {'responded': False, 'latency_ms': None, 'peak_dbfs': round(peak, 1)}
 
 
 # ── 오디오 재생/녹음 (sounddevice는 필요할 때만 import) ────
@@ -192,7 +192,8 @@ def run_scenario(cfg, scenario):
     verdict = analyze_recording(
         samples, sr,
         float(cfg.get('voice_threshold_dbfs', -45)),
-        int(cfg.get('min_voice_ms', 300)),
+        float(cfg.get('speech_window_seconds', 1.0)),
+        float(cfg.get('speech_voiced_ratio', 0.7)),
     )
 
     # 생성형 답변은 녹음 창보다 길 수 있음 — 응답이 완전히 끝난 뒤에
@@ -211,7 +212,8 @@ def run_scenario(cfg, scenario):
         'result': 'pass' if verdict['responded'] else 'fail',
         'latency_ms': verdict['latency_ms'],
         'detail': json.dumps({'peak_dbfs': verdict['peak_dbfs'],
-                              'threshold_dbfs': cfg.get('voice_threshold_dbfs', -45)},
+                              'threshold_dbfs': cfg.get('voice_threshold_dbfs', -45),
+                              'voiced_ratio': cfg.get('speech_voiced_ratio', 0.7)},
                              ensure_ascii=False),
         'media_ref': rec_name,
         'note': '',
@@ -326,22 +328,41 @@ def cmd_selftest():
     silence = np.zeros(sr, dtype=np.int16)
     noise = (np.random.default_rng(0).normal(0, 30, sr * 3)).astype(np.int16)  # 아주 작은 잡음 3초
 
+    beep = tone[:int(sr * 0.25)]                     # 0.25초 '띵'
+    gap = np.zeros(int(sr * 0.75), dtype=np.int16)   # 0.75초 간격
+    chime = np.concatenate([beep, gap] * 5)          # 연산 대기음 흉내 (5초)
+
+    talk_on = tone[:int(sr * 0.8)]                   # 0.8초 발성
+    talk_off = np.zeros(int(sr * 0.15), dtype=np.int16)  # 0.15초 어절 사이 쉼
+    speech = np.concatenate([talk_on, talk_off] * 4)     # 말소리 흉내
+
     ok = True
 
-    v = analyze_recording(np.concatenate([silence, tone, silence]), sr, -45, 300)
-    good = v['responded'] and abs(v['latency_ms'] - 1000) <= FRAME_MS * 2
-    print(f'  [1] 1초 침묵 후 응답  → responded={v["responded"]}, latency={v["latency_ms"]}ms '
+    v = analyze_recording(np.concatenate([silence, tone, silence]), sr, -45)
+    good = v['responded'] and abs(v['latency_ms'] - 1000) <= FRAME_MS * 3
+    print(f'  [1] 1초 침묵 후 응답     → responded={v["responded"]}, latency={v["latency_ms"]}ms '
           + ('OK' if good else 'FAIL (기대: 약 1000ms)'))
     ok &= good
 
-    v = analyze_recording(noise, sr, -45, 300)
+    v = analyze_recording(noise, sr, -45)
     good = not v['responded']
-    print(f'  [2] 무응답(잡음만)    → responded={v["responded"]} ' + ('OK' if good else 'FAIL'))
+    print(f'  [2] 무응답(잡음만)       → responded={v["responded"]} ' + ('OK' if good else 'FAIL'))
     ok &= good
 
-    v = analyze_recording(np.concatenate([silence, tone[:int(sr * 0.1)], noise]), sr, -45, 300)
+    v = analyze_recording(np.concatenate([silence, tone[:int(sr * 0.1)], noise]), sr, -45)
     good = not v['responded']
-    print(f'  [3] 0.1초 순간 소음   → responded={v["responded"]} ' + ('OK (짧은 소음은 무시)' if good else 'FAIL'))
+    print(f'  [3] 0.1초 순간 소음      → responded={v["responded"]} ' + ('OK (짧은 소음은 무시)' if good else 'FAIL'))
+    ok &= good
+
+    v = analyze_recording(np.concatenate([silence, chime]), sr, -45)
+    good = not v['responded']
+    print(f'  [4] 연산 대기음(띵띵띵)  → responded={v["responded"]} ' + ('OK (효과음은 응답 아님)' if good else 'FAIL'))
+    ok &= good
+
+    v = analyze_recording(np.concatenate([silence, speech]), sr, -45)
+    good = v['responded']
+    print(f'  [5] 어절 쉼 있는 말소리  → responded={v["responded"]}, latency={v["latency_ms"]}ms '
+          + ('OK' if good else 'FAIL (말소리는 잡아야 함)'))
     ok &= good
 
     print('\n[selftest] ' + ('모두 통과' if ok else '실패 있음'))
