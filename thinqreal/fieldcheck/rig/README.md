@@ -42,7 +42,7 @@ Windows 내장 음성합성으로 점검 문장을 WAV 파일로 만듭니다:
 ```
 python synthesize_phrases.py "하이 엘지" phrases/wake.wav
 python synthesize_phrases.py "지금 몇 시야?" phrases/ask_time.wav
-python synthesize_phrases.py "요즘 볼만한 영화 추천해줘" phrases/smalltalk.wav
+python synthesize_phrases.py "오늘 기분 어때?" phrases/smalltalk.wav
 python synthesize_phrases.py "오늘 날씨 어때?" phrases/ask_weather.wav
 ```
 - 기동어("하이 엘지" 부분)는 **실제 ThinQ ON 기동어**로 바꿔서 만드세요.
@@ -98,7 +98,7 @@ python fieldcheck.py --loop
    ```
    python3 synthesize_phrases.py "하이 엘지" phrases/wake.wav
    python3 synthesize_phrases.py "지금 몇 시야?" phrases/ask_time.wav
-   python3 synthesize_phrases.py "요즘 볼만한 영화 추천해줘" phrases/smalltalk.wav
+   python3 synthesize_phrases.py "오늘 기분 어때?" phrases/smalltalk.wav
    python3 synthesize_phrases.py "오늘 날씨 어때?" phrases/ask_weather.wav
    ```
 5. **설정·소음 측정·점검**: 본문 3, 5, 6번과 동일 (`python` 대신 `python3`)

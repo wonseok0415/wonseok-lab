@@ -196,11 +196,12 @@ def run_scenario(cfg, scenario):
         float(cfg.get('speech_voiced_ratio', 0.7)),
     )
 
-    # 생성형 답변은 녹음 창보다 길 수 있음 — 응답이 완전히 끝난 뒤에
-    # 다음 시나리오로 넘어가야 기동어가 씹히지 않는다.
-    if verdict['responded']:
-        print('  응답 종료 대기 중...')
-        wait_for_quiet(cfg, sd)
+    # 생성형 답변은 녹음 창보다 길 수 있고, 무응답 '판정'이라도 실제 답변이
+    # 창이 끝난 뒤 늦게 시작될 수 있다 (현장 관측: 영화 질문 — 긴 연산 후 답변,
+    # 그 답변이 다음 시나리오의 기동어를 씹음). 판정 결과와 무관하게
+    # 조용해질 때까지 기다린 뒤 다음 시나리오로 넘어간다.
+    print('  주변이 조용해질 때까지 대기...')
+    wait_for_quiet(cfg, sd)
 
     result = {
         'type': 'health_check',
