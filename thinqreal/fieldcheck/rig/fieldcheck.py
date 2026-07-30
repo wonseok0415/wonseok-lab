@@ -91,22 +91,48 @@ def frame_dbfs(seg):
     return 20 * math.log10(rms / 32768.0) if rms > 0 else -120.0
 
 
-def frame_band_db(seg, samplerate):
-    """음성 대역(250~4000Hz)의 에너지만 측정 — 팬/에어컨 저주파 소음 배제."""
+_WEIGHT_CACHE = {}
+
+
+def _a_weight_linear(freqs):
+    """IEC 61672 A-가중 곡선 — 사람 귀의 주파수별 민감도 반영 (선형 배율)."""
+    f2 = np.maximum(freqs, 1e-6) ** 2
+    ra = (12194.0 ** 2 * f2 ** 2) / (
+        (f2 + 20.6 ** 2)
+        * np.sqrt((f2 + 107.7 ** 2) * (f2 + 737.9 ** 2))
+        * (f2 + 12194.0 ** 2)
+    )
+    a_db = 20 * np.log10(ra) + 2.0
+    return 10 ** (a_db / 10)          # 파워 스케일 배율
+
+
+def frame_dba(seg, samplerate, cal_offset=0.0):
+    """프레임의 A-가중 음성 대역(250~4000Hz) 레벨을 dBA로 측정.
+
+    - A-가중: 사람 귀 기준 감도로 주파수별 가중 (dBA 표기의 근거)
+    - 대역 제한: 팬/에어컨 저주파 소음 배제 (A-가중과 이중 방어)
+    - cal_offset: 휴대폰 소음측정 앱 등 실측과 한 번 비교해 넣는 보정값.
+      0이면 상대 dBA (판정에는 상대값으로 충분 — 바닥 대비 차이만 사용)
+    """
+    key = (len(seg), samplerate)
+    if key not in _WEIGHT_CACHE:
+        freqs = np.fft.rfftfreq(len(seg), 1.0 / samplerate)
+        band = (freqs >= BAND_LOW_HZ) & (freqs <= BAND_HIGH_HZ)
+        _WEIGHT_CACHE[key] = (band, _a_weight_linear(freqs), np.hanning(len(seg)))
+    band, weight, window = _WEIGHT_CACHE[key]
+
     x = seg.astype(np.float64) / 32768.0
-    spec = np.fft.rfft(x * np.hanning(len(x)))
-    freqs = np.fft.rfftfreq(len(x), 1.0 / samplerate)
-    band = (freqs >= BAND_LOW_HZ) & (freqs <= BAND_HIGH_HZ)
-    e = float(np.mean(np.abs(spec[band]) ** 2)) if band.any() else 0.0
-    return 10 * math.log10(e) if e > 0 else -120.0
+    power = np.abs(np.fft.rfft(x * window)) ** 2
+    e = float(np.mean((power * weight)[band])) if band.any() else 0.0
+    return (10 * math.log10(e) if e > 0 else -120.0) + cal_offset
 
 
 def analyze_recording(samples, samplerate, over_floor_db=8.0,
-                      window_s=1.0, voiced_ratio=0.7):
-    """녹음에서 '음성 응답'의 시작 시점을 찾는다. (적응형 판정)
+                      window_s=1.0, voiced_ratio=0.7, cal_offset=0.0):
+    """녹음에서 '음성 응답'의 시작 시점을 찾는다. (적응형 판정, dBA 기준)
 
-    1) 30ms 프레임마다 음성 대역(250~4000Hz) 에너지를 잰다
-       — 에어컨/선풍기 저주파 소음은 애초에 측정에서 빠진다.
+    1) 30ms 프레임마다 A-가중 음성 대역(250~4000Hz) 레벨(dBA)을 잰다
+       — 에어컨/선풍기 저주파 소음은 대역 제한 + A-가중으로 이중 배제.
     2) 프레임 값들의 하위 10퍼센타일을 '소음 바닥'으로 삼는다
        — 환경마다 다른 소음 수준에 자동 적응 (절대 임계값 불필요).
     3) 바닥보다 over_floor_db(기본 8dB) 이상 솟은 프레임을 발성으로 보고,
@@ -117,17 +143,21 @@ def analyze_recording(samples, samplerate, over_floor_db=8.0,
     간격의 반복)은 발성 비율이 낮아 걸러지고, 사람 말(연속 발성)만 잡힌다.
     TTS 장애로 '듣고 연산음은 내지만 말을 못 하는' 상태를 FAIL로 잡는 것이
     L1의 핵심이므로, 효과음을 응답으로 인정하면 안 된다.
+
+    cal_offset(dba_calibration_offset)이 0이면 상대 dBA — 판정은 바닥 대비
+    차이만 쓰므로 보정 없이도 정확하다. 실측 소음계와 숫자를 맞추고 싶을
+    때만 보정하면 된다 (README 'dBA 보정' 참조).
     """
     frame = max(1, int(samplerate * FRAME_MS / 1000))
     dbs = []
     for i in range(0, len(samples) - frame + 1, frame):
-        dbs.append(frame_band_db(samples[i:i + frame], samplerate))
+        dbs.append(frame_dba(samples[i:i + frame], samplerate, cal_offset))
     if not dbs:
-        return {'responded': False, 'latency_ms': None, 'floor_db': None, 'peak_db': None}
+        return {'responded': False, 'latency_ms': None, 'floor_dba': None, 'peak_dba': None}
 
     # 하위 10퍼센타일 = 소음 바닥. 완전 무음(-120) 구간이 바닥을 비현실적으로
     # 끌어내리지 않도록 하한을 둔다 (실제 마이크 환경엔 완전 무음이 없음).
-    floor = max(float(np.percentile(dbs, 10)), -85.0)
+    floor = max(float(np.percentile(dbs, 10)), -85.0 + cal_offset)
     thr = floor + over_floor_db
     peak = max(dbs)
     voiced = [d >= thr for d in dbs]
@@ -140,11 +170,11 @@ def analyze_recording(samples, samplerate, over_floor_db=8.0,
             return {
                 'responded': True,
                 'latency_ms': int(first * FRAME_MS),
-                'floor_db': round(floor, 1),
-                'peak_db': round(peak, 1),
+                'floor_dba': round(floor, 1),
+                'peak_dba': round(peak, 1),
             }
     return {'responded': False, 'latency_ms': None,
-            'floor_db': round(floor, 1), 'peak_db': round(peak, 1)}
+            'floor_dba': round(floor, 1), 'peak_dba': round(peak, 1)}
 
 
 # ── 오디오 재생/녹음 (sounddevice는 필요할 때만 import) ────
@@ -213,14 +243,17 @@ def run_scenario(cfg, scenario):
     rec_path = os.path.join(REC_DIR, rec_name)
     write_wav(rec_path, samples, sr)
 
+    cal = float(cfg.get('dba_calibration_offset', 0.0))
     verdict = analyze_recording(
         samples, sr,
         float(cfg.get('voice_over_floor_db', 8.0)),
         float(cfg.get('speech_window_seconds', 1.0)),
         float(cfg.get('speech_voiced_ratio', 0.7)),
+        cal,
     )
-    print(f'  판정 참고: 소음 바닥 {verdict["floor_db"]}dB / 최고 {verdict["peak_db"]}dB '
-          f'(음성 인정 기준: 바닥+{cfg.get("voice_over_floor_db", 8.0)}dB)')
+    rel = '' if cal else ' (상대값 — 실측 보정은 README §dBA 보정)'
+    print(f'  판정 참고: 소음 바닥 {verdict["floor_dba"]}dBA / 최고 {verdict["peak_dba"]}dBA '
+          f'(음성 인정 기준: 바닥+{cfg.get("voice_over_floor_db", 8.0)}dB){rel}')
 
     # 생성형 답변은 녹음 창보다 길 수 있고, 무응답 '판정'이라도 실제 답변이
     # 창이 끝난 뒤 늦게 시작될 수 있다 (현장 관측: 영화 질문 — 긴 연산 후 답변,
@@ -238,8 +271,9 @@ def run_scenario(cfg, scenario):
         'scenario_label': scenario['label'],
         'result': 'pass' if verdict['responded'] else 'fail',
         'latency_ms': verdict['latency_ms'],
-        'detail': json.dumps({'floor_db': verdict['floor_db'],
-                              'peak_db': verdict['peak_db'],
+        'detail': json.dumps({'floor_dba': verdict['floor_dba'],
+                              'peak_dba': verdict['peak_dba'],
+                              'cal_offset': cal,
                               'over_floor_db': cfg.get('voice_over_floor_db', 8.0),
                               'voiced_ratio': cfg.get('speech_voiced_ratio', 0.7)},
                              ensure_ascii=False),
@@ -338,14 +372,25 @@ def cmd_list_devices():
 def cmd_calibrate(cfg):
     sd = audio()
     sr = int(cfg.get('samplerate', 16000))
+    cal = float(cfg.get('dba_calibration_offset', 0.0))
     print('주변 소음을 3초간 측정합니다. 조용히 해주세요...')
     rec = sd.rec(int(3 * sr), samplerate=sr, channels=1, dtype='int16', device=cfg.get('input_device'))
     sd.wait()
-    ambient = frame_dbfs(rec[:, 0])
+    samples = rec[:, 0]
+
+    frame = max(1, int(sr * FRAME_MS / 1000))
+    dbas = [frame_dba(samples[i:i + frame], sr, cal)
+            for i in range(0, len(samples) - frame + 1, frame)]
+    ambient_dba = float(np.mean(dbas))
+    ambient = frame_dbfs(samples)
     suggest = min(-25.0, max(-55.0, ambient + 12))
-    print(f'  주변 소음: {ambient:.1f} dBFS')
-    print(f'  추천 임계값(voice_threshold_dbfs): {suggest:.0f}')
-    print('  → config.json의 voice_threshold_dbfs를 위 값으로 설정한 뒤 --once로 테스트해 보세요.')
+
+    print(f'  주변 소음: {ambient_dba:.1f} dBA' + ('' if cal else ' (상대값)'))
+    if not cal:
+        print('  → 실제 소음계 숫자와 맞추려면: 휴대폰 소음측정 앱으로 같은 자리에서 측정 후')
+        print('    config.json의 dba_calibration_offset = (앱 측정값) - (위 표시값) 으로 설정')
+    print(f'  응답 종료 대기용 임계값(voice_threshold_dbfs) 추천: {suggest:.0f}')
+    print('  → config.json에 반영한 뒤 --once로 테스트해 보세요. (응답 판정 자체는 자동 적응이라 별도 설정 불필요)')
 
 
 def cmd_selftest():

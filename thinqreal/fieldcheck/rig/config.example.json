@@ -5,6 +5,7 @@
   "samplerate": 16000,
   "voice_threshold_dbfs": -45,
   "voice_over_floor_db": 8,
+  "dba_calibration_offset": 0,
   "speech_window_seconds": 1.0,
   "speech_voiced_ratio": 0.7,
   "wake_gap_seconds": 1.5,
