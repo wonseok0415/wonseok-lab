@@ -60,15 +60,36 @@ def synth_windows(text, out_path):
         os.unlink(ps1)
 
 
+# macOS에 기본 탑재된 저품질 효과음성(다국어 장난감 음성) — 점검용으로 부적합
+NOVELTY_VOICES = {
+    'Albert', 'Bad News', 'Bahh', 'Bells', 'Boing', 'Bubbles', 'Cellos',
+    'Eddy', 'Flo', 'Good News', 'Grandma', 'Grandpa', 'Jester', 'Organ',
+    'Reed', 'Rocko', 'Sandy', 'Shelley', 'Superstar', 'Trinoids',
+    'Whisper', 'Wobble', 'Zarvox',
+}
+
+
 def find_macos_korean_voice():
     try:
         listing = subprocess.run(['say', '-v', '?'], capture_output=True, text=True).stdout
     except FileNotFoundError:
         return None
+    candidates = []
     for line in listing.splitlines():
         m = re.match(r'^(.*?)\s+(ko[_-]KR)\s', line)
         if m:
-            return m.group(1).strip()
+            candidates.append(m.group(1).strip())
+    if not candidates:
+        return None
+    # 1순위: Yuna (자연스러운 한국어 음성)
+    for name in candidates:
+        if 'yuna' in name.lower() or '유나' in name:
+            return name
+    # 2순위: 장난감 음성이 아닌 것
+    for name in candidates:
+        base = name.split(' (')[0].strip()
+        if base not in NOVELTY_VOICES:
+            return name
     return None
 
 
