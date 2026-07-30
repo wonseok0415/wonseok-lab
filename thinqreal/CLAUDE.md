@@ -156,7 +156,7 @@ Apps Script 콜드 스타트(1~3초) 자체는 서버 측 제약이라 완전히
 
 `fieldcheck/` 폴더는 **기존 예약 관리 웹사이트와 별도의 시스템**이다. 2026-07 ATOM TTS 서버 장애(ThinQ ON 무응답 → 시연 불가)를 계기로, ThinQ ON에게 주기적으로 말을 걸어 응답을 자동 판정·기록·알림하는 점검 리그(남는 노트북 활용)를 설계함. 상세는 `fieldcheck/DESIGN.md` 참조.
 
-- 기존 파일과의 접점은 계획된 연동뿐: Apps Script `health_check` 엔드포인트 추가, Sheets `health_checks` 탭, 관리자 🩺 탭 (모두 미구현)
+- **구축 1단계 코드 완성 (2026-07-30)**: `fieldcheck/rig/` (노트북용 Python 점검 프로그램 — L1 무응답 감지, 초보자 설치 가이드 포함) + Apps Script에 `health_checks` 탭·엔드포인트 구현 (`POST type:health_check` — 리그 인증 키 `FC_API_KEY`, `GET ?type=health_checks&days=N`). **Apps Script 재배포 필요** (재배포 시 URL 불변, 코드만 갱신). 관리자 🩺 탭은 미구현(Phase 2)
 - 시스템 가동 전까지는 `fieldcheck/DAILY_CHECKLIST.md`의 수동 점검으로 운영
 - 사내 이관 대비 원칙(엔드포인트/인증/저장소를 설정으로 분리)은 DESIGN.md §10 — 구현 시 필수 준수
 

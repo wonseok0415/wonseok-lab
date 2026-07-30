@@ -15,6 +15,9 @@
 const SHEET_ID   = '1-Z158TV46MtSEArir9bW4h4KQ438NCuhb3qaGyOooA0';  // ← Sheets URL의 /d/ 뒤 ID
 const SHEET_NAME = 'bookings';               // 시트 탭 이름 (예약)
 const ROI_SHEET_NAME = 'roi_snapshots';      // 시트 탭 이름 (ROI 시나리오 이력)
+const HEALTH_SHEET_NAME = 'health_checks';   // 시트 탭 이름 (FieldCheck 자동 점검 이력)
+// FieldCheck 점검 리그 인증 키 — rig/config.json의 api_key와 같아야 함
+const FC_API_KEY = 'fieldcheck2026';
 // 신규 예약 알림을 받는 담당자들 (콤마로 구분, MailApp이 다중 수신 처리)
 const ADMIN_EMAILS = 'ch275.lee@lge.com, moonsu.seo@lge.com, hj8462.kim@lge.com';
 const CC_EMAIL     = 'kang.wonseok@lge.com';  // 참조 수신자 (시스템 동작 모니터링)
@@ -98,6 +101,9 @@ function doGet(e) {
   }
   if (type === 'appliances') {
     return handleGetAppliances();
+  }
+  if (type === 'health_checks') {
+    return handleGetHealthChecks(e.parameter.days);
   }
 
   return jsonResponse({ error: 'Unknown type' });
@@ -206,6 +212,7 @@ function doPost(e) {
   if (data.type === 'update')  return handleUpdateStatus(data);
   if (data.type === 'roi_snapshot') return handleNewRoiSnapshot(data);
   if (data.type === 'roi_delete')   return handleDeleteRoiSnapshot(data);
+  if (data.type === 'health_check') return handleNewHealthCheck(data);
 
   return jsonResponse({ error: 'Unknown type' });
 }
@@ -665,6 +672,118 @@ function handleDeleteRoiSnapshot(data) {
     }
   }
   return jsonResponse({ error: 'Record not found' });
+}
+
+// ============================================================
+//  FieldCheck 자동 점검 (ThinQ ON Field 자동 점검 시스템)
+//  - 시트 탭: health_checks
+//  - 점검 리그(fieldcheck/rig)가 결과를 POST, 관리자 페이지가 GET
+//  - 상세 설계: fieldcheck/DESIGN.md
+// ============================================================
+
+function getHealthSheet() {
+  const ss = SpreadsheetApp.openById(SHEET_ID);
+  return ss.getSheetByName(HEALTH_SHEET_NAME) || ss.insertSheet(HEALTH_SHEET_NAME);
+}
+
+function getOrCreateHealthHeaders(sheet) {
+  const HEADERS = ['id', 'timestamp', 'level', 'scenario_id', 'scenario_label',
+                   'result', 'latency_ms', 'detail', 'stt_text', 'expected',
+                   'media_ref', 'note'];
+  const firstRow = sheet.getRange(1, 1, 1, HEADERS.length).getValues()[0];
+  if (!firstRow[0]) {
+    sheet.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    const headerRange = sheet.getRange(1, 1, 1, HEADERS.length);
+    headerRange.setBackground('#3a5035');
+    headerRange.setFontColor('#ffffff');
+    headerRange.setFontWeight('bold');
+    sheet.setFrozenRows(1);
+  }
+  return HEADERS;
+}
+
+// ── 점검 결과 저장 (+ 실패 시 담당자 알림 메일) ─────────────
+function handleNewHealthCheck(data) {
+  if (String(data.apiKey || '') !== FC_API_KEY) {
+    return jsonResponse({ error: 'Unauthorized' });
+  }
+
+  const sheet = getHealthSheet();
+  const headers = getOrCreateHealthHeaders(sheet);
+  const id = String(Date.now());
+  const row = headers.map(h => {
+    if (h === 'id')        return id;
+    if (h === 'timestamp') return data.timestamp || new Date().toISOString();
+    return data[h] ?? '';
+  });
+  sheet.appendRow(row);
+
+  // 리그가 alert=true로 표시한 실패(연속 실패 기준 도달)에만 메일 발송
+  let mailed = false;
+  if (data.result === 'fail' && data.alert) {
+    sendHealthAlert(data);
+    mailed = true;
+  }
+
+  return jsonResponse({ success: true, id, mailed });
+}
+
+// ── 점검 이력 조회 (관리자 대시보드용) ──────────────────────
+function handleGetHealthChecks(days) {
+  const sheet = getHealthSheet();
+  getOrCreateHealthHeaders(sheet);
+  const rows = sheet.getDataRange().getValues();
+  const headers = rows[0];
+
+  let cutoff = null;
+  const n = Number(days);
+  if (n > 0) cutoff = new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+
+  const records = rows.slice(1).map(row => {
+    const obj = {};
+    headers.forEach((h, j) => {
+      let v = row[j];
+      if (Object.prototype.toString.call(v) === '[object Date]') v = v.toISOString();
+      obj[h] = v == null ? '' : v;
+    });
+    return obj;
+  }).filter(r => {
+    if (!r.id) return false;
+    if (!cutoff) return true;
+    const t = new Date(r.timestamp);
+    return !isNaN(t) && t >= cutoff;
+  });
+
+  // 최신순 정렬
+  records.sort((a, b) => String(b.timestamp).localeCompare(String(a.timestamp)));
+  return jsonResponse({ records });
+}
+
+// ── 점검 실패 알림 메일 ─────────────────────────────────────
+function sendHealthAlert(data) {
+  const subject = `[ThinQ Real] ⚠ 자동 점검 실패 — ${data.scenario_label || data.scenario_id || ''}`;
+  const body = `
+FieldCheck 자동 점검에서 실패가 감지되었습니다.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  점검 시각 : ${data.timestamp || ''}
+  점검 단계 : ${data.level || 'L1'}
+  시나리오  : ${data.scenario_label || data.scenario_id || ''}
+  결과      : 실패 (응답 없음 또는 판정 기준 미달)
+  녹음 파일 : ${data.media_ref || '-'} (점검 리그 노트북의 recordings 폴더)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+ThinQ ON이 점검 발화에 응답하지 않았습니다.
+현장에서 직접 발화하여 재현 여부를 확인해 주세요.
+(대응 절차: fieldcheck/DAILY_CHECKLIST.md '이상 발생 시 대응' 참조)
+  `.trim();
+
+  try {
+    MailApp.sendEmail({ to: ADMIN_EMAILS, cc: CC_EMAIL, subject, body });
+    Logger.log('Health alert sent → ' + ADMIN_EMAILS);
+  } catch(err) {
+    Logger.log('Health alert error: ' + err.message);
+  }
 }
 
 // 헤더가 없으면 자동 생성

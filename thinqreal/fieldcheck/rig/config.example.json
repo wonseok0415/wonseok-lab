@@ -1,0 +1,43 @@
+{
+  "endpoint_url": "https://script.google.com/macros/s/AKfycbxqmzxbm99Fi9vrKgLxCslUwwEl8TxiyUN6LPMwimf04yjQjIO1s2tjC2jWKnR7iCSrSQ/exec",
+  "api_key": "fieldcheck2026",
+
+  "samplerate": 16000,
+  "voice_threshold_dbfs": -45,
+  "min_voice_ms": 300,
+  "wake_gap_seconds": 0.8,
+
+  "consecutive_fails_for_alert": 1,
+  "loop_interval_minutes": 30,
+  "active_hours": "07:00-19:00",
+
+  "output_device": null,
+  "input_device": null,
+
+  "scenarios": [
+    {
+      "id": "l1_ask_time",
+      "label": "기동어 응답 — 시간 질문",
+      "level": "L1",
+      "wake_file": "phrases/wake.wav",
+      "phrase_file": "phrases/ask_time.wav",
+      "listen_seconds": 8
+    },
+    {
+      "id": "l1_smalltalk",
+      "label": "일상 대화(순수) — 자유 질문",
+      "level": "L1",
+      "wake_file": "phrases/wake.wav",
+      "phrase_file": "phrases/smalltalk.wav",
+      "listen_seconds": 10
+    },
+    {
+      "id": "l1_weather",
+      "label": "일상 대화(서비스 연계) — 날씨 질문",
+      "level": "L1",
+      "wake_file": "phrases/wake.wav",
+      "phrase_file": "phrases/ask_weather.wav",
+      "listen_seconds": 10
+    }
+  ]
+}

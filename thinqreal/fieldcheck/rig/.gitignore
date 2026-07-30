@@ -1,0 +1,10 @@
+# 실제 운영 설정 (api_key 포함) — 예시 파일(config.example.json)만 커밋
+config.json
+
+# 리그가 만들어내는 로컬 데이터
+recordings/
+results.jsonl
+state.json
+
+# 점검 음성 파일 (각 리그에서 생성/녹음)
+phrases/*.wav
