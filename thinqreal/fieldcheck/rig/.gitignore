@@ -8,3 +8,6 @@ state.json
 
 # 점검 음성 파일 (각 리그에서 생성/녹음)
 phrases/*.wav
+
+# Python 캐시
+__pycache__/
