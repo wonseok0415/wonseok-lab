@@ -31,7 +31,15 @@ thinqreal/
 ├── CLAUDE.md                   # 이 파일
 ├── fieldcheck/                 # ⚠️ 별도 시스템: ThinQ ON Field 자동 점검 (FieldCheck)
 │   ├── DESIGN.md               # 설계 문서 (배경/구조/판정 3단계/이관 대비 원칙/로드맵)
-│   └── DAILY_CHECKLIST.md      # 시스템 가동 전 운영자 수동 일일 점검 체크리스트
+│   ├── DAILY_CHECKLIST.md      # 시스템 가동 전 운영자 수동 일일 점검 체크리스트
+│   ├── PROGRESS_REPORT.md      # 진행 보고서 소스 (클로드디자인 다듬기용)
+│   └── rig/                    # 점검 리그 프로그램 (노트북용 Python)
+│       ├── fieldcheck.py       #   메인 — 발화·녹음·L1 판정·전송
+│       ├── booking.py          #   예약 시간대 자동 회피 (시연 중 발화 방지)
+│       ├── stt.py              #   L2 내용 판정 (로컬 Whisper + 키워드)
+│       ├── synthesize_phrases.py  # 점검 문장 WAV 생성기
+│       ├── config.example.json #   설정 예시 (config.json은 커밋 금지 — api_key 포함)
+│       └── README.md           #   초보자용 설치·운영 가이드
 └── images/                     # 이미지 (GitHub Raw로 참조됨)
     ├── thinqreal_*.png/jpeg    # 메인 사이트 이미지 10개
     └── thinqreal_admin_*.png   # 관리자 페이지 이미지 2개
@@ -165,7 +173,8 @@ Apps Script 콜드 스타트(1~3초) 자체는 서버 측 제약이라 완전히
 
 `fieldcheck/` 폴더는 **기존 예약 관리 웹사이트와 별도의 시스템**이다. 2026-07 ATOM TTS 서버 장애(ThinQ ON 무응답 → 시연 불가)를 계기로, ThinQ ON에게 주기적으로 말을 걸어 응답을 자동 판정·기록·알림하는 점검 리그(남는 노트북 활용)를 설계함. 상세는 `fieldcheck/DESIGN.md` 참조.
 
-- **구축 1단계 코드 완성 (2026-07-30)**: `fieldcheck/rig/` (노트북용 Python 점검 프로그램 — L1 무응답 감지, 초보자 설치 가이드 포함) + Apps Script에 `health_checks` 탭·엔드포인트 구현 (`POST type:health_check` — 리그 인증 키 `FC_API_KEY`, `GET ?type=health_checks&days=N`). **Apps Script 재배포 필요** (재배포 시 URL 불변, 코드만 갱신). 관리자 🩺 탭은 미구현(Phase 2)
+- **구축 1단계 완료 (2026-07-31 현장 검증 통과)**: `fieldcheck/rig/` (노트북용 Python 점검 프로그램 — L1 무응답 감지, 초보자 설치 가이드 포함) + Apps Script에 `health_checks` 탭·엔드포인트 (`POST type:health_check` — 리그 인증 키 `FC_API_KEY`, `GET ?type=health_checks&days=N`) + 매일 아침 8시 요약 메일
+- **구축 2단계 코드 완성 (2026-07-31)**: 예약 시간대 자동 회피(`rig/booking.py`) + 로컬 Whisper L2 내용 판정(`rig/stt.py`). 현장 검증 대기. 관리자 🩺 탭은 미구현(Phase 2)
 - 시스템 가동 전까지는 `fieldcheck/DAILY_CHECKLIST.md`의 수동 점검으로 운영
 - 사내 이관 대비 원칙(엔드포인트/인증/저장소를 설정으로 분리)은 DESIGN.md §10 — 구현 시 필수 준수
 
@@ -263,6 +272,18 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 4. **세션 마무리 시 핸드오프 기록**: 사용자가 자리를 옮기거나 세션을 마칠 때(또는 "마무리해줘"라고 하면), 그날의 진행 상황·미완료 항목을 아래 "진행 상태" 섹션에 갱신하고 커밋·푸시할 것. 채팅 히스토리는 세션 간 이동하지 않으므로 이 기록이 유일한 인수인계 수단임
 
 ## FieldCheck 진행 상태 (핸드오프 로그 — 세션 마무리 시 갱신)
+
+**2026-07-31 (2) — 구축 2단계 코드 완성:**
+- **1단계 마감 확인**: 첫 자동 08시 요약 메일 정상 수신(강원석 단독 수신 확인). 실패 3건은 모두 재배포 이전(06:51~06:52) 기록이며 이후 6건은 전원 성공
+- **구축 2단계 구현 완료** (현장 검증은 대기):
+  - `rig/booking.py` — 발화 전 `?type=availability` 조회 → 확정 예약 + 관리자 차단 슬롯 시간대(시작 20분 전 ~ 종료 10분 후)에는 점검 스킵. 조회 실패 시 당일 캐시 재사용, 캐시도 없으면 **건너뜀**(시연 방해 방지 우선). `--force`로 강행 가능
+  - `rig/stt.py` — **로컬 Whisper**(faster-whisper 우선, openai-whisper 폴백)로 L2 내용 판정. 클라우드 STT 안은 철회(보안 검토 회피·오프라인 판정·과금 없음). 엔진 미설치 시 L2만 건너뛰고 L1은 그대로 동작
+  - L2는 **L1 통과 건에만** 판정 → L2 성공률 = "응답한 것 중 내용까지 맞은 비율"
+  - `--transcribe` 추가 — 저장된 녹음으로 발화 없이 키워드 튜닝
+  - selftest 18건(기존 7 + L2 5 + 슬롯 6) 전원 통과
+- **Apps Script**(`thinqreal` 저장소, 브랜치 `claude/fieldcheck-stage2-summary`): 요약 메일을 **판정 단계(L1/L2)별로 나눠 집계** + L2 실패 시 STT 인식 텍스트 표시. 스텁 실행으로 본문 확인 완료
+- **다음 할 일**: ① 맥북에서 `pip3 install faster-whisper` → `--selftest` → `--transcribe`로 기존 녹음 키워드 튜닝 → `--once` 현장 검증 ② `config.json`에 `booking_avoidance`/`stt` 블록 추가(예시는 `config.example.json`) ③ `thinqreal` 브랜치 머지 후 Apps Script 재배포 ④ 검증 통과 시 양 저장소 main 머지
+- **미검증 항목(샌드박스 제약)**: 실제 예약 조회 GET, Whisper 모델 로딩·인식 — 둘 다 이 환경에서 아웃바운드가 차단되어 맥북 확인 필요
 
 **2026-07-31 마감:**
 - **구축 1단계 main 머지 완료** — wonseok-lab 작업 브랜치 + thinqreal의 claude/fieldcheck-health-endpoint 모두 main 반영

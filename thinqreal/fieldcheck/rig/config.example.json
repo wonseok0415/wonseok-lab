@@ -19,6 +19,32 @@
   "output_device": null,
   "input_device": null,
 
+  "booking_avoidance": {
+    "enabled": true,
+    "guard_before_minutes": 20,
+    "guard_after_minutes": 10,
+    "avoid_blocked": true,
+    "avoid_pending": false,
+    "on_query_failure": "skip",
+    "slot_windows": {
+      "1": "09:00-10:30",
+      "2": "13:00-14:30",
+      "3": "15:00-16:30"
+    }
+  },
+
+  "stt": {
+    "enabled": true,
+    "engine": "auto",
+    "model": "small",
+    "language": "ko",
+    "min_chars": 4,
+    "forbid_any_default": [
+      "모르겠", "죄송", "다시 말씀", "이해하지 못", "이해할 수 없",
+      "지원하지 않", "확인할 수 없", "알 수 없"
+    ]
+  },
+
   "scenarios": [
     {
       "id": "l1_ask_time",
@@ -26,7 +52,8 @@
       "level": "L1",
       "wake_file": "phrases/wake.wav",
       "phrase_file": "phrases/ask_time.wav",
-      "listen_seconds": 15
+      "listen_seconds": 15,
+      "expect_any": ["시", "오전", "오후", "정각"]
     },
     {
       "id": "l1_smalltalk",
@@ -42,7 +69,8 @@
       "level": "L1",
       "wake_file": "phrases/wake.wav",
       "phrase_file": "phrases/ask_weather.wav",
-      "listen_seconds": 20
+      "listen_seconds": 20,
+      "expect_any": ["날씨", "기온", "맑", "흐", "비", "눈", "구름", "더위", "추위"]
     }
   ]
 }

@@ -1,10 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ============================================================
-#  ThinQ Real FieldCheck — 점검 리그 (구축 1단계: L1 무응답 감지)
+#  ThinQ Real FieldCheck — 점검 리그
+#    구축 1단계: L1 무응답 감지
+#    구축 2단계: 예약 슬롯 자동 회피 + L2 내용 판정(로컬 STT)
 #
-#  동작: 저장된 점검 음성(WAV) 재생 → 마이크 녹음 → 응답 유무·지연시간 판정
-#        → 결과를 Apps Script(health_checks)로 전송, 실패 시 담당자 메일
+#  동작: (예약 확인) → 저장된 점검 음성(WAV) 재생 → 마이크 녹음
+#        → L1 응답 유무·지연시간 판정 → L2 내용 판정(STT + 키워드)
+#        → 결과를 Apps Script(health_checks)로 전송, 아침 요약 메일로 보고
 #
 #  사용법 (자세한 안내는 README.md):
 #    python fieldcheck.py --list-devices   스피커/마이크 장치 목록
@@ -12,6 +15,8 @@
 #    python fieldcheck.py --once           전체 시나리오 1회 점검
 #    python fieldcheck.py --loop           주기 점검 (config의 loop_interval_minutes)
 #    python fieldcheck.py --selftest       오디오 장치 없이 판정 로직 자체 검증
+#    python fieldcheck.py --transcribe A.wav [시나리오ID]   녹음 파일 L2 판정만 시험
+#    (--once/--loop에 --force를 붙이면 예약 시간대에도 강제로 점검)
 # ============================================================
 
 import argparse
@@ -24,6 +29,9 @@ import time
 import urllib.request
 
 import numpy as np
+
+import booking
+import stt
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, 'config.json')
@@ -262,13 +270,17 @@ def run_scenario(cfg, scenario):
     print('  주변이 조용해질 때까지 대기...')
     wait_for_quiet(cfg, sd)
 
-    result = {
+    base = {
         'type': 'health_check',
         'apiKey': cfg.get('api_key', ''),
         'timestamp': now.isoformat(timespec='seconds'),
-        'level': scenario.get('level', 'L1'),
         'scenario_id': scenario['id'],
         'scenario_label': scenario['label'],
+        'media_ref': rec_name,
+        'note': '',
+    }
+    l1 = dict(base, **{
+        'level': 'L1',
         'result': 'pass' if verdict['responded'] else 'fail',
         'latency_ms': verdict['latency_ms'],
         'detail': json.dumps({'floor_dba': verdict['floor_dba'],
@@ -277,10 +289,41 @@ def run_scenario(cfg, scenario):
                               'over_floor_db': cfg.get('voice_over_floor_db', 8.0),
                               'voiced_ratio': cfg.get('speech_voiced_ratio', 0.7)},
                              ensure_ascii=False),
-        'media_ref': rec_name,
-        'note': '',
-    }
-    return result
+        'stt_text': '',
+        'expected': '',
+    })
+    results = [l1]
+
+    # L2(내용 판정)는 L1이 통과했을 때만 — 응답 자체가 없으면 판정할 말이 없고,
+    # 같은 실패를 두 건으로 세면 통계가 왜곡된다. 따라서 L2 성공률은
+    # "응답한 것 중 내용까지 맞은 비율"로 읽어야 한다.
+    if verdict['responded'] and stt.available(cfg):
+        l2 = judge_content(cfg, scenario, samples, sr, base)
+        if l2:
+            results.append(l2)
+    return results
+
+
+def judge_content(cfg, scenario, samples, samplerate, base):
+    """녹음을 텍스트로 바꿔 내용을 판정한다. STT 엔진이 없으면 None."""
+    print('  응답 내용 인식 중(STT)...')
+    started = time.time()
+    text = stt.transcribe(samples, samplerate, cfg)
+    if text is None:
+        return None
+    took = int((time.time() - started) * 1000)
+    verdict = stt.judge(text, scenario, cfg)
+    print(f'  인식 결과: "{text[:80]}{"…" if len(text) > 80 else ""}"')
+    print(f'  내용 판정: {"통과" if verdict["passed"] else "실패"} — {verdict["reason"]}')
+    return dict(base, **{
+        'level': 'L2',
+        'result': 'pass' if verdict['passed'] else 'fail',
+        'latency_ms': None,
+        'detail': json.dumps({'engine': stt._ENGINE, 'stt_ms': took,
+                              'reason': verdict['reason']}, ensure_ascii=False),
+        'stt_text': text,
+        'expected': verdict['expected'],
+    })
 
 
 # ── 결과 전송/기록 ──────────────────────────────────────────
@@ -312,36 +355,48 @@ def post_result(cfg, payload):
     return False
 
 
-def run_all(cfg):
+def run_all(cfg, force=False):
     state = load_state()
+
+    allowed, reason = booking.check(cfg, state)
+    if not allowed and not force:
+        print(f'[건너뜀] {reason}')
+        save_state(state)
+        return []
+    if not allowed:
+        print(f'[주의] {reason} → --force 지정으로 강행합니다.')
+    else:
+        print(f'[예약 확인] {reason}')
+
     fails = state.setdefault('consecutive_fails', {})
     alert_after = int(cfg.get('consecutive_fails_for_alert', 1))
     summary = []
 
     for scenario in cfg.get('scenarios', []):
         print(f"[점검] {scenario['label']}")
-        result = run_scenario(cfg, scenario)
 
-        sid = scenario['id']
-        if result['result'] == 'fail':
-            fails[sid] = fails.get(sid, 0) + 1
-        else:
-            fails[sid] = 0
-        # 연속 실패가 기준에 도달했을 때만 서버가 메일을 보내도록 표시
-        result['alert'] = bool(result['result'] == 'fail' and fails[sid] >= alert_after)
+        for result in run_scenario(cfg, scenario):
+            key = result['level'] + ':' + scenario['id']
+            if result['result'] == 'fail':
+                fails[key] = fails.get(key, 0) + 1
+            else:
+                fails[key] = 0
+            # 연속 실패가 기준에 도달했을 때만 서버가 메일을 보내도록 표시
+            result['alert'] = bool(result['result'] == 'fail' and fails[key] >= alert_after)
 
-        append_local_log(result)
-        sent = post_result(cfg, result)
+            append_local_log(result)
+            sent = post_result(cfg, result)
 
-        mark = 'OK ' if result['result'] == 'pass' else 'FAIL'
-        lat = f"{result['latency_ms']}ms" if result['latency_ms'] is not None else '-'
-        print(f'  → [{mark}] 지연 {lat} / 서버 전송 {"성공" if sent else "안 됨(로컬 기록됨)"}'
-              + (' / 담당자 메일 발송 요청' if result['alert'] else ''))
-        summary.append(result)
+            mark = 'OK ' if result['result'] == 'pass' else 'FAIL'
+            lat = f"{result['latency_ms']}ms" if result['latency_ms'] is not None else '-'
+            print(f'  → [{result["level"]} {mark}] 지연 {lat} / 서버 전송 '
+                  f'{"성공" if sent else "안 됨(로컬 기록됨)"}'
+                  + (' / 담당자 메일 발송 요청' if result['alert'] else ''))
+            summary.append(result)
 
     save_state(state)
     n_fail = sum(1 for r in summary if r['result'] == 'fail')
-    print(f'\n[완료] {len(summary)}건 점검, 실패 {n_fail}건')
+    print(f'\n[완료] {len(summary)}건 판정, 실패 {n_fail}건')
     return summary
 
 
@@ -391,6 +446,41 @@ def cmd_calibrate(cfg):
         print('    config.json의 dba_calibration_offset = (앱 측정값) - (위 표시값) 으로 설정')
     print(f'  응답 종료 대기용 임계값(voice_threshold_dbfs) 추천: {suggest:.0f}')
     print('  → config.json에 반영한 뒤 --once로 테스트해 보세요. (응답 판정 자체는 자동 적응이라 별도 설정 불필요)')
+
+
+def cmd_transcribe(cfg, wav_path, scenario_id=None):
+    """이미 저장된 녹음으로 L2(내용 판정)만 시험한다 — 발화 없이 키워드 튜닝용."""
+    path = wav_path if os.path.isabs(wav_path) else os.path.join(BASE_DIR, wav_path)
+    if not os.path.exists(path):
+        alt = os.path.join(REC_DIR, wav_path)
+        if os.path.exists(alt):
+            path = alt
+        else:
+            sys.exit(f'[오류] 파일을 찾을 수 없습니다: {wav_path}')
+
+    samples, sr = read_wav(path)
+    scenarios = cfg.get('scenarios', [])
+    if scenario_id:
+        match = [s for s in scenarios if s['id'] == scenario_id]
+        if not match:
+            sys.exit(f'[오류] config.json에 시나리오 "{scenario_id}"가 없습니다. '
+                     f'있는 것: {", ".join(s["id"] for s in scenarios)}')
+        scenario = match[0]
+    else:
+        # 파일명이 "..._시나리오ID.wav" 형식이면 자동으로 찾는다
+        stem = os.path.splitext(os.path.basename(path))[0]
+        match = [s for s in scenarios if stem.endswith(s['id'])]
+        scenario = match[0] if match else {'id': '(미지정)', 'label': '(미지정)'}
+
+    print(f'파일 : {os.path.basename(path)}')
+    print(f'시나리오: {scenario.get("label", scenario["id"])}')
+    text = stt.transcribe(samples, sr, cfg)
+    if text is None:
+        sys.exit('[오류] 위 사유로 내용 판정을 진행할 수 없습니다.')
+    verdict = stt.judge(text, scenario, cfg)
+    print(f'인식 결과: "{text}"')
+    print(f'기대 조건: {verdict["expected"] or "(없음)"}')
+    print(f'판정     : {"통과" if verdict["passed"] else "실패"} — {verdict["reason"]}')
 
 
 def cmd_selftest():
@@ -458,6 +548,42 @@ def cmd_selftest():
           + ('OK (소음 속에서도 감지)' if good else 'FAIL'))
     ok &= good
 
+    # ── L2 내용 판정 (STT 엔진 없이 키워드 로직만 검증) ──
+    cfg2 = {'stt': {'min_chars': 4}}
+    weather = {'id': 'l1_weather', 'expect_any': ['날씨', '기온', '맑', '흐', '비', '눈', '구름']}
+    free = {'id': 'l1_smalltalk'}
+    l2_cases = [
+        ('기대 키워드 일치', '오늘 서울 날씨는 맑고 기온은 28도입니다', weather, True),
+        ('회피 표현 감지', '죄송해요, 잘 모르겠어요', weather, False),
+        ('엉뚱한 답', '음악을 재생할게요', weather, False),
+        ('자유 대화(내용 있음)', '저는 오늘 기분이 아주 좋아요', free, True),
+        ('자유 대화(너무 짧음)', '네', free, False),
+    ]
+    for i, (name, text, scen, expect) in enumerate(l2_cases, start=8):
+        v = stt.judge(text, scen, cfg2)
+        good = v['passed'] == expect
+        print(f'  [{i}] L2 {name:<18} → passed={v["passed"]} ({v["reason"]}) ' + ('OK' if good else 'FAIL'))
+        ok &= good
+
+    # ── 예약 슬롯 회피 (네트워크 없이 시간 판정만 검증) ──
+    cfg3 = {'booking_avoidance': {'guard_before_minutes': 20, 'guard_after_minutes': 10}}
+    avail = {'bookedSlots': [1], 'pendingCounts': {}, 'blockedSlots': [2]}
+    day = datetime.date(2026, 8, 3)
+    slot_cases = [
+        ('1회차 진행 중(09:30)', datetime.time(9, 30), True),
+        ('1회차 시작 15분 전(08:45)', datetime.time(8, 45), True),
+        ('1회차 시작 40분 전(08:20)', datetime.time(8, 20), False),
+        ('1회차 종료 5분 후(10:35)', datetime.time(10, 35), True),
+        ('1회차 종료 30분 후(11:00)', datetime.time(11, 0), False),
+        ('관리자 차단 2회차(13:30)', datetime.time(13, 30), True),
+    ]
+    for i, (name, t, expect_block) in enumerate(slot_cases, start=8 + len(l2_cases)):
+        hit = booking.blocking_slot(cfg3, avail, datetime.datetime.combine(day, t))
+        good = bool(hit) == expect_block
+        state = '회피' if hit else '점검 가능'
+        print(f'  [{i}] 슬롯 {name:<22} → {state} ' + ('OK' if good else 'FAIL'))
+        ok &= good
+
     print('\n[selftest] ' + ('모두 통과' if ok else '실패 있음'))
     return 0 if ok else 1
 
@@ -471,6 +597,9 @@ def main():
     p.add_argument('--calibrate', action='store_true', help='주변 소음 측정 및 임계값 추천')
     p.add_argument('--list-devices', action='store_true', help='오디오 장치 목록')
     p.add_argument('--selftest', action='store_true', help='판정 로직 자체 검증 (장치 불필요)')
+    p.add_argument('--transcribe', metavar='WAV', help='저장된 녹음으로 L2 내용 판정만 시험')
+    p.add_argument('--scenario', metavar='ID', help='--transcribe에서 사용할 시나리오 ID')
+    p.add_argument('--force', action='store_true', help='예약 시간대에도 강제로 점검 (시연 방해 주의)')
     args = p.parse_args()
 
     if args.selftest:
@@ -484,15 +613,18 @@ def main():
     if args.calibrate:
         cmd_calibrate(cfg)
         return
+    if args.transcribe:
+        cmd_transcribe(cfg, args.transcribe, args.scenario)
+        return
     if args.once:
-        run_all(cfg)
+        run_all(cfg, force=args.force)
         return
     if args.loop:
         interval = float(cfg.get('loop_interval_minutes', 30))
         print(f'[loop] {interval:.0f}분 간격 주기 점검을 시작합니다. 중지: Ctrl+C')
         while True:
             if in_active_hours(cfg):
-                run_all(cfg)
+                run_all(cfg, force=args.force)
             else:
                 print(f'[loop] 점검 시간대(active_hours={cfg.get("active_hours")}) 밖 — 이번 회차 건너뜀')
             time.sleep(interval * 60)
