@@ -94,7 +94,7 @@ def load_model(cfg, verbose=True):
         print('  [주의] STT 엔진은 설치되어 있으나 모델을 읽지 못해 L2(내용 판정)를 건너뜁니다.')
         print(f'         사유: {_LOAD_ERROR}')
         print('         모델 파일은 첫 실행 때 인터넷에서 내려받습니다. 인터넷이 되는 곳에서')
-        print(f'         한 번 실행해 캐시를 만든 뒤 리그에 옮기거나, stt.model을 더 작은 값'
+        print(f'         한 번 실행해 캐시를 만든 뒤 점검 장비에 옮기거나, stt.model을 더 작은 값'
               f'(현재 "{size}" → "base"/"tiny")으로 바꿔 보세요.')
     else:
         print('  [주의] STT 엔진이 없어 L2(내용 판정)를 건너뜁니다. 설치:  pip install faster-whisper')

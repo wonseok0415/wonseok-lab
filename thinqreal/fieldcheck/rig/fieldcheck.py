@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ============================================================
-#  ThinQ Real FieldCheck — 점검 리그
+#  ThinQ Real FieldCheck — 점검 장비
 #    구축 1단계: L1 무응답 감지
 #    구축 2단계: 예약 슬롯 자동 회피 + L2 내용 판정(로컬 STT)
 #
@@ -141,6 +141,12 @@ def frame_dba(seg, samplerate, cal_offset=0.0):
 def analyze_recording(samples, samplerate, over_floor_db=8.0,
                       window_s=1.0, voiced_ratio=0.7, cal_offset=0.0):
     """녹음에서 '음성 응답'의 시작 시점을 찾는다. (적응형 판정, dBA 기준)
+
+    반환하는 latency_ms('응답 시작')의 기준점은 **녹음 시작 시점**, 즉
+    점검 질문 재생이 끝난 순간이다. 따라서 "질문을 다 말한 뒤 ThinQ ON이
+    답을 시작하기까지 걸린 시간"이며, 답변을 끝내기까지의 길이가 아니다.
+    (기동어 '띵' 시점 기준도 아니다 — 기동어와 질문 재생은 녹음 전에 끝난다)
+
 
     1) 30ms 프레임마다 A-가중 음성 대역(250~4000Hz) 레벨(dBA)을 잰다
        — 에어컨/선풍기 저주파 소음은 대역 제한 + A-가중으로 이중 배제.
@@ -296,8 +302,8 @@ def run_scenario(cfg, scenario):
         'scenario_id': scenario['id'],
         'scenario_label': scenario['label'],
         'media_ref': rec_name,
-        # 무음은 리그 자체의 문제이므로 ThinQ ON 장애와 구분되게 남긴다
-        'note': '마이크 무입력 — 리그 설정/권한 문제 (ThinQ ON 장애 아님)'
+        # 무음은 점검 장비 자체의 문제이므로 ThinQ ON 장애와 구분되게 남긴다
+        'note': '마이크 무입력 — 점검 장비 설정/권한 문제 (ThinQ ON 장애 아님)'
                 if verdict.get('silent') else '',
     }
     l1 = dict(base, **{
@@ -425,7 +431,7 @@ def run_all(cfg, force=False):
 
             mark = 'OK ' if result['result'] == 'pass' else 'FAIL'
             lat = f"{result['latency_ms']}ms" if result['latency_ms'] is not None else '-'
-            print(f'  → [{result["level"]} {mark}] 지연 {lat} / 서버 전송 '
+            print(f'  → [{result["level"]} {mark}] 응답 시작 {lat} / 서버 전송 '
                   f'{"성공" if sent else "안 됨(로컬 기록됨)"}'
                   + (' / 담당자 메일 발송 요청' if result['alert'] else ''))
             summary.append(result)
@@ -488,7 +494,7 @@ def cmd_mic_test(cfg, seconds=3.0):
     """마이크로 실제 소리가 들어오는지만 확인한다 (발화 없음).
 
     macOS/Windows는 마이크 권한이 없어도 오류를 내지 않고 '무음'을 돌려주기
-    때문에, 점검 실패가 ThinQ ON 문제인지 리그 문제인지 헷갈린다.
+    때문에, 점검 실패가 ThinQ ON 문제인지 점검 장비 문제인지 헷갈린다.
     이 명령은 그 둘을 분리해서 알려준다.
     """
     sd = audio()
@@ -690,7 +696,7 @@ def cmd_selftest():
     v = analyze_recording(np.zeros(sr * 5, dtype=np.int16), sr, cal_offset=87.4)
     good = v['silent'] and not v['responded']
     print(f'  [8] 마이크 무입력(권한 없음)  → silent={v["silent"]} '
-          + ('OK (리그 문제로 구분됨)' if good else 'FAIL'))
+          + ('OK (점검 장비 문제로 구분됨)' if good else 'FAIL'))
     ok &= good
 
     v = analyze_recording(np.concatenate([silence, tone, silence]), sr)
@@ -741,7 +747,7 @@ def cmd_selftest():
 # ── 메인 ────────────────────────────────────────────────────
 
 def main():
-    p = argparse.ArgumentParser(description='ThinQ Real FieldCheck 점검 리그')
+    p = argparse.ArgumentParser(description='ThinQ Real FieldCheck 점검 장비')
     p.add_argument('--once', action='store_true', help='전체 시나리오 1회 점검')
     p.add_argument('--loop', action='store_true', help='주기 점검 (Ctrl+C로 중지)')
     p.add_argument('--calibrate', action='store_true', help='주변 소음 측정 및 임계값 추천')
