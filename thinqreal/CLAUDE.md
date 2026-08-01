@@ -6,7 +6,7 @@
 > `thinqreal.html` / `thinqreal_admin.html` / `ThinQReal_AppScript.gs`는 **구버전 사본**이다.
 > - 실서비스 Apps Script: `wonseok0415/thinqreal` 루트의 `ThinQReal_AppScript.gs` (3,700줄+, 인증·텔레그램·설문 등 대폭 확장됨)
 > - **이 저장소의 .gs를 script.google.com에 배포하면 운영 장애 발생** — 파일 내용은 안내문으로 교체해 둠
-> - 이 저장소에서 계속 관리하는 것: **`fieldcheck/`** (ThinQ ON 자동 점검 시스템 — 리그 코드·설계 문서)
+> - 이 저장소에서 계속 관리하는 것: **`fieldcheck/`** (ThinQ ON 자동 점검 시스템 — 점검 장비 코드·설계 문서)
 > - 아래 본문 중 웹사이트 관련 서술은 이전 완료 전 기준의 기록이므로 참고용으로만 볼 것
 
 ## 프로젝트 개요
@@ -33,7 +33,7 @@ thinqreal/
 │   ├── DESIGN.md               # 설계 문서 (배경/구조/판정 3단계/이관 대비 원칙/로드맵)
 │   ├── DAILY_CHECKLIST.md      # 시스템 가동 전 운영자 수동 일일 점검 체크리스트
 │   ├── PROGRESS_REPORT.md      # 진행 보고서 소스 (클로드디자인 다듬기용)
-│   └── rig/                    # 점검 리그 프로그램 (노트북용 Python)
+│   └── rig/                    # 점검 프로그램 (노트북용 Python)
 │       ├── fieldcheck.py       #   메인 — 발화·녹음·L1 판정·전송
 │       ├── booking.py          #   예약 시간대 자동 회피 (시연 중 발화 방지)
 │       ├── stt.py              #   L2 내용 판정 (로컬 Whisper + 키워드)
@@ -171,9 +171,9 @@ Apps Script 콜드 스타트(1~3초) 자체는 서버 측 제약이라 완전히
 
 ## FieldCheck — ThinQ ON Field 자동 점검 시스템 (설계 단계)
 
-`fieldcheck/` 폴더는 **기존 예약 관리 웹사이트와 별도의 시스템**이다. 2026-07 ATOM TTS 서버 장애(ThinQ ON 무응답 → 시연 불가)를 계기로, ThinQ ON에게 주기적으로 말을 걸어 응답을 자동 판정·기록·알림하는 점검 리그(남는 노트북 활용)를 설계함. 상세는 `fieldcheck/DESIGN.md` 참조.
+`fieldcheck/` 폴더는 **기존 예약 관리 웹사이트와 별도의 시스템**이다. 2026-07 ATOM TTS 서버 장애(ThinQ ON 무응답 → 시연 불가)를 계기로, ThinQ ON에게 주기적으로 말을 걸어 응답을 자동 판정·기록·알림하는 점검 장비(남는 노트북 활용)를 설계함. 상세는 `fieldcheck/DESIGN.md` 참조.
 
-- **구축 1단계 완료 (2026-07-31 현장 검증 통과)**: `fieldcheck/rig/` (노트북용 Python 점검 프로그램 — L1 무응답 감지, 초보자 설치 가이드 포함) + Apps Script에 `health_checks` 탭·엔드포인트 (`POST type:health_check` — 리그 인증 키 `FC_API_KEY`, `GET ?type=health_checks&days=N`) + 매일 아침 8시 요약 메일
+- **구축 1단계 완료 (2026-07-31 현장 검증 통과)**: `fieldcheck/rig/` (노트북용 Python 점검 프로그램 — L1 무응답 감지, 초보자 설치 가이드 포함) + Apps Script에 `health_checks` 탭·엔드포인트 (`POST type:health_check` — 점검 장비 인증 키 `FC_API_KEY`, `GET ?type=health_checks&days=N`) + 매일 아침 8시 요약 메일
 - **구축 2단계 코드 완성 (2026-07-31)**: 예약 시간대 자동 회피(`rig/booking.py`) + 로컬 Whisper L2 내용 판정(`rig/stt.py`). 현장 검증 대기. 관리자 🩺 탭은 미구현(Phase 2)
 - 시스템 가동 전까지는 `fieldcheck/DAILY_CHECKLIST.md`의 수동 점검으로 운영
 - 사내 이관 대비 원칙(엔드포인트/인증/저장소를 설정으로 분리)은 DESIGN.md §10 — 구현 시 필수 준수
@@ -296,17 +296,17 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 - **응답 시작(latency_ms) 정의 확정**: 점검 질문 재생이 끝난 시점(=녹음 시작)부터 ThinQ ON이 말을 시작할 때까지. 기동어 '띵' 기준 아님, 답변 총 길이 아님
 
 **2026-08-01 — 자동 실행 추가 (점검 장비가 안 돌던 문제):**
-- 아침 요약 메일이 **"⚠ 점검 기록 없음"**으로 발송됨 → 판정 로직 문제가 아니라 **리그가 그날 한 번도 실행되지 않은 것**. 수동 `--once`에만 의존하고 있었고, 맥북이 정해진 시각에 스스로 실행하는 장치가 없었음
+- 아침 요약 메일이 **"⚠ 점검 기록 없음"**으로 발송됨 → 판정 로직 문제가 아니라 **점검 장비가 그날 한 번도 실행되지 않은 것**. 수동 `--once`에만 의존하고 있었고, 맥북이 정해진 시각에 스스로 실행하는 장치가 없었음
 - `rig/schedule/` 추가 — **매일 07:30 자동 실행** (1회차 09:00 회피 구간 08:40보다 앞서 충돌 없음, 08시 요약 메일에 당일 결과 포함)
   - 맥: `install_macos.sh` (launchd LaunchAgent) + `sudo pmset repeat wakeorpoweron`으로 자동 기상. **설치 후 `launchctl kickstart`로 한 번 수동 실행해 마이크 권한을 승인해야 함** (백그라운드 첫 실행에서 권한 창을 놓치면 조용히 실패)
-  - Windows(상주 리그): `install_windows.ps1` (작업 스케줄러, WakeToRun + StartWhenAvailable). 스피커·마이크 사용 때문에 로그온 세션 필요
+  - Windows(상주 장비): `install_windows.ps1` (작업 스케줄러, WakeToRun + StartWhenAvailable). 스피커·마이크 사용 때문에 로그온 세션 필요
 - `--upgrade-config` 추가 — config.json에 **새로 생긴 항목만** 채우고 기존 값(보정값 87.4 등)은 보존. 버전 업 때마다 손으로 고치다 빠뜨리는 문제 해소. `.bak` 백업 생성, 두 번 실행해도 안전
 - 교훈: **판정이 정확해도 실행되지 않으면 무의미** — 자동 실행은 선택이 아니라 필수 구성요소 (DESIGN.md §8 기록)
 - **macOS 마이크 권한 함정 (같은 날 후속)**: 자동 실행 첫 점검이 3건 모두 FAIL. 원인은 ThinQ ON이 아니라 **launchd가 실행한 python3에 마이크 권한이 없던 것**. macOS는 앱 번들이 아닌 실행 파일에는 권한 창을 띄우지 않고 **오류 없이 무음을 반환**하며, 시스템 설정 마이크 목록에도 안 나타나 수동 허용도 불가
   - 판별 단서: 세 시나리오의 dBA 값이 소수점까지 동일(2.4 / -32.6)하고 최고가 바닥보다 낮음 → 보정값 87.4를 빼면 -120.0dB(에너지 0)
   - 대응 ①: launchd가 `open -a Terminal <run_once.command>`로 실행하도록 변경 — 터미널은 정식 앱이라 권한 창이 정상 표시됨
-  - 대응 ②: 무음 자동 감지 → 콘솔 경고 + 시트 `note`에 "리그 설정/권한 문제(ThinQ ON 장애 아님)" 기록 + `--mic-test` 진단 명령 추가
-  - Windows 상주 리그로 옮기면 이 제약은 자연 해소됨
+  - 대응 ②: 무음 자동 감지 → 콘솔 경고 + 시트 `note`에 "점검 장비 설정/권한 문제(ThinQ ON 장애 아님)" 기록 + `--mic-test` 진단 명령 추가
+  - Windows 상주 장비로 옮기면 이 제약은 자연 해소됨
 
 **2026-07-31 (2) — 구축 2단계 코드 완성:**
 - **1단계 마감 확인**: 첫 자동 08시 요약 메일 정상 수신(강원석 단독 수신 확인). 실패 3건은 모두 재배포 이전(06:51~06:52) 기록이며 이후 6건은 전원 성공
@@ -328,7 +328,7 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 **2026-07-31 갱신:**
 - **구축 1단계 현장 검증 통과** — 적응형(dBA·발성 비율) 판정으로 소음 환경(에어컨·선풍기)에서 실패 0건
 - 서버 파이프라인 완성: 재배포 완료, Sheets `health_checks` 기록, 일일 아침 요약 메일 수신 확인 (테스트 모드 — 강원석에게만, 텔레그램 미발송, 건별 알림 끔)
-- dBA 실측 보정 완료: `dba_calibration_offset 87.4` (휴대폰 소음앱 42dBA 대비 1점 교정, 42 근처 확인). 리그 config 확정: wake_gap 1.5s, voice_over_floor_db 8
+- dBA 실측 보정 완료: `dba_calibration_offset 87.4` (휴대폰 소음앱 42dBA 대비 1점 교정, 42 근처 확인). 점검 장비 config 확정: wake_gap 1.5s, voice_over_floor_db 8
 - **남은 마감**: ① 다음 아침 "✅ 전체 정상" 요약 메일 확인 ② 확인 후 양 저장소 브랜치 main 머지(wonseok-lab 작업 브랜치 + thinqreal의 claude/fieldcheck-health-endpoint — 시각 표시 수정분 재배포 포함) ③ 1단계 공식 마감 후 구축 2단계(예약 슬롯 회피 + 로컬 Whisper L2) 착수
 
 **2026-07-30 기준:**
