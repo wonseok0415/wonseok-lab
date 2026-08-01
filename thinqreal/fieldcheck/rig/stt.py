@@ -112,20 +112,28 @@ def _to_float32_16k(samples, samplerate):
 
 
 def transcribe(samples, samplerate, cfg, verbose=True):
-    """녹음을 텍스트로. 엔진이 없거나 실패하면 None."""
+    """녹음을 텍스트로. 엔진이 없거나 실패하면 None.
+
+    vocabulary_hint(initial_prompt): Whisper에게 "이런 말이 나올 것"이라고
+    미리 알려주는 어휘 힌트. 지명(등촌동·마곡)이나 제품명(ThinQ ON)처럼
+    일반 한국어 모델이 자주 틀리는 고유명사의 인식률을 올린다.
+    별도의 AI 엔진 연동 없이 정확도를 개선하는 가장 값싼 방법.
+    """
     model, engine = load_model(cfg, verbose)
     if model is None:
         return None
 
     opt = cfg.get('stt') or {}
     lang = opt.get('language', 'ko')
+    hint = opt.get('vocabulary_hint') or None
     audio = _to_float32_16k(samples, samplerate)
     try:
         if engine == 'faster-whisper':
             segments, _ = model.transcribe(audio, language=lang, beam_size=1,
-                                           vad_filter=True)
+                                           vad_filter=True, initial_prompt=hint)
             return ''.join(s.text for s in segments).strip()
-        result = model.transcribe(audio, language=lang, fp16=False)
+        result = model.transcribe(audio, language=lang, fp16=False,
+                                  initial_prompt=hint)
         return str(result.get('text', '')).strip()
     except Exception as e:
         print(f'  [주의] STT 변환 실패: {e}')

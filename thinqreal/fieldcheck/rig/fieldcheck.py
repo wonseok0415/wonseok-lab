@@ -355,25 +355,39 @@ def append_local_log(result):
         f.write(json.dumps(result, ensure_ascii=False) + '\n')
 
 
-def post_result(cfg, payload):
+def post_result(cfg, payload, attempts=3):
+    """결과를 서버로 전송. 일시적 실패는 재시도한다.
+
+    Apps Script는 콜드 스타트(1~3초)나 순간적인 지연으로 응답이 늦어지는
+    일이 있어, 한 번 실패했다고 기록을 포기하면 일일 요약에서 그 건이
+    통째로 빠진다. 짧은 간격으로 몇 번 더 시도한다.
+    """
     url = cfg.get('endpoint_url', '')
     if not url or 'script.google.com' not in url:
         print('  [주의] endpoint_url이 설정되지 않아 서버 전송을 건너뜁니다 (로컬 기록만).')
         return False
-    req = urllib.request.Request(
-        url,
-        data=json.dumps(payload).encode('utf-8'),
-        headers={'Content-Type': 'application/json'},
-        method='POST',
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=30) as resp:
-            body = json.loads(resp.read().decode('utf-8'))
-        if body.get('success'):
-            return True
-        print(f"  [주의] 서버 응답 오류: {body}")
-    except Exception as e:  # 네트워크 단절 등 — 점검 자체는 계속되어야 함
-        print(f'  [주의] 서버 전송 실패: {e}')
+
+    timeout = float(cfg.get('post_timeout_seconds', 45))
+    for i in range(attempts):
+        req = urllib.request.Request(
+            url,
+            data=json.dumps(payload).encode('utf-8'),
+            headers={'Content-Type': 'application/json'},
+            method='POST',
+        )
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as resp:
+                body = json.loads(resp.read().decode('utf-8'))
+            if body.get('success'):
+                return True
+            print(f'  [주의] 서버 응답 오류: {body}')
+            return False          # 인증 실패 등은 재시도해도 같은 결과
+        except Exception as e:    # 타임아웃·네트워크 단절 — 점검 자체는 계속되어야 함
+            last = (i == attempts - 1)
+            print(f'  [주의] 서버 전송 실패({i + 1}/{attempts}): {e}'
+                  + ('' if last else ' — 잠시 후 재시도'))
+            if not last:
+                time.sleep(2 * (i + 1))
     return False
 
 
