@@ -35,6 +35,7 @@ import stt
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, 'config.json')
+EXAMPLE_PATH = os.path.join(BASE_DIR, 'config.example.json')
 STATE_PATH = os.path.join(BASE_DIR, 'state.json')
 LOG_PATH = os.path.join(BASE_DIR, 'results.jsonl')
 REC_DIR = os.path.join(BASE_DIR, 'recordings')
@@ -448,6 +449,63 @@ def cmd_calibrate(cfg):
     print('  → config.json에 반영한 뒤 --once로 테스트해 보세요. (응답 판정 자체는 자동 적응이라 별도 설정 불필요)')
 
 
+def cmd_upgrade_config():
+    """config.example.json에 새로 생긴 항목만 config.json에 채워 넣는다.
+
+    기존 값(보정값·장치 번호·키워드 등)은 절대 덮어쓰지 않고, **없는 키만**
+    추가한다. 버전이 올라갈 때마다 설정 파일을 손으로 고치다 항목을 빠뜨리는
+    일을 막기 위한 명령.
+    """
+    if not os.path.exists(EXAMPLE_PATH):
+        sys.exit('[오류] config.example.json이 없습니다.')
+    with open(EXAMPLE_PATH, encoding='utf-8') as f:
+        example = json.load(f)
+
+    if not os.path.exists(CONFIG_PATH):
+        with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+            json.dump(example, f, ensure_ascii=False, indent=2)
+        print('config.json이 없어 예시 파일로 새로 만들었습니다.')
+        print('→ endpoint_url과 api_key가 맞는지 확인해 주세요.')
+        return
+
+    with open(CONFIG_PATH, encoding='utf-8') as f:
+        cfg = json.load(f)
+
+    added = []
+
+    def merge(dst, src, path=''):
+        for k, v in src.items():
+            if k not in dst:
+                dst[k] = v
+                added.append(f'{path}{k} = {json.dumps(v, ensure_ascii=False)}')
+            elif isinstance(v, dict) and isinstance(dst[k], dict):
+                merge(dst[k], v, f'{path}{k}.')
+
+    merge(cfg, {k: v for k, v in example.items() if k != 'scenarios'})
+
+    # 시나리오는 목록이라 통째로 합치면 사용자가 지운 항목이 되살아난다.
+    # 같은 id를 찾아 빠진 키(기대 키워드 등)만 채운다.
+    by_id = {s['id']: s for s in example.get('scenarios', []) if 'id' in s}
+    for scenario in cfg.get('scenarios', []):
+        ref = by_id.get(scenario.get('id'))
+        if ref:
+            merge(scenario, ref, f"scenarios[{scenario['id']}].")
+
+    if not added:
+        print('추가할 항목이 없습니다 — config.json은 이미 최신입니다.')
+        return
+
+    backup = CONFIG_PATH + '.bak'
+    os.replace(CONFIG_PATH, backup)
+    with open(CONFIG_PATH, 'w', encoding='utf-8') as f:
+        json.dump(cfg, f, ensure_ascii=False, indent=2)
+
+    print(f'{len(added)}개 항목을 추가했습니다 (기존 값은 그대로 유지):')
+    for line in added:
+        print(f'  + {line}')
+    print(f'\n이전 파일은 {os.path.basename(backup)}로 백업했습니다.')
+
+
 def cmd_transcribe(cfg, wav_path, scenario_id=None):
     """이미 저장된 녹음으로 L2(내용 판정)만 시험한다 — 발화 없이 키워드 튜닝용."""
     path = wav_path if os.path.isabs(wav_path) else os.path.join(BASE_DIR, wav_path)
@@ -600,12 +658,17 @@ def main():
     p.add_argument('--transcribe', metavar='WAV', help='저장된 녹음으로 L2 내용 판정만 시험')
     p.add_argument('--scenario', metavar='ID', help='--transcribe에서 사용할 시나리오 ID')
     p.add_argument('--force', action='store_true', help='예약 시간대에도 강제로 점검 (시연 방해 주의)')
+    p.add_argument('--upgrade-config', action='store_true',
+                   help='config.json에 새로 생긴 설정 항목만 채우기 (기존 값 유지)')
     args = p.parse_args()
 
     if args.selftest:
         sys.exit(cmd_selftest())
     if args.list_devices:
         cmd_list_devices()
+        return
+    if args.upgrade_config:
+        cmd_upgrade_config()
         return
 
     cfg = load_config()

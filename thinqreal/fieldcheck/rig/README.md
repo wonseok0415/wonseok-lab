@@ -52,6 +52,11 @@ pip install faster-whisper          ← L2(내용 판정)용. 생략하면 L1만
    - `endpoint_url` — Apps Script 주소 (기본값이 현재 운영 주소)
    - `api_key` — Apps Script의 `FC_API_KEY`와 같은 값이어야 함
 
+> **이미 `config.json`을 쓰고 있는데 프로그램이 업데이트된 경우**는 손으로 고치지 말고 아래 명령을 쓰세요. **새로 생긴 항목만** 채우고 기존 값(보정값·장치 번호·키워드)은 그대로 둡니다. 이전 파일은 `config.json.bak`으로 백업됩니다.
+> ```
+> python fieldcheck.py --upgrade-config
+> ```
+
 ## 4. 점검 음성 만들기 (딱 한 번)
 
 Windows 내장 음성합성으로 점검 문장을 WAV 파일로 만듭니다:
@@ -98,6 +103,36 @@ python fieldcheck.py --loop
 1. 설정 → 시스템 → 전원: "덮개를 닫으면" → **아무 것도 안 함**
 2. 같은 화면에서: 전원 연결 시 절전 모드 → **안 함**
 3. Windows 업데이트 → 사용 시간 설정: 점검 시간대(07~19시)를 사용 시간으로 지정
+
+## 9. 매일 자동 실행 (중요)
+
+`--once`는 사람이 명령을 칠 때만 돕니다. 노트북을 켜 두어도 **정해진 시각에 스스로 실행되지는 않습니다.** 실제로 2026-08-01 아침 요약이 "⚠ 점검 기록 없음"으로 온 이유가 이것입니다.
+
+기본 실행 시각은 **매일 07:30** — 1회차 예약(09:00) 회피 구간(08:40부터)보다 앞서므로 시연과 겹치지 않고, 08시 요약 메일에 그날 결과가 실립니다.
+
+**맥 (개발·검증용)**
+```
+cd ~/workspace/wonseok-lab/thinqreal/fieldcheck/rig
+bash schedule/install_macos.sh            # 매일 07:30 (시각 변경: install_macos.sh 8 15)
+```
+설치 후 **반드시 한 번 수동 실행**해서 마이크 권한 창을 띄우고 "허용"을 눌러 주세요. 백그라운드 첫 실행에서 권한 창을 놓치면 조용히 실패합니다.
+```
+launchctl kickstart -p gui/$(id -u)/com.thinqreal.fieldcheck
+tail -f logs/schedule.log
+```
+그 시각에 맥이 잠들어 있으면 실행되지 않으므로, 자동 기상도 함께 설정합니다 (관리자 암호 필요):
+```
+sudo pmset repeat wakeorpoweron MTWRFSU 07:25:00
+```
+해제: `bash schedule/uninstall_macos.sh`
+
+**Windows (상주 리그)**
+```
+powershell -ExecutionPolicy Bypass -File schedule\install_windows.ps1
+```
+절전 중이면 깨워서 실행(`WakeToRun`), 그 시각을 놓쳤으면 이후에라도 실행(`StartWhenAvailable`)하도록 등록됩니다. 스피커·마이크를 쓰므로 **로그온 상태**여야 하며, 덮개만 닫아 두는 운영 방식은 위 8번 설정과 함께 사용합니다.
+
+> **자동 실행이 잘 되고 있는지 확인하는 법**: 매일 아침 요약 메일이 "점검 기록 없음"이 아니면 정상입니다. 이 메일 자체가 리그 생존 확인 장치입니다.
 
 ## 예약 시간대 자동 회피
 
@@ -210,6 +245,8 @@ python fieldcheck.py --transcribe recordings/어떤파일.wav --scenario l1_weat
 | 서버 전송 실패 표시 | Wi-Fi 확인. 전송이 실패해도 `results.jsonl`에 로컬 기록은 남습니다 |
 | 판정 로직이 의심될 때 | `python fieldcheck.py --selftest` (오디오 장치 없이 검증) |
 | 계속 "건너뜀"만 나옴 | 예약 시간대이거나 예약 조회에 실패한 상태. 메시지에 사유가 표시됩니다. 지금 꼭 점검해야 하면 `--once --force` |
+| 아침 요약이 "점검 기록 없음" | 리그가 그날 한 번도 실행되지 않음 → 위 9번 자동 실행이 등록되어 있는지, 노트북이 그 시각에 깨어 있었는지 확인. `logs/schedule.log` 확인 |
+| 자동 실행은 되는데 녹음이 안 됨 | 마이크 권한 문제. 맥은 `launchctl kickstart`로 한 번 수동 실행해 권한 창을 띄우고 허용 |
 | L2 결과가 안 나옴 | STT 엔진 미설치 — `pip install faster-whisper`. 설치 후에도 안 되면 `config.json`의 `stt.enabled`가 `true`인지 확인 |
 | L2가 자꾸 실패로 나옴 | `--transcribe`로 인식 텍스트를 먼저 확인 → 실제 답변에 맞게 `expect_any` 조정. 인식 자체가 부정확하면 `stt.model`을 `small`→`medium`으로 |
 | L2 판정이 너무 느림 | `stt.model`을 `base`로 낮추기 (정확도는 다소 하락) |
@@ -221,6 +258,8 @@ python fieldcheck.py --transcribe recordings/어떤파일.wav --scenario l1_weat
 | `fieldcheck.py` | 메인 프로그램 |
 | `booking.py` | 예약 시간대 회피 (예약 시스템 조회 + 슬롯 시간 판정) |
 | `stt.py` | L2 내용 판정 (로컬 STT + 키워드 검사) |
+| `schedule/` | 매일 자동 실행 등록 스크립트 (맥 launchd / Windows 작업 스케줄러) |
+| `logs/schedule.log` | 자동 실행 로그 (수동 실행분은 여기 안 남음) |
 | `synthesize_phrases.py` | 점검 문장 WAV 생성기 |
 | `config.json` | 내 설정 (커밋 금지 — api_key 포함) |
 | `phrases/` | 점검 음성 파일 (한 번 만들고 고정) |
