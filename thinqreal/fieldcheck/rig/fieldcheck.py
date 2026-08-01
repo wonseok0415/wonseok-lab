@@ -15,6 +15,8 @@
 #    python fieldcheck.py --once           전체 시나리오 1회 점검
 #    python fieldcheck.py --loop           주기 점검 (config의 loop_interval_minutes)
 #    python fieldcheck.py --selftest       오디오 장치 없이 판정 로직 자체 검증
+#    python fieldcheck.py --mic-test       마이크 입력 확인 (권한 문제 진단)
+#    python fieldcheck.py --upgrade-config config.json에 새 설정 항목만 채우기
 #    python fieldcheck.py --transcribe A.wav [시나리오ID]   녹음 파일 L2 판정만 시험
 #    (--once/--loop에 --force를 붙이면 예약 시간대에도 강제로 점검)
 # ============================================================
@@ -162,7 +164,16 @@ def analyze_recording(samples, samplerate, over_floor_db=8.0,
     for i in range(0, len(samples) - frame + 1, frame):
         dbs.append(frame_dba(samples[i:i + frame], samplerate, cal_offset))
     if not dbs:
-        return {'responded': False, 'latency_ms': None, 'floor_dba': None, 'peak_dba': None}
+        return {'responded': False, 'latency_ms': None, 'floor_dba': None,
+                'peak_dba': None, 'silent': True}
+
+    # 마이크 권한이 없거나 입력 장치가 잘못되면 macOS/Windows는 오류 대신
+    # '완전한 무음'을 돌려준다. 이때 모든 프레임이 -120dB이 되는데, 이를
+    # 그냥 FAIL로 표시하면 ThinQ ON 장애로 오인하게 된다. 별도로 구분한다.
+    if max(dbs) <= -119.0 + cal_offset:
+        return {'responded': False, 'latency_ms': None,
+                'floor_dba': round(min(dbs), 1), 'peak_dba': round(max(dbs), 1),
+                'silent': True}
 
     # 하위 10퍼센타일 = 소음 바닥. 완전 무음(-120) 구간이 바닥을 비현실적으로
     # 끌어내리지 않도록 하한을 둔다 (실제 마이크 환경엔 완전 무음이 없음).
@@ -181,9 +192,10 @@ def analyze_recording(samples, samplerate, over_floor_db=8.0,
                 'latency_ms': int(first * FRAME_MS),
                 'floor_dba': round(floor, 1),
                 'peak_dba': round(peak, 1),
+                'silent': False,
             }
     return {'responded': False, 'latency_ms': None,
-            'floor_dba': round(floor, 1), 'peak_dba': round(peak, 1)}
+            'floor_dba': round(floor, 1), 'peak_dba': round(peak, 1), 'silent': False}
 
 
 # ── 오디오 재생/녹음 (sounddevice는 필요할 때만 import) ────
@@ -260,9 +272,15 @@ def run_scenario(cfg, scenario):
         float(cfg.get('speech_voiced_ratio', 0.7)),
         cal,
     )
-    rel = '' if cal else ' (상대값 — 실측 보정은 README §dBA 보정)'
-    print(f'  판정 참고: 소음 바닥 {verdict["floor_dba"]}dBA / 최고 {verdict["peak_dba"]}dBA '
-          f'(음성 인정 기준: 바닥+{cfg.get("voice_over_floor_db", 8.0)}dB){rel}')
+    if verdict.get('silent'):
+        print('  [경고] 마이크에서 아무 소리도 들어오지 않았습니다 (완전 무음).')
+        print('         ThinQ ON의 응답 여부와 무관한 문제입니다 — 볼륨을 올려도 해결되지 않습니다.')
+        print('         맥: 시스템 설정 → 개인정보 보호 및 보안 → 마이크 에서 Python 항목 확인/허용')
+        print('         공통: python fieldcheck.py --mic-test 로 입력 상태를 먼저 점검하세요')
+    else:
+        rel = '' if cal else ' (상대값 — 실측 보정은 README §dBA 보정)'
+        print(f'  판정 참고: 소음 바닥 {verdict["floor_dba"]}dBA / 최고 {verdict["peak_dba"]}dBA '
+              f'(음성 인정 기준: 바닥+{cfg.get("voice_over_floor_db", 8.0)}dB){rel}')
 
     # 생성형 답변은 녹음 창보다 길 수 있고, 무응답 '판정'이라도 실제 답변이
     # 창이 끝난 뒤 늦게 시작될 수 있다 (현장 관측: 영화 질문 — 긴 연산 후 답변,
@@ -278,7 +296,9 @@ def run_scenario(cfg, scenario):
         'scenario_id': scenario['id'],
         'scenario_label': scenario['label'],
         'media_ref': rec_name,
-        'note': '',
+        # 무음은 리그 자체의 문제이므로 ThinQ ON 장애와 구분되게 남긴다
+        'note': '마이크 무입력 — 리그 설정/권한 문제 (ThinQ ON 장애 아님)'
+                if verdict.get('silent') else '',
     }
     l1 = dict(base, **{
         'level': 'L1',
@@ -286,6 +306,7 @@ def run_scenario(cfg, scenario):
         'latency_ms': verdict['latency_ms'],
         'detail': json.dumps({'floor_dba': verdict['floor_dba'],
                               'peak_dba': verdict['peak_dba'],
+                              'silent': bool(verdict.get('silent')),
                               'cal_offset': cal,
                               'over_floor_db': cfg.get('voice_over_floor_db', 8.0),
                               'voiced_ratio': cfg.get('speech_voiced_ratio', 0.7)},
@@ -449,6 +470,50 @@ def cmd_calibrate(cfg):
     print('  → config.json에 반영한 뒤 --once로 테스트해 보세요. (응답 판정 자체는 자동 적응이라 별도 설정 불필요)')
 
 
+def cmd_mic_test(cfg, seconds=3.0):
+    """마이크로 실제 소리가 들어오는지만 확인한다 (발화 없음).
+
+    macOS/Windows는 마이크 권한이 없어도 오류를 내지 않고 '무음'을 돌려주기
+    때문에, 점검 실패가 ThinQ ON 문제인지 리그 문제인지 헷갈린다.
+    이 명령은 그 둘을 분리해서 알려준다.
+    """
+    sd = audio()
+    sr = int(cfg.get('samplerate', 16000))
+    dev = cfg.get('input_device')
+    print(f'{seconds:.0f}초간 마이크 입력을 확인합니다. 아무 말이나 해보세요...')
+    rec = sd.rec(int(seconds * sr), samplerate=sr, channels=1, dtype='int16', device=dev)
+    sd.wait()
+    samples = rec[:, 0]
+
+    peak_raw = int(np.max(np.abs(samples))) if len(samples) else 0
+    print(f'  입력 장치 : {dev if dev is not None else "기본 장치"}')
+    print(f'  최대 진폭 : {peak_raw} / 32768')
+
+    if peak_raw == 0:
+        print('\n  ✗ 완전 무음 — 마이크에서 아무것도 들어오지 않습니다.')
+        if sys.platform == 'darwin':
+            print('    맥: 시스템 설정 → 개인정보 보호 및 보안 → 마이크')
+            print('        목록에 Python(또는 python3)이 있으면 켜고, 없으면 아래를 실행해')
+            print('        권한 요청 창을 띄우세요:')
+            print('          launchctl kickstart -p gui/$(id -u)/com.thinqreal.fieldcheck')
+        else:
+            print('    설정 → 개인 정보 → 마이크 에서 데스크톱 앱의 마이크 접근을 허용하세요.')
+        print('    장치가 잘못 지정된 경우도 있습니다: python fieldcheck.py --list-devices')
+        return 1
+
+    cal = float(cfg.get('dba_calibration_offset', 0.0))
+    frame = max(1, int(sr * FRAME_MS / 1000))
+    dbas = [frame_dba(samples[i:i + frame], sr, cal)
+            for i in range(0, len(samples) - frame + 1, frame)]
+    print(f'  음성 대역 : 최고 {max(dbas):.1f} dBA / 평균 {float(np.mean(dbas)):.1f} dBA'
+          + ('' if cal else ' (상대값)'))
+    if peak_raw < 100:
+        print('\n  △ 소리가 매우 작습니다. 마이크 입력 볼륨을 올리거나 ThinQ ON에 더 가까이 두세요.')
+        return 0
+    print('\n  ✓ 마이크 정상 — 입력이 들어오고 있습니다.')
+    return 0
+
+
 def cmd_upgrade_config():
     """config.example.json에 새로 생긴 항목만 config.json에 채워 넣는다.
 
@@ -606,6 +671,19 @@ def cmd_selftest():
           + ('OK (소음 속에서도 감지)' if good else 'FAIL'))
     ok &= good
 
+    # 마이크 권한 없음 = 완전 무음. 실제 현장에서 3건 모두 FAIL로만 표시되어
+    # ThinQ ON 장애로 오인됐던 사례(2026-08-01)를 재현한다.
+    v = analyze_recording(np.zeros(sr * 5, dtype=np.int16), sr, cal_offset=87.4)
+    good = v['silent'] and not v['responded']
+    print(f'  [8] 마이크 무입력(권한 없음)  → silent={v["silent"]} '
+          + ('OK (리그 문제로 구분됨)' if good else 'FAIL'))
+    ok &= good
+
+    v = analyze_recording(np.concatenate([silence, tone, silence]), sr)
+    good = not v['silent']
+    print(f'  [9] 정상 녹음은 무음 아님      → silent={v["silent"]} ' + ('OK' if good else 'FAIL'))
+    ok &= good
+
     # ── L2 내용 판정 (STT 엔진 없이 키워드 로직만 검증) ──
     cfg2 = {'stt': {'min_chars': 4}}
     weather = {'id': 'l1_weather', 'expect_any': ['날씨', '기온', '맑', '흐', '비', '눈', '구름']}
@@ -617,7 +695,7 @@ def cmd_selftest():
         ('자유 대화(내용 있음)', '저는 오늘 기분이 아주 좋아요', free, True),
         ('자유 대화(너무 짧음)', '네', free, False),
     ]
-    for i, (name, text, scen, expect) in enumerate(l2_cases, start=8):
+    for i, (name, text, scen, expect) in enumerate(l2_cases, start=10):
         v = stt.judge(text, scen, cfg2)
         good = v['passed'] == expect
         print(f'  [{i}] L2 {name:<18} → passed={v["passed"]} ({v["reason"]}) ' + ('OK' if good else 'FAIL'))
@@ -635,7 +713,7 @@ def cmd_selftest():
         ('1회차 종료 30분 후(11:00)', datetime.time(11, 0), False),
         ('관리자 차단 2회차(13:30)', datetime.time(13, 30), True),
     ]
-    for i, (name, t, expect_block) in enumerate(slot_cases, start=8 + len(l2_cases)):
+    for i, (name, t, expect_block) in enumerate(slot_cases, start=10 + len(l2_cases)):
         hit = booking.blocking_slot(cfg3, avail, datetime.datetime.combine(day, t))
         good = bool(hit) == expect_block
         state = '회피' if hit else '점검 가능'
@@ -660,6 +738,8 @@ def main():
     p.add_argument('--force', action='store_true', help='예약 시간대에도 강제로 점검 (시연 방해 주의)')
     p.add_argument('--upgrade-config', action='store_true',
                    help='config.json에 새로 생긴 설정 항목만 채우기 (기존 값 유지)')
+    p.add_argument('--mic-test', action='store_true',
+                   help='마이크로 소리가 들어오는지만 확인 (발화 없음, 권한 문제 진단)')
     args = p.parse_args()
 
     if args.selftest:
@@ -673,6 +753,8 @@ def main():
 
     cfg = load_config()
 
+    if args.mic_test:
+        sys.exit(cmd_mic_test(cfg))
     if args.calibrate:
         cmd_calibrate(cfg)
         return

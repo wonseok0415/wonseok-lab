@@ -115,10 +115,16 @@ python fieldcheck.py --loop
 cd ~/workspace/wonseok-lab/thinqreal/fieldcheck/rig
 bash schedule/install_macos.sh            # 매일 07:30 (시각 변경: install_macos.sh 8 15)
 ```
-설치 후 **반드시 한 번 수동 실행**해서 마이크 권한 창을 띄우고 "허용"을 눌러 주세요. 백그라운드 첫 실행에서 권한 창을 놓치면 조용히 실패합니다.
+설치 후 **반드시 한 번 수동 실행**해서 마이크 권한 창을 띄우고 "허용"을 눌러 주세요. 백그라운드 첫 실행에서 권한 창을 놓치면 **조용히 무음을 녹음하며 매일 실패**합니다 (오류가 나지 않아 알아채기 어렵습니다).
 ```
 launchctl kickstart -p gui/$(id -u)/com.thinqreal.fieldcheck
 tail -f logs/schedule.log
+```
+등록 직후 **"로그인 항목 및 확장 프로그램"** 창이 뜨는 것은 정상입니다. macOS가 "백그라운드 항목이 추가됐다"고 알리는 것으로, **스위치가 켜져 있는지만 확인**하면 됩니다 (별도로 실행할 것은 없습니다). 목록에는 `python3` 또는 개발자 이름으로 표시될 수 있습니다.
+
+권한이 제대로 들어갔는지는 이걸로 확인합니다:
+```
+python3 fieldcheck.py --mic-test
 ```
 그 시각에 맥이 잠들어 있으면 실행되지 않으므로, 자동 기상도 함께 설정합니다 (관리자 암호 필요):
 ```
@@ -239,6 +245,8 @@ python fieldcheck.py --transcribe recordings/어떤파일.wav --scenario l1_weat
 |------|------|
 | `python` 명령이 없다고 나옴 | Python 재설치하며 "Add to PATH" 체크 |
 | 소리가 안 나옴 / 녹음이 안 됨 | `python fieldcheck.py --list-devices`로 장치 번호 확인 → `config.json`의 `output_device`/`input_device`에 번호 입력 |
+| **"마이크에서 아무 소리도 들어오지 않았습니다"** | 마이크 권한 문제(볼륨과 무관). `python fieldcheck.py --mic-test`로 확인 → 맥은 시스템 설정 → 개인정보 보호 및 보안 → 마이크에서 Python 허용. 자동 실행이 무음이면 `launchctl kickstart`로 권한 창을 띄워 승인 |
+| 모든 시나리오의 dBA 값이 **완전히 똑같음** | 녹음이 안 되고 있다는 신호입니다 (실제 소리는 매번 달라짐). 위 마이크 권한 항목 참고 |
 | 항상 FAIL (응답하는데도) | 응답 판정은 소음 바닥 대비 상대 기준(`voice_over_floor_db`, 기본 8) — 8→5로 낮추거나, 노트북을 ThinQ ON에 더 가까이 배치. 실행 시 출력되는 "판정 참고: 소음 바닥/최고" 값에서 최고가 바닥+8을 넘는지 확인 |
 | 항상 OK (응답 없는데도) | `voice_over_floor_db`를 8→12로 올려보기 |
 | 에어컨·선풍기 소음 환경 | 자동 대응됨 — 음성 대역(250~4000Hz)만 측정하고 소음 바닥에 자동 적응. `voice_threshold_dbfs`(`--calibrate`)는 '응답 종료 대기'에만 사용 |
