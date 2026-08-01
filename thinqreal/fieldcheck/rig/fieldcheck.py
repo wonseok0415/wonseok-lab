@@ -123,7 +123,7 @@ def frame_dba(seg, samplerate, cal_offset=0.0):
     - A-가중: 사람 귀 기준 감도로 주파수별 가중 (dBA 표기의 근거)
     - 대역 제한: 팬/에어컨 저주파 소음 배제 (A-가중과 이중 방어)
     - cal_offset: 휴대폰 소음측정 앱 등 실측과 한 번 비교해 넣는 보정값.
-      0이면 상대 dBA (판정에는 상대값으로 충분 — 바닥 대비 차이만 사용)
+      0이면 상대 dBA (판정에는 상대값으로 충분 — 기저 소음 대비 차이만 사용)
     """
     key = (len(seg), samplerate)
     if key not in _WEIGHT_CACHE:
@@ -144,9 +144,9 @@ def analyze_recording(samples, samplerate, over_floor_db=8.0,
 
     1) 30ms 프레임마다 A-가중 음성 대역(250~4000Hz) 레벨(dBA)을 잰다
        — 에어컨/선풍기 저주파 소음은 대역 제한 + A-가중으로 이중 배제.
-    2) 프레임 값들의 하위 10퍼센타일을 '소음 바닥'으로 삼는다
+    2) 프레임 값들의 하위 10퍼센타일을 '기저 소음'으로 삼는다
        — 환경마다 다른 소음 수준에 자동 적응 (절대 임계값 불필요).
-    3) 바닥보다 over_floor_db(기본 8dB) 이상 솟은 프레임을 발성으로 보고,
+    3) 기저 소음보다 over_floor_db(기본 8dB) 이상 솟은 프레임을 발성으로 보고,
        1초 구간(window_s) 안에서 발성 비율이 voiced_ratio(70%) 이상이면
        음성 응답으로 판정한다.
 
@@ -155,7 +155,7 @@ def analyze_recording(samples, samplerate, over_floor_db=8.0,
     TTS 장애로 '듣고 연산음은 내지만 말을 못 하는' 상태를 FAIL로 잡는 것이
     L1의 핵심이므로, 효과음을 응답으로 인정하면 안 된다.
 
-    cal_offset(dba_calibration_offset)이 0이면 상대 dBA — 판정은 바닥 대비
+    cal_offset(dba_calibration_offset)이 0이면 상대 dBA — 판정은 기저 소음 대비
     차이만 쓰므로 보정 없이도 정확하다. 실측 소음계와 숫자를 맞추고 싶을
     때만 보정하면 된다 (README 'dBA 보정' 참조).
     """
@@ -175,7 +175,7 @@ def analyze_recording(samples, samplerate, over_floor_db=8.0,
                 'floor_dba': round(min(dbs), 1), 'peak_dba': round(max(dbs), 1),
                 'silent': True}
 
-    # 하위 10퍼센타일 = 소음 바닥. 완전 무음(-120) 구간이 바닥을 비현실적으로
+    # 하위 10퍼센타일 = 기저 소음. 완전 무음(-120) 구간이 기저 소음을 비현실적으로
     # 끌어내리지 않도록 하한을 둔다 (실제 마이크 환경엔 완전 무음이 없음).
     floor = max(float(np.percentile(dbs, 10)), -85.0 + cal_offset)
     thr = floor + over_floor_db
@@ -279,8 +279,8 @@ def run_scenario(cfg, scenario):
         print('         공통: python fieldcheck.py --mic-test 로 입력 상태를 먼저 점검하세요')
     else:
         rel = '' if cal else ' (상대값 — 실측 보정은 README §dBA 보정)'
-        print(f'  판정 참고: 소음 바닥 {verdict["floor_dba"]}dBA / 최고 {verdict["peak_dba"]}dBA '
-              f'(음성 인정 기준: 바닥+{cfg.get("voice_over_floor_db", 8.0)}dB){rel}')
+        print(f'  판정 참고: 기저 소음 {verdict["floor_dba"]}dBA / 최고 {verdict["peak_dba"]}dBA '
+              f'(음성 인정 기준: 기저 소음+{cfg.get("voice_over_floor_db", 8.0)}dB){rel}')
 
     # 생성형 답변은 녹음 창보다 길 수 있고, 무응답 '판정'이라도 실제 답변이
     # 창이 끝난 뒤 늦게 시작될 수 있다 (현장 관측: 영화 질문 — 긴 연산 후 답변,
