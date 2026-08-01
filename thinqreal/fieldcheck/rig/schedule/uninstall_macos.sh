@@ -5,8 +5,10 @@ set -euo pipefail
 LABEL="com.thinqreal.fieldcheck"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
 
+RIG_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+
 launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
-rm -f "$PLIST"
+rm -f "$PLIST" "$RIG_DIR/schedule/run_once.command"
 
 echo "자동 실행을 해제했습니다. ($PLIST 삭제)"
 echo

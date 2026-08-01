@@ -9,8 +9,10 @@ state.json
 # 점검 음성 파일 (각 리그에서 생성/녹음)
 phrases/*.wav
 
-# 자동 실행 로그 (schedule/ 설치 스크립트가 생성)
+# 자동 실행 로그 + 설치 스크립트가 만드는 실행 파일 (경로가 PC마다 다름)
 logs/
+schedule/run_once.command
+schedule/run_once.bat
 
 # Python 캐시
 __pycache__/
