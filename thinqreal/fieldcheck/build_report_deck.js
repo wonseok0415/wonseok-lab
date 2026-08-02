@@ -149,7 +149,7 @@ function slide(dark) {
 /* ══════════════ 3. 왜 만들었나 ══════════════ */
 {
   const s = slide();
-  head(s, '왜 만들었나', '2026-07-27 주간 · ATOM TTS 서버 장애');
+  head(s, '추진 배경', '2026-07-27 주간 · ATOM TTS 서버 장애');
 
   const tl = [
     ['월 오후', '무응답 증가', '발화 후 응답 없음\n빈도가 늘기 시작', MUTED],
@@ -186,7 +186,7 @@ function slide(dark) {
 /* ══════════════ 4. 전체 구조 ══════════════ */
 {
   const s = slide();
-  head(s, '무엇을 만들었나', '기존 예약 관리 시스템의 백엔드·메일 인프라를 그대로 재활용 — 신규 서버·계정·과금 없음');
+  head(s, '시스템 구성', '기존 예약 관리 시스템의 백엔드·메일 인프라를 그대로 재활용 — 신규 서버·계정·과금 없음');
 
   const rows = [
     ['점검 장비', '상주 노트북 + (3단계) USB 웹캠', '① 음성 재생 "하이엘지" → 점검 질문   ② 내장 마이크로 응답 녹음   ③ 웹캠으로 가전 제어 전·후 촬영', OLIVE],
@@ -209,7 +209,7 @@ function slide(dark) {
 /* ══════════════ 5. 하루가 어떻게 돌아가는가 ══════════════ */
 {
   const s = slide();
-  head(s, '하루가 어떻게 돌아가는가', '사람이 할 일은 아침에 메일 한 번 보는 것뿐입니다');
+  head(s, '일일 운영 흐름', '사람이 할 일은 아침에 메일 한 번 보는 것뿐입니다');
 
   const day = [
     ['07:30', '자동 점검', '점검 장비가 스스로 깨어나\nThinQ ON에게 3개 질문\n→ 판정 후 서버 전송', '사람 할 일 없음', OLIVE],
@@ -239,7 +239,7 @@ function slide(dark) {
 /* ══════════════ 6. 판정 3단계 ══════════════ */
 {
   const s = slide();
-  head(s, '판정 3단계 — 무엇을 잡는가', '단계마다 보는 계층이 다릅니다. 어느 단계에서 실패했는지가 곧 원인 진단입니다');
+  head(s, '판정 체계 — 3단계', '단계마다 보는 계층이 다릅니다. 어느 단계에서 실패했는지가 곧 원인 진단입니다');
 
   const lv = [
     ['L1', '말을 했는가', '소리 에너지만 분석\nSTT 불필요 · 즉시 판정', '7월 ATOM 장애가\n정확히 이 단계', '운영 중', OLIVE],
@@ -279,7 +279,7 @@ function slide(dark) {
 /* ══════════════ 7. L1 vs L2 ══════════════ */
 {
   const s = slide();
-  head(s, 'L1과 L2는 무엇이 다른가', '가장 많이 받는 질문입니다');
+  head(s, 'L1 · L2 판정의 역할 구분', '같은 실패가 아니라, 서로 다른 계층의 실패를 잡습니다');
 
   card(s, { x: 0.7, y: 1.72, w: 11.9, h: 0.95, fill: OLIVE, line: OLIVE, flat: true });
   s.addText('전화에 비유하면 — L1은 "전화를 받았는가", L2는 "받아서 제대로 대답했는가"', {
@@ -319,7 +319,7 @@ function slide(dark) {
 /* ══════════════ 8. 응답 시작 도식 ══════════════ */
 {
   const s = slide();
-  head(s, "'응답 시작'이란 무엇인가", '메일과 대시보드에 나오는 밀리초(ms) 수치가 무엇을 재는지');
+  head(s, "'응답 시작' 측정 기준", '메일과 대시보드에 나오는 밀리초(ms) 수치가 무엇을 재는지');
 
   const steps = [
     ['①', '"하이엘지"\n재생', SAGE],
@@ -355,7 +355,7 @@ function slide(dark) {
 /* ══════════════ 9. 현장에서 해결한 문제 ══════════════ */
 {
   const s = slide();
-  head(s, '현장에서 발견하고 해결한 문제', '설계실에서는 나오지 않고 현장에서만 나온 문제들입니다 — 신뢰도의 근거');
+  head(s, '현장 검증 중 발견·개선 사항', '설계 단계에서는 나오지 않고 현장에서만 나온 문제들입니다 — 판정 신뢰도의 근거');
 
   const issues = [
     ['기동어 직후 명령이 씹힘', "ThinQ ON이 '띵' 반응 전에는 듣지 못함", '기동어·질문을 분리 재생 + 1.5초 대기'],
@@ -382,7 +382,7 @@ function slide(dark) {
 /* ══════════════ 10. 마이크 권한 함정 ══════════════ */
 {
   const s = slide();
-  head(s, '가장 위험했던 사례 — 점검 장비가 스스로를 속인 경우');
+  head(s, '자가 진단 설계 — 점검 장비 이상의 오보 방지');
 
   card(s, { x: 0.7, y: 1.6, w: 11.9, h: 0.92, fill: BRICK, line: BRICK, flat: true });
   s.addText('자동 실행 첫날 점검 3건 전부 실패 — 그런데 ThinQ ON은 정상이었습니다', {
@@ -413,7 +413,7 @@ function slide(dark) {
 /* ══════════════ 11. 검증 결과 ══════════════ */
 {
   const s = slide();
-  head(s, '검증 결과 (실측)', '2026-08-01 L1+L2 통합 판정 · 2026-08-02 자동 실행');
+  head(s, '현장 검증 결과', '2026-08-01 L1+L2 통합 판정 · 2026-08-02 07:30 자동 실행');
 
   const kpi = [
     ['6건', '일일 판정', 'L1 3건 + L2 3건'],
@@ -429,38 +429,46 @@ function slide(dark) {
     s.addText(k[2], { x: x + 0.22, y: 2.75, w: 2.4, h: 0.3, margin: 0, fontFace: F, fontSize: 11, color: MUTED });
   });
 
-  s.addText('실제 인식 결과 — 로컬 STT가 받아쓴 ThinQ ON의 답변', { x: 0.7, y: 3.32, w: 8, h: 0.35, margin: 0, fontFace: F, fontSize: 14, bold: true, color: OLIVE });
+  s.addText([
+    { text: '실측 상세 — ', options: { bold: true, color: OLIVE } },
+    { text: '응답 시간의 차이는 성능 편차가 아니라 ', options: { color: MUTED } },
+    { text: '처리 경로의 차이', options: { bold: true, color: OLIVE } },
+    { text: '입니다', options: { color: MUTED } },
+  ], { x: 0.7, y: 3.3, w: 11.9, h: 0.35, margin: 0, fontFace: F, fontSize: 14 });
 
-  const cols = [[0.7, 3.5], [4.35, 1.6], [6.1, 5.15], [11.4, 1.2]];
-  ['시나리오', '응답 시작', '인식된 문장', '판정'].forEach((h, i) => {
+  const cols = [[0.7, 2.1], [2.85, 3.35], [6.25, 1.5], [7.8, 3.6], [11.45, 1.15]];
+  ['시나리오', '추정 처리 경로', '응답 시작', '인식된 문장', '판정'].forEach((h, i) => {
     s.addText(h, { x: cols[i][0] + 0.2, y: 3.72, w: cols[i][1] - 0.3, h: 0.3, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: MUTED });
   });
   const recs = [
-    ['시간 질문', '150 ms', '"지금은 9시 33분이에요"'],
-    ['일상 대화', '2,910 ms', '"저는 항상 기분이 좋아요…"'],
-    ['날씨 (외부 연동)', '4,620 ms', '"오늘 등천동 날씨는… 기온은 최고 34.2도…"'],
+    ['시간 질문', '기기 내 즉답 — AI 엔진 미호출', '150 ms', '"지금은 9시 33분이에요"'],
+    ['일상 대화', '생성 엔진 경유', '2,910 ms', '"저는 항상 기분이 좋아요…"'],
+    ['날씨', '생성 엔진 + 외부 서비스 연동', '4,620 ms', '"오늘 등천동…기온은 최고 34.2도…"'],
   ];
   recs.forEach((r, i) => {
     const y = 4.08 + i * 0.72;
     card(s, { x: 0.7, y, w: 11.9, h: 0.6, flat: true });
-    s.addText(r[0], { x: 0.9, y, w: 3.3, h: 0.6, margin: 0, fontFace: F, fontSize: 13, bold: true, color: INK, valign: 'middle' });
-    s.addText(r[1], { x: 4.55, y, w: 1.4, h: 0.6, margin: 0, fontFace: F, fontSize: 13, color: OLIVE, bold: true, valign: 'middle' });
-    s.addText(r[2], { x: 6.3, y, w: 4.95, h: 0.6, margin: 0, fontFace: F, fontSize: 12.5, color: MUTED, valign: 'middle' });
-    s.addText('통과', { x: 11.6, y, w: 0.9, h: 0.6, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE, valign: 'middle' });
+    s.addText(r[0], { x: 0.9, y, w: 1.95, h: 0.6, margin: 0, fontFace: F, fontSize: 12.5, bold: true, color: INK, valign: 'middle' });
+    s.addText(r[1], { x: 3.05, y, w: 3.15, h: 0.6, margin: 0, fontFace: F, fontSize: 11.5, color: INK, valign: 'middle' });
+    s.addText(r[2], { x: 6.45, y, w: 1.3, h: 0.6, margin: 0, fontFace: F, fontSize: 13, color: OLIVE, bold: true, valign: 'middle' });
+    s.addText(r[3], { x: 8.0, y, w: 3.4, h: 0.6, margin: 0, fontFace: F, fontSize: 11, color: MUTED, valign: 'middle' });
+    s.addText('통과', { x: 11.65, y, w: 0.85, h: 0.6, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE, valign: 'middle' });
   });
 
-  card(s, { x: 0.7, y: 6.3, w: 11.9, h: 0.78, fill: BG_SOFT, flat: true });
+  card(s, { x: 0.7, y: 6.28, w: 11.9, h: 0.88, fill: BG_SOFT, flat: true });
   s.addText([
-    { text: '받아쓰기 오류는 감수합니다 (의도된 설계) — ', options: { bold: true, color: OLIVE } },
-    { text: '“등촌동”을 “등천동”으로 잘못 듣지만 기대 키워드(날씨·기온)가 살아남아 판정은 정확합니다. 키워드를 여러 개 두어 오인식 한 번이 오판정이 되지 않게 했습니다.', options: { color: INK } },
-  ], { x: 1.0, y: 6.3, w: 11.3, h: 0.78, margin: 0, fontFace: F, fontSize: 12.5, valign: 'middle' });
+    { text: '경로별 기준선이 다르므로 시나리오별 추이로 봅니다 — ', options: { bold: true, color: OLIVE } },
+    { text: '“시간 질문이 3초”는 절대값으론 정상이어도 이상 신호입니다. 날씨만 느려지면 외부 연동, 전부 느려지면 엔진·인프라로 지연 위치를 특정합니다.\n', options: { color: INK } },
+    { text: '받아쓰기 오류는 감수합니다 — ', options: { bold: true, color: OLIVE } },
+    { text: '“등촌동”→“등천동” 오인식에도 기대 키워드(날씨·기온)가 살아남아 판정은 정확합니다 (다중 키워드 완충).', options: { color: INK } },
+  ], { x: 1.0, y: 6.28, w: 11.3, h: 0.88, margin: 0, fontFace: F, fontSize: 12, valign: 'middle', lineSpacing: 19 });
   s.addNotes('판정 대상은 "질문에 맞는 답을 했는가"이지 "받아쓰기가 정확한가"가 아닙니다.');
 }
 
 /* ══════════════ 12. 무엇을 받게 되는가 ══════════════ */
 {
   const s = slide();
-  head(s, '무엇을 받게 되는가', '건별 알림은 없습니다 — 정상일 때는 아침 요약 한 통뿐입니다');
+  head(s, '운영 산출물 — 요약 메일 · 관리자 탭', '건별 알림은 없습니다 — 정상일 때는 아침 요약 한 통뿐입니다');
 
   card(s, { x: 0.7, y: 1.8, w: 5.85, h: 3.4 });
   s.addShape(pres.ShapeType.roundRect, { x: 0.7, y: 1.8, w: 5.85, h: 0.72, rectRadius: 0.09, fill: { color: OLIVE }, line: { width: 0 } });
@@ -493,7 +501,7 @@ function slide(dark) {
 /* ══════════════ 13. 실패 메일을 받으면 ══════════════ */
 {
   const s = slide();
-  head(s, '실패 메일을 받으면 무엇을 하나', '팀원용 대응 가이드');
+  head(s, '실패 알림 대응 가이드', '알림 문구별 첫 조치 — 실패 1건이 곧 장애는 아닙니다');
 
   const acts = [
     ['[L1] 무응답', 'ThinQ ON이 말을 하지 않음', '현장에서 직접 "하이엘지" 발화 → 재현되면 TTS·네트워크 이슈로 보고', BRICK],
@@ -521,7 +529,7 @@ function slide(dark) {
 /* ══════════════ 14. 비용 + 남은 계획 ══════════════ */
 {
   const s = slide();
-  head(s, '비용과 남은 계획');
+  head(s, '소요 비용 및 향후 계획');
 
   s.addText('비용', { x: 0.7, y: 1.72, w: 3, h: 0.32, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
   const costs = [
@@ -540,7 +548,7 @@ function slide(dark) {
 
   s.addText('남은 계획', { x: 6.75, y: 1.72, w: 3, h: 0.32, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
   const plans = [
-    ['구축 3단계 (L3)', 'USB 웹캠으로 가전 제어 전·후 촬영 판정', '판정 방식 확정'],
+    ['구축 3단계 (L3)', '가전 제어 전·후 촬영 판정 + 단독 제어 vs 서비스 연동 응답 시간 비교', '판정 방식 확정'],
     ['운영 전환', '상주 Windows 이관 + 단일 실행파일 패키징 + 담당자 전체 알림', '대기'],
     ['Phase 2 격상', '수동 일일 점검을 자동 점검으로 대체', '병행 검증 후'],
   ];
