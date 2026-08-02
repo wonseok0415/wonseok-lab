@@ -11,7 +11,7 @@
 #    Unregister-ScheduledTask -TaskName "ThinQReal FieldCheck" -Confirm:$false
 # ============================================================
 param(
-    [string]$Time = "07:30"
+    [string]$Time = "07:00"
 )
 
 $ErrorActionPreference = "Stop"

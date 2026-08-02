@@ -3,7 +3,7 @@
 #  매일 정해진 시각에 점검을 자동 실행 (macOS / launchd)
 #
 #  사용법:
-#    bash schedule/install_macos.sh          → 매일 07:30 실행
+#    bash schedule/install_macos.sh          → 매일 07:00 실행
 #    bash schedule/install_macos.sh 8 15     → 매일 08:15 실행
 #
 #  해제:
@@ -20,7 +20,7 @@
 set -euo pipefail
 
 HOUR="${1:-7}"
-MIN="${2:-30}"
+MIN="${2:-0}"
 LABEL="com.thinqreal.fieldcheck"
 
 RIG_DIR="$(cd "$(dirname "$0")/.." && pwd)"
@@ -95,5 +95,7 @@ echo "    → '터미널이(가) 마이크에 접근하려고 합니다' 창이 
 echo "      (이 승인은 한 번만 하면 이후 계속 유지됩니다)"
 echo
 echo "▶ 그 시각에 맥이 잠들어 있으면 실행되지 않습니다. 자동으로 깨우려면 (관리자 암호 필요):"
-printf '    sudo pmset repeat wakeorpoweron MTWRFSU %02d:%02d:00\n' "$HOUR" "$((MIN > 5 ? MIN - 5 : 0))"
+WAKE_M=$((MIN - 5)); WAKE_H=$HOUR
+if [ "$WAKE_M" -lt 0 ]; then WAKE_M=$((WAKE_M + 60)); WAKE_H=$(( (HOUR + 23) % 24 )); fi
+printf '    sudo pmset repeat wakeorpoweron MTWRFSU %02d:%02d:00\n' "$WAKE_H" "$WAKE_M"
 echo "    (평일만 원하면 MTWRFSU 대신 MTWRF)"

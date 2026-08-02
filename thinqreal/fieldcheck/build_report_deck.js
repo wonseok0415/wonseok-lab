@@ -96,7 +96,7 @@ function slide(dark) {
     x: 0.92, y: 4.5, w: 4.75, h: 0.62, rectRadius: 0.31,
     fill: { color: OLIVE }, line: { color: OLIVE_MID, width: 1 },
   });
-  s.addText('매일 아침 07:30 자동 운영 중', {
+  s.addText('매일 아침 07:00 자동 운영 중', {
     x: 0.92, y: 4.5, w: 4.75, h: 0.62, margin: 0,
     fontFace: F, fontSize: 15, bold: true, color: WHITE, align: 'center', valign: 'middle',
   });
@@ -212,8 +212,8 @@ function slide(dark) {
   head(s, '일일 운영 흐름', '사람이 할 일은 아침에 메일 한 번 보는 것뿐입니다');
 
   const day = [
-    ['07:30', '자동 점검', '점검 장비가 스스로 깨어나\nThinQ ON에게 3개 질문\n→ 판정 후 서버 전송', '사람 할 일 없음', OLIVE],
-    ['08시대', '요약 메일', '정상 / 실패가\n헤더 색으로 구분되어\n메일로 도착', '메일 한 번 보기', AMBER],
+    ['07:00', '자동 점검', '점검 장비가 스스로 깨어나\nThinQ ON에게 3개 질문\n→ 판정 후 서버 전송', '사람 할 일 없음', OLIVE],
+    ['07:40', '요약 메일', '정상 / 실패가\n헤더 색으로 구분되어\n메일로 도착', '메일 한 번 보기', AMBER],
     ['상시', '관리자 페이지', '🩺 자동 점검 탭에서\n최근 7 / 14 / 30일\n추이 확인', '필요할 때만', OLIVE_MID],
     ['예약 시간', '자동 스킵', '확정 예약·차단 슬롯에는\n점검을 걸지 않음\n(시작 20분 전 ~ 종료 10분 후)', '사람 할 일 없음', SAGE],
   ];
@@ -229,8 +229,8 @@ function slide(dark) {
   });
 
   card(s, { x: 0.7, y: 5.45, w: 11.9, h: 1.2, fill: BG_SOFT, flat: true });
-  s.addText('왜 07:30인가', { x: 1.0, y: 5.62, w: 2.2, h: 0.3, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE });
-  s.addText('1회차 예약(09:00)의 회피 구간(08:40~)보다 앞서 시연과 충돌하지 않고, 08시 요약 메일에 당일 결과가 실립니다.\n즉 시연이 시작되기 전에 「오늘 정상」을 확인할 수 있습니다.', {
+  s.addText('왜 07:00인가', { x: 1.0, y: 5.62, w: 2.2, h: 0.3, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE });
+  s.addText('사내 메일은 보안 게이트웨이를 거치며 수십 분 늦게 도착합니다. 점검 07:00 → 발송 07:40으로 앞당겨,\n지연을 감안해도 09:00 1회차 시연 전에 「오늘 정상」을 확인하고 대응할 여유를 확보했습니다.', {
     x: 1.0, y: 5.95, w: 11.3, h: 0.62, margin: 0, fontFace: F, fontSize: 13.5, color: INK, lineSpacing: 20,
   });
   s.addNotes('팀원 입장에서 실제로 무엇이 바뀌는지를 보여주는 슬라이드입니다.');
@@ -350,6 +350,77 @@ function slide(dark) {
     x: 1.0, y: 6.14, w: 11.3, h: 0.45, margin: 0, fontFace: F, fontSize: 13.5, color: INK,
   });
   s.addNotes('숫자만 있고 정의가 없으면 오해되므로 요약 메일 안에도 같은 도식을 넣었습니다.');
+}
+
+/* ══════════════ 8a. L1 판정 로직 ══════════════ */
+{
+  const s = slide();
+  head(s, "L1 판정 로직 — 소리에서 '말'을 가려내는 방법", '쇼룸에는 에어컨 소음과 ThinQ ON 자신의 효과음이 섞여 있습니다 — 세 겹의 필터로 목소리만 남깁니다');
+
+  const flt = [
+    ['①', '대역 필터', '사람 목소리 대역\n250~4,000Hz의\n에너지만 측정', '에어컨·선풍기의 저주파 팬 소음\n— 아무리 커도 측정에서 제외', OLIVE],
+    ['②', '기저 소음 자동 추정', '조용한 하위 10% 구간을\n그날의 기저 소음으로 잡고\n기저 +8dB 이상만 발성 후보', '그날그날 다른 배경 소음 수준\n— 고정 기준이 아니라 환경이\n바뀌어도 재보정 불필요', OLIVE_MID],
+    ['③', '발성 비율 판정', '1초 구간의 70% 이상이\n발성 프레임일 때만\n「말」로 인정', "'띵' 효과음(짧은 소리+간격)과\n순간 소음은 비율 미달로 배제,\n어절 쉼이 있는 말은 통과", AMBER],
+  ];
+  flt.forEach((f, i) => {
+    const x = 0.7 + i * 4.07;
+    card(s, { x, y: 1.8, w: 3.82, h: 3.5 });
+    badge(s, x + 0.28, y0 = 2.02, f[0].replace(/[①②③]/, String(i + 1)), f[4]);
+    s.addText(f[1], { x: x + 0.85, y: 2.02, w: 2.75, h: 0.42, margin: 0, fontFace: F, fontSize: 16.5, bold: true, color: INK, valign: 'middle' });
+    s.addText(f[2], { x: x + 0.28, y: 2.62, w: 3.26, h: 1.05, margin: 0, fontFace: F, fontSize: 13, color: INK, lineSpacing: 19 });
+    s.addShape(pres.ShapeType.roundRect, { x: x + 0.28, y: 3.78, w: 3.26, h: 1.28, rectRadius: 0.09, fill: { color: BG_SOFT }, line: { width: 0 } });
+    s.addText([
+      { text: '걸러내는 것\n', options: { bold: true, color: f[4], fontSize: 10.5 } },
+      { text: f[3], options: { color: INK, fontSize: 11.5 } },
+    ], { x: x + 0.45, y: 3.78, w: 2.95, h: 1.28, margin: 0, fontFace: F, valign: 'middle', lineSpacing: 16 });
+    if (i < 2) s.addText('▶', { x: x + 3.82, y: 3.3, w: 0.26, h: 0.4, margin: 0, fontFace: F, fontSize: 12, color: SAGE, align: 'center' });
+  });
+
+  card(s, { x: 0.7, y: 5.6, w: 11.9, h: 1.15, fill: WHITE, line: AMBER });
+  s.addText('③이 특히 중요합니다', { x: 1.0, y: 5.76, w: 11.3, h: 0.32, margin: 0, fontFace: F, fontSize: 14, bold: true, color: AMBER });
+  s.addText("ATOM 장애는 \"연산음('띵띵띵')은 내는데 말을 못 하는\" 상태였습니다. 단순히 「소리가 났는가」로 판정했다면 이 장애를 정상으로 오판했을 것입니다. 세 필터를 모두 통과한 최초 시점이 '응답 시작'으로 기록됩니다.", {
+    x: 1.0, y: 6.12, w: 11.3, h: 0.55, margin: 0, fontFace: F, fontSize: 13, color: INK, lineSpacing: 19,
+  });
+  s.addNotes('판정에 AI가 없습니다 — 전부 신호 처리(산술)라 결과가 재현 가능하고 빠릅니다. 자체 시험 20건으로 각 필터를 검증했습니다.');
+}
+
+/* ══════════════ 8b. L2 Whisper ══════════════ */
+{
+  const s = slide();
+  head(s, 'L2 판정 로직 — Whisper 음성 인식', '팀에서 처음 접하는 솔루션이라 소개합니다');
+
+  card(s, { x: 0.7, y: 1.78, w: 5.6, h: 3.15 });
+  s.addText('Whisper란', { x: 1.0, y: 1.98, w: 5.0, h: 0.36, margin: 0, fontFace: F, fontSize: 17, bold: true, color: OLIVE });
+  s.addText([
+    { text: 'OpenAI가 2022년 공개한 음성 인식(STT) AI 모델', options: { bullet: true, breakLine: true } },
+    { text: '68만 시간 다국어 음성으로 학습 (한국어 포함) · 오픈소스 무료', options: { bullet: true, breakLine: true } },
+    { text: '대화형 AI가 아니라 「받아쓰기」만 하는 모델 — 녹음을 넣으면 문장이 나옴', options: { bullet: true, breakLine: true } },
+    { text: '점검 장비 노트북 안에서 실행 — small 모델 약 500MB, CPU로 동작', options: { bullet: true } },
+  ], { x: 1.0, y: 2.42, w: 5.05, h: 2.3, margin: 0, fontFace: F, fontSize: 12.5, color: INK, paraSpaceAfter: 9, lineSpacing: 18 });
+
+  card(s, { x: 6.55, y: 1.78, w: 6.05, h: 3.15, fill: OLIVE, line: OLIVE, flat: true });
+  s.addText('로컬 실행이 핵심입니다', { x: 6.85, y: 1.98, w: 5.45, h: 0.36, margin: 0, fontFace: F, fontSize: 17, bold: true, color: WHITE });
+  s.addText([
+    { text: '공간의 음성이 외부로 나가지 않음 → 클라우드 STT 대비 보안 검토 부담 없음', options: { bullet: true, breakLine: true } },
+    { text: '인터넷이 끊겨도 판정 지속 → 정작 장애 상황에서 점검이 멈추는 구조를 회피', options: { bullet: true, breakLine: true } },
+    { text: '계정·과금 없음 → 운영 시스템에 개인 결제 수단을 묶지 않음', options: { bullet: true } },
+  ], { x: 6.85, y: 2.42, w: 5.5, h: 2.3, margin: 0, fontFace: F, fontSize: 12.5, color: 'E8EDE5', paraSpaceAfter: 10, lineSpacing: 18 });
+
+  s.addText('판정 연동 흐름', { x: 0.7, y: 5.12, w: 4, h: 0.34, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
+  const flow = [
+    ['①  응답 녹음', 'WAV 파일', WHITE, INK],
+    ['②  Whisper 전사', '"오늘 등천동 날씨는…\n기온은 최고 34.2도…"', WHITE, INK],
+    ['③  키워드 판정', '회피 표현(죄송·모르겠) → 실패\n기대 키워드(날씨·기온) → 통과', 'F4F6F2', INK],
+    ['④  기록·보고', '결과 + 인식 문장을 시트에,\n실패 시 메일에 문장 표시', WHITE, INK],
+  ];
+  flow.forEach((f, i) => {
+    const x = 0.7 + i * 3.03;
+    card(s, { x, y: 5.52, w: 2.83, h: 1.25, fill: f[2], flat: true, line: i === 2 ? OLIVE_MID : undefined });
+    s.addText(f[0], { x: x + 0.2, y: 5.64, w: 2.45, h: 0.3, margin: 0, fontFace: F, fontSize: 12.5, bold: true, color: OLIVE });
+    s.addText(f[1], { x: x + 0.2, y: 5.97, w: 2.45, h: 0.72, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED, lineSpacing: 14 });
+    if (i < 3) s.addText('▶', { x: x + 2.83, y: 5.95, w: 0.2, h: 0.35, margin: 0, fontFace: F, fontSize: 10, color: SAGE, align: 'center' });
+  });
+  s.addNotes('Whisper는 받아쓰기까지만 하고 판정은 단순 키워드 규칙입니다 — AI의 판단이 아니라 규칙이므로 같은 녹음엔 항상 같은 결과(재현 가능)이고, 왜 실패인지 설명할 수 있습니다.');
 }
 
 /* ══════════════ 9. 현장에서 해결한 문제 ══════════════ */
