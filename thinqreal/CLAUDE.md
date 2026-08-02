@@ -273,6 +273,13 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 
 ## FieldCheck 진행 상태 (핸드오프 로그 — 세션 마무리 시 갱신)
 
+**2026-08-03 — API 키 보안 조치 수용 + 예약 조회 404 복구:**
+- **main 리베이스로 운영 세션의 보안 조치 유입** (thinqreal PR #51, 필독 안내는 thinqreal `CLAUDE.md` §FieldCheck): `FC_API_KEY` 하드코딩 제거 → **Script Property 조회(`getFcApiKey()`, 미설정·불일치 시 전부 거부)**. 초기 키 `fieldcheck2026`은 노출 폐기. **코드·예시·문서에 실제 키 재기록 금지**
+- **rig 예약 조회 404 → 점검 스킵 발생**: 원인은 맥북 `config.json`의 `endpoint_url`이 폐기된 배포 주소를 가리킨 것. 저장소 기준 메인 배포 URL은 처음부터 `AKfycbxqmzxbm99…` 하나뿐(config.example.json 기본값 = 메인 주소) — 로컬 파일만 교정하면 됨
+- 조치: `config.example.json` api_key를 자리표시자로 교체(평문 키 제거), rig README §3에 404·Unauthorized 대처 안내, DESIGN.md §9에 보안 서브섹션 신설 + **`GET ?type=health_checks` 무인증 → 관리자 토큰 게이트 검토 백로그** (운영 세션 관찰 위임분)
+- **사용자 후속 (맥북 로컬)**: `config.json`의 `endpoint_url`을 메인 배포 주소로, `api_key`를 Script Property `FC_API_KEY` 새 값으로 교체 → `--once`로 확인. Apps Script는 main 최신(.gs = 보안 조치 + 07:40 스케줄)을 에디터 반영 후 **기존 배포 편집(새 버전)으로 재배포** — 새 배포를 만들면 URL이 바뀌어 모든 클라이언트가 끊김
+- ⚠ 여전히 미확인: `setupFieldCheckDailyTrigger()` 1회 실행 여부 (요약 메일이 8시대에 오면 누락 신호)
+
 **2026-08-02 — 07:30 자동 실행 첫 검증 성공 + 팀 공유 자료:**
 - **07:30 정상 자동 실행 확인 (사람 개입 없음)** — 구축 1·2단계의 마지막 미검증 항목이었던 "스스로 도는가"까지 통과. 이로써 1·2단계 공식 완결
 - **요약 메일 08:47 수신 — 정상 범위.** 지연 요인이 둘 겹침: ① Apps Script 시간 트리거는 8시대(08:00~09:00) 임의 시점에 실행 ② 발신이 외부 Gmail이라 사내 수신 시 **LG 보안 게이트웨이 스캔 큐**를 탐 (기존 확인 사항 — `thinqreal` 저장소 `docs/history.md` §발신자 참조. 예약 안내 메일에서 이미 겪었던 그 지연과 동일 원인)

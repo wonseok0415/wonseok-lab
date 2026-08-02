@@ -1,6 +1,6 @@
 {
   "endpoint_url": "https://script.google.com/macros/s/AKfycbxqmzxbm99Fi9vrKgLxCslUwwEl8TxiyUN6LPMwimf04yjQjIO1s2tjC2jWKnR7iCSrSQ/exec",
-  "api_key": "fieldcheck2026",
+  "api_key": "여기에_새_FC_API_KEY_입력",
 
   "samplerate": 16000,
   "voice_threshold_dbfs": -45,

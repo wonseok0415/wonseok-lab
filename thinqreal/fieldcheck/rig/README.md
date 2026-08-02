@@ -66,8 +66,9 @@ pip install faster-whisper          ← L2(내용 판정)용. 생략하면 L1만
 
 1. `config.example.json`을 복사해서 같은 폴더에 `config.json`으로 저장
 2. 메모장으로 열어 두 값 확인:
-   - `endpoint_url` — Apps Script 주소 (기본값이 현재 운영 주소)
-   - `api_key` — Apps Script의 `FC_API_KEY`와 같은 값이어야 함
+   - `endpoint_url` — Apps Script **메인 배포 주소** (예시 파일의 기본값이 현재 운영 주소). 예약 조회나 결과 전송이 **404**로 실패하면 이 값이 폐기된 배포 주소인 경우가 대부분 — 예시 파일의 주소로 교체할 것
+   - `api_key` — Apps Script **Script Property `FC_API_KEY`에 등록된 값**과 같아야 함 (프로젝트 설정 → 스크립트 속성). 예시 파일의 자리표시자를 실제 값으로 바꿔야 동작하며, 키가 다르면 서버가 전송을 전부 거부함(Unauthorized)
+   - ⚠ 실제 키는 `config.json`(커밋 금지)에만 둘 것 — 코드·예시 파일·문서에 적으면 안 됨 (초기 키 `fieldcheck2026`은 노출로 폐기됨)
 
 > **이미 `config.json`을 쓰고 있는데 프로그램이 업데이트된 경우**는 손으로 고치지 말고 아래 명령을 쓰세요. **새로 생긴 항목만** 채우고 기존 값(보정값·장치 번호·키워드)은 그대로 둡니다. 이전 파일은 `config.json.bak`으로 백업됩니다.
 > ```
