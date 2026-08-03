@@ -273,6 +273,12 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 
 ## FieldCheck 진행 상태 (핸드오프 로그 — 세션 마무리 시 갱신)
 
+**2026-08-04 — 07:00 미실행 원인 규명 (launchd 시각 미변경):**
+- 8/4 07:00 자동 점검 미실행 신고 → 진단 결과 **launchd 등록이 여전히 07:30** (schedule.log상 8/3도 07:30:01 실행). 8/2 "맥북 재설치"가 `git pull` 없이 구버전 설치 스크립트(기본값 07:30)로 수행된 것이 원인. pmset 06:55 기상은 정상 동작 확인(8/4 06:55:03 EC.RTC Wake, AC 연결)
+- 조치 안내: 맥북에서 `git pull` → `bash schedule/install_macos.sh` 재실행(기본값 07:00). 확인법: plist의 Hour 7/Minute 0. 마이크 권한·pmset은 재설정 불필요
+- 참고: 8/4 당일은 07:30 실행 + 요약 트리거(07:25~07:55)가 겹쳐 메일이 "기록 없음"으로 올 수 있음(일시적). **8/5 아침 = 완전 검증**: 07:00 실행(404 없이 예약 조회 통과) + 08시 초중반 메일
+- 교훈: 수동 `--once`는 schedule.log에 남지 않음(run_once.command만 기록) — 자동 실행 검증은 반드시 schedule.log 타임스탬프로
+
 **2026-08-03 — API 키 보안 조치 수용 + 예약 조회 404 복구:**
 - **main 리베이스로 운영 세션의 보안 조치 유입** (thinqreal PR #51, 필독 안내는 thinqreal `CLAUDE.md` §FieldCheck): `FC_API_KEY` 하드코딩 제거 → **Script Property 조회(`getFcApiKey()`, 미설정·불일치 시 전부 거부)**. 초기 키 `fieldcheck2026`은 노출 폐기. **코드·예시·문서에 실제 키 재기록 금지**
 - **rig 예약 조회 404 → 점검 스킵 발생**: 원인은 맥북 `config.json`의 `endpoint_url`이 폐기된 배포 주소를 가리킨 것. 저장소 기준 메인 배포 URL은 처음부터 `AKfycbxqmzxbm99…` 하나뿐(config.example.json 기본값 = 메인 주소) — 로컬 파일만 교정하면 됨
