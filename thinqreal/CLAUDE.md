@@ -279,7 +279,7 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 - 조치: `config.example.json` api_key를 자리표시자로 교체(평문 키 제거), rig README §3에 404·Unauthorized 대처 안내, DESIGN.md §9에 보안 서브섹션 신설 + **`GET ?type=health_checks` 무인증 → 관리자 토큰 게이트 검토 백로그** (운영 세션 관찰 위임분)
 - **사용자 후속 (맥북 로컬)**: `config.json`의 `endpoint_url`을 메인 배포 주소로, `api_key`를 Script Property `FC_API_KEY` 새 값으로 교체 → `--once`로 확인. Apps Script는 main 최신(.gs = 보안 조치 + 07:40 스케줄)을 에디터 반영 후 **기존 배포 편집(새 버전)으로 재배포** — 새 배포를 만들면 URL이 바뀌어 모든 클라이언트가 끊김
 - ⚠ 여전히 미확인: `setupFieldCheckDailyTrigger()` 1회 실행 여부 (요약 메일이 8시대에 오면 누락 신호)
-- **(후속) 리포 상태 점검 (08-04)**: 맥북 config.json 교정 + `--once` 성공 확인 → 404 건 종결. 단 thinqreal에 운영 세션 PR #52·#53(월간 리포트 개편, .gs ±1,000줄)이 **머지+재배포 완료** 상태라, 세션이 보낸 `배포용_20260803.gs`는 구버전 — **에디터에 Ctrl+F로 `monthly_report_preview` 검색해 없으면 최신 main(`배포용_20260804.gs`) 재반영+재배포 필요** (8/4 팀장 리뷰·8/5 발송 전 필수). wonseok-lab 잔여 브랜치 중 미머지 작업: `claude/gallant-faraday-G2Azk`(IoT 배치도 v10, 4커밋)·`claude/practical-davinci-70l3eh`(16커밋) — 나머지 5개는 main에 전부 반영된 빈 브랜치
+- **(후속) 리포 상태 점검 (08-04)**: 맥북 config.json 교정 + `--once` 성공 확인 → 404 건 종결. 단 thinqreal에 운영 세션 PR #52·#53(월간 리포트 개편, .gs ±1,000줄)이 **머지+재배포 완료** 상태라, 세션이 보낸 `배포용_20260803.gs`는 구버전 — **에디터에 Ctrl+F로 `monthly_report_preview` 검색해 없으면 최신 main(`배포용_20260804.gs`) 재반영+재배포 필요** (8/4 팀장 리뷰·8/5 발송 전 필수) → **확인 결과 에디터 최신 (08-04 06:23, 검색 2건 일치 — 재반영 불필요, 경고 해제)**. wonseok-lab 잔여 브랜치 중 미머지 작업: `claude/gallant-faraday-G2Azk`(IoT 배치도 v10, 4커밋)·`claude/practical-davinci-70l3eh`(16커밋) — 나머지 5개는 main에 전부 반영된 빈 브랜치
 
 **2026-08-02 — 07:30 자동 실행 첫 검증 성공 + 팀 공유 자료:**
 - **07:30 정상 자동 실행 확인 (사람 개입 없음)** — 구축 1·2단계의 마지막 미검증 항목이었던 "스스로 도는가"까지 통과. 이로써 1·2단계 공식 완결
