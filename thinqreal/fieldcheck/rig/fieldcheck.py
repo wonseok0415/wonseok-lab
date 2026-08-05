@@ -218,17 +218,20 @@ def audio():
         sys.exit('[오류] sounddevice가 설치되지 않았습니다. 명령창에서:  pip install sounddevice numpy')
 
 
-def wait_for_quiet(cfg, sd):
+def wait_for_quiet(cfg, sd, post_silence=None, max_wait=None):
     """앞 시나리오의 응답(생성형 AI라 길이가 크게 변동)이 끝날 때까지 대기.
 
     마이크를 0.5초 단위로 살피다가 post_silence_seconds(기본 2초) 동안
     조용하면 응답이 끝난 것으로 보고 반환한다. 무한 대기를 막기 위해
     max_response_wait_seconds(기본 60초)에서 강제 종료한다.
+
+    post_silence/max_wait 인자로 설정값을 덮어쓸 수 있다 — 되물음 확답처럼
+    청취 창이 닫히기 전에 서둘러야 하는 구간에서 짧은 값을 쓴다.
     """
     sr = int(cfg.get('samplerate', 16000))
     thr = float(cfg.get('voice_threshold_dbfs', -45))
-    quiet_needed = float(cfg.get('post_silence_seconds', 2.0))
-    max_wait = float(cfg.get('max_response_wait_seconds', 60))
+    quiet_needed = float(cfg.get('post_silence_seconds', 2.0)) if post_silence is None else post_silence
+    max_wait = float(cfg.get('max_response_wait_seconds', 60)) if max_wait is None else max_wait
     chunk = 0.5
     waited = 0.0
     quiet = 0.0
@@ -318,18 +321,22 @@ def run_scenario(cfg, scenario):
     # 창이 끝난 뒤 늦게 시작될 수 있다 (현장 관측: 영화 질문 — 긴 연산 후 답변,
     # 그 답변이 다음 시나리오의 기동어를 씹음). 판정 결과와 무관하게
     # 조용해질 때까지 기다린 뒤 다음 시나리오로 넘어간다.
-    print('  주변이 조용해질 때까지 대기...')
-    wait_for_quiet(cfg, sd)
-
     # ── 되물음 대비 '무조건 확답' (대책 A, 2026-08-05) ──
     # ThinQ ON이 "…실행할까요?"라고 되물었다면 지금 청취 모드라 확답이 접수되고,
     # 이미 실행했다면 기동어 없는 발화라 무시된다 — 어느 쪽이든 안전하다.
-    # (되물음 후 청취 창은 짧으므로 L3 시나리오는 listen_seconds를 짧게(8초) 둘 것)
+    # 단, 되물음의 청취 창은 짧다 — 첫 통합 시험(08-05)에서 일반 대기(2초 무음
+    # 확인)를 거친 확답이 창을 놓쳐 루틴이 불발됐다. 확답 앞에서는 무음 1초만
+    # 확인되면 즉시 재생하고, listen_seconds도 짧게(6~8초) 둘 것.
     if scenario.get('confirm_file'):
+        print('  응답이 멎는 즉시 확답을 재생합니다 (되물음 청취 창 대응)...')
+        wait_for_quiet(cfg, sd, post_silence=1.0, max_wait=8)
         confirm, confirm_sr = read_wav(os.path.join(BASE_DIR, scenario['confirm_file']))
         print('  확답 재생 — 되물음이면 접수되고, 이미 실행 중이면 무시됩니다')
         sd.play(confirm, confirm_sr, device=out_dev)
         sd.wait()
+    else:
+        print('  주변이 조용해질 때까지 대기...')
+        wait_for_quiet(cfg, sd)
 
     # ── L3: 가전 동작 구간 연속 촬영 + 판정 ──
     l3_judge = None
