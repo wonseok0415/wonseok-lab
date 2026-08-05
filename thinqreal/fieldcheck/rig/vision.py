@@ -183,32 +183,38 @@ def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
     판정 원칙: 사전 상태가 이미 목표 상태면 변화가 없어 실패(판정 불가)로
     남는다 — 웰컴(켜짐)→외출(꺼짐+복구) 쌍 구성으로 시작 상태를 보장할 것.
     """
+    # 판정은 변화의 '크기'만 본다 (2026-08-05 16:31 실측 교훈): 태양 각도에 따라
+    # 같은 가전 동작이 상대값을 올리기도 내리기도 한다 — 외출 루틴(어두워짐)이
+    # 정상 동작했는데 Δ+0.433이 나온 사례. 방향은 진단 참고값으로만 기록한다.
+    # 무인 점검에서는 사람 개입이 없으므로, 명령 직후의 급격한 |Δ|는 가전이
+    # 물리적으로 반응했다는 증거로 충분하다.
     want_on = (expect != 'off')
-    label = '밝아짐(켜짐)' if want_on else '어두워짐(꺼짐)'
 
     ratios = [s[3] for s in series]
     if not ratios or before_ratio is None:
         return {'passed': False, 'reason': '측정 데이터 없음', 'action_latency_ms': None,
-                'before_ratio': before_ratio, 'after_ratio': None}
+                'before_ratio': before_ratio, 'after_ratio': None, 'direction_match': None}
     tail = ratios[-sustain:]
     after = round(sum(tail) / len(tail), 3)
     delta = round(after - before_ratio, 3)
-    goal = (before_ratio + min_delta) if want_on else (before_ratio - min_delta)
 
-    def reached(r):
-        return r >= goal if want_on else r <= goal
-
-    if (delta >= min_delta) if want_on else (delta <= -min_delta):
-        crossed = next(s[0] for s in series if reached(s[3]))
+    if abs(delta) >= min_delta:
+        crossed = next(s[0] for s in series if abs(s[3] - before_ratio) >= min_delta)
+        direction_match = (delta > 0) == want_on
+        note = '' if direction_match else \
+            ' ※ 변화 방향이 기대와 반대 — 태양 각도에 따라 방향은 뒤집힐 수 있어 참고만'
         return {'passed': True,
-                'reason': f'{label} 확인 — 상대값 {before_ratio}→{after} (Δ{delta:+}, 기준 ±{min_delta})',
+                'reason': f'물리 변화 감지 — 상대값 {before_ratio}→{after} '
+                          f'(Δ{delta:+}, 기준 |Δ|≥{min_delta}){note}',
                 'action_latency_ms': int(crossed * 1000),
-                'before_ratio': before_ratio, 'after_ratio': after}
+                'before_ratio': before_ratio, 'after_ratio': after,
+                'direction_match': direction_match}
 
     return {'passed': False,
-            'reason': f'{label} 미확인 — 상대값 {before_ratio}→{after} (Δ{delta:+}, 기준 ±{min_delta}). '
-                      '변화가 없으면 명령 미동작 또는 점검 전 이미 목표 상태',
-            'action_latency_ms': None, 'before_ratio': before_ratio, 'after_ratio': after}
+            'reason': f'물리 변화 미감지 — 상대값 {before_ratio}→{after} (Δ{delta:+}, 기준 |Δ|≥{min_delta}). '
+                      '명령 미동작 또는 점검 전 이미 목표 상태',
+            'action_latency_ms': None, 'before_ratio': before_ratio, 'after_ratio': after,
+            'direction_match': None}
 
 
 # ── 독립 도구 (수동 측정) ───────────────────────────────────

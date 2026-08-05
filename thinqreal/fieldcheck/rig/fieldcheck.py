@@ -418,12 +418,14 @@ def run_scenario(cfg, scenario):
                     'after_ratio': l3_judge['after_ratio'] if l3_judge else None,
                     'min_delta': cam.get('min_delta', 0.15),
                     'expect': cam.get('expect', 'on'),
+                    'direction_match': l3_judge.get('direction_match') if l3_judge else None,
                     'reason': l3_judge['reason'] if l3_judge else '',
                     'reask': reask,
                     'snapshot': l3_snapshot,
                 }, ensure_ascii=False),
                 'stt_text': '',
-                'expected': f'{"밝아짐(켜짐)" if want_on else "어두워짐(꺼짐)"} — 상대값 변화 ±{cam.get("min_delta", 0.15)} 이상',
+                'expected': f'명령 직후 물리 변화 |Δ|≥{cam.get("min_delta", 0.15)} '
+                            f'(기대 방향: {"밝아짐" if want_on else "어두워짐"} — 참고용)',
                 'note': '되물음 발생 → 확답으로 진행' if reask else '',
             })
         results.append(l3)
@@ -844,12 +846,14 @@ def cmd_selftest():
     flat_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.76), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.76), (5.0, 0, 0, 0.75)]
     spike_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.95), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.76), (5.0, 0, 0, 0.75)]
     off_s = [(1.0, 0, 0, 0.97), (2.0, 0, 0, 0.96), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.74), (5.0, 0, 0, 0.73)]
+    dark_s = [(1.0, 0, 0, 0.74), (2.0, 0, 0, 0.73), (3.0, 0, 0, 0.55), (4.0, 0, 0, 0.54), (5.0, 0, 0, 0.53)]
     l3_cases = [
         ('켜짐 전환 감지', 0.75, on_s, 'on', True, 3000),
         ('변화 없음 → 실패', 0.75, flat_s, 'on', False, None),
         ('점검 전 이미 켜짐 → 판정 불가', 0.96, on_s, 'on', False, None),
         ('순간 스파이크 무시', 0.75, spike_s, 'on', False, None),
         ('꺼짐 전환 감지', 0.97, off_s, 'off', True, 3000),
+        ('방향 반대여도 |Δ| 크면 통과', 0.75, dark_s, 'on', True, 3000),
     ]
     for i, (name, before, series, expect, want_pass, want_lat) in enumerate(
             l3_cases, start=10 + len(l2_cases) + len(slot_cases)):
