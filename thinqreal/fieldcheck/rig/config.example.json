@@ -73,6 +73,24 @@
       "phrase_file": "phrases/ask_weather.wav",
       "listen_seconds": 20,
       "expect_any": ["날씨", "기온", "맑", "흐", "비", "눈", "구름", "더위", "추위"]
+    },
+    {
+      "id": "l3_welcome_routine",
+      "label": "가전 제어 — 웰컴모드 루틴 (조명 판정)",
+      "level": "L3",
+      "wake_file": "phrases/wake.wav",
+      "phrase_file": "phrases/routine_welcome.wav",
+      "confirm_file": "phrases/confirm_yes.wav",
+      "listen_seconds": 8,
+      "expect_any": ["웰컴", "루틴", "실행"],
+      "camera": {
+        "device": 0,
+        "watch_seconds": 35,
+        "interval_seconds": 1.0,
+        "ratio_threshold": 0.905,
+        "expect": "on",
+        "sustain": 3
+      }
     }
   ]
 }

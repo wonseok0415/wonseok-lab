@@ -19,6 +19,9 @@
 #    python fieldcheck.py --upgrade-config config.json에 새 설정 항목만 채우기
 #    python fieldcheck.py --transcribe A.wav [시나리오ID]   녹음 파일 L2 판정만 시험
 #    (--once/--loop에 --force를 붙이면 예약 시간대에도 강제로 점검)
+#
+#  구축 3단계(L3): 시나리오에 camera 블록(+confirm_file)을 넣으면 가전 제어의
+#  물리적 변화를 카메라(vision.py)로 판정한다. 사전 준비와 원리는 README 참조.
 # ============================================================
 
 import argparse
@@ -34,6 +37,7 @@ import numpy as np
 
 import booking
 import stt
+import vision
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, 'config.json')
@@ -253,6 +257,28 @@ def run_scenario(cfg, scenario):
     wake, wake_sr = read_wav(os.path.join(BASE_DIR, scenario['wake_file']))
     phrase, phrase_sr = read_wav(os.path.join(BASE_DIR, scenario['phrase_file']))
 
+    # ── L3(가전 제어) 준비: 발화 전 카메라로 사전 상태 측정 ──
+    cam = scenario.get('camera')
+    cam_roi = None
+    cam_problem = ''
+    before_ratio = None
+    if cam:
+        if not vision.available():
+            print('  [주의] opencv-python 미설치 — L3(카메라 판정)를 건너뜁니다: python3 -m pip install --user opencv-python')
+            cam = None
+        else:
+            cam_roi = vision.load_roi()
+            if cam_roi is None:
+                print('  [주의] 카메라 영역 미지정 — python3 vision.py --pick 실행 후 L3 판정 가능. 이번엔 건너뜁니다')
+                cam = None
+            else:
+                ok, before_ratio, cam_problem = vision.capture_ratio_once(
+                    int(cam.get('device', cam_roi.get('device', 0))), cam_roi)
+                if ok:
+                    print(f'  사전 상태 촬영: 상대값 {before_ratio}')
+                else:
+                    print(f'  [경고] 카메라 사전 촬영 실패: {cam_problem} — 점검 장비 문제로 기록됩니다')
+
     print(f"  발화 재생 중... ({scenario['label']})")
     sd.play(wake, wake_sr, device=out_dev)
     sd.wait()
@@ -295,6 +321,38 @@ def run_scenario(cfg, scenario):
     print('  주변이 조용해질 때까지 대기...')
     wait_for_quiet(cfg, sd)
 
+    # ── 되물음 대비 '무조건 확답' (대책 A, 2026-08-05) ──
+    # ThinQ ON이 "…실행할까요?"라고 되물었다면 지금 청취 모드라 확답이 접수되고,
+    # 이미 실행했다면 기동어 없는 발화라 무시된다 — 어느 쪽이든 안전하다.
+    # (되물음 후 청취 창은 짧으므로 L3 시나리오는 listen_seconds를 짧게(8초) 둘 것)
+    if scenario.get('confirm_file'):
+        confirm, confirm_sr = read_wav(os.path.join(BASE_DIR, scenario['confirm_file']))
+        print('  확답 재생 — 되물음이면 접수되고, 이미 실행 중이면 무시됩니다')
+        sd.play(confirm, confirm_sr, device=out_dev)
+        sd.wait()
+
+    # ── L3: 가전 동작 구간 연속 촬영 + 판정 ──
+    l3_judge = None
+    l3_snapshot = ''
+    if cam and not cam_problem:
+        watch_s = float(cam.get('watch_seconds', 35))
+        interval_s = float(cam.get('interval_seconds', 1.0))
+        print(f'  가전 동작 촬영 중... ({watch_s:.0f}초, {interval_s:.0f}초 간격)')
+        shot = vision.capture_series(int(cam.get('device', cam_roi.get('device', 0))), cam_roi,
+                                     watch_s, interval_s, prefix=scenario['id'])
+        if shot['ok']:
+            l3_snapshot = shot['snapshot']
+            l3_judge = vision.judge_light(before_ratio, shot['series'],
+                                          float(cam.get('ratio_threshold', 0.9)),
+                                          cam.get('expect', 'on'), int(cam.get('sustain', 3)))
+            print(f'  L3 판정: {"통과" if l3_judge["passed"] else "실패"} — {l3_judge["reason"]}')
+        else:
+            cam_problem = shot['problem']
+            print(f'  [경고] 가전 동작 촬영 실패: {cam_problem} — 점검 장비 문제로 기록됩니다')
+        # 커튼·에어컨 가동음과 확답에 대한 응답 멘트가 끝나기를 기다린다
+        print('  가전 동작음이 잦아들 때까지 대기...')
+        wait_for_quiet(cfg, sd)
+
     base = {
         'type': 'health_check',
         'apiKey': cfg.get('api_key', ''),
@@ -329,6 +387,39 @@ def run_scenario(cfg, scenario):
         l2 = judge_content(cfg, scenario, samples, sr, base)
         if l2:
             results.append(l2)
+
+    # ── L3(물리 동작 판정) — camera 블록이 있는 시나리오에만 ──
+    if cam:
+        l2_text = results[1]['stt_text'] if len(results) > 1 else ''
+        reask = '할까요' in l2_text  # 되물음 흔적 — 빈도 자체가 진단 데이터
+        if cam_problem:
+            l3 = dict(base, **{
+                'level': 'L3', 'result': 'fail', 'latency_ms': None,
+                'detail': json.dumps({'camera_problem': cam_problem, 'reask': reask},
+                                     ensure_ascii=False),
+                'stt_text': '', 'expected': '',
+                'note': f'점검 장비 문제(카메라: {cam_problem}) — ThinQ ON 장애 아님',
+            })
+        else:
+            want_on = cam.get('expect', 'on') != 'off'
+            l3 = dict(base, **{
+                'level': 'L3',
+                'result': 'pass' if l3_judge and l3_judge['passed'] else 'fail',
+                'latency_ms': l3_judge['action_latency_ms'] if l3_judge else None,
+                'detail': json.dumps({
+                    'before_ratio': l3_judge['before_ratio'] if l3_judge else before_ratio,
+                    'after_ratio': l3_judge['after_ratio'] if l3_judge else None,
+                    'threshold': cam.get('ratio_threshold'),
+                    'expect': cam.get('expect', 'on'),
+                    'reason': l3_judge['reason'] if l3_judge else '',
+                    'reask': reask,
+                    'snapshot': l3_snapshot,
+                }, ensure_ascii=False),
+                'stt_text': '',
+                'expected': f'{"켜짐" if want_on else "꺼짐"} (상대값 기준 {cam.get("ratio_threshold")})',
+                'note': '되물음 발생 → 확답으로 진행' if reask else '',
+            })
+        results.append(l3)
     return results
 
 
@@ -738,6 +829,27 @@ def cmd_selftest():
         good = bool(hit) == expect_block
         state = '회피' if hit else '점검 가능'
         print(f'  [{i}] 슬롯 {name:<22} → {state} ' + ('OK' if good else 'FAIL'))
+        ok &= good
+
+    # ── L3 조명 판정 (카메라 없이 판정 로직만 검증 — 임계값은 08-04 실측 기반) ──
+    thr = 0.905
+    on_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.76), (3.0, 0, 0, 0.96), (4.0, 0, 0, 0.97), (5.0, 0, 0, 0.98)]
+    flat_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.76), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.76), (5.0, 0, 0, 0.75)]
+    spike_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.95), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.76), (5.0, 0, 0, 0.75)]
+    off_s = [(1.0, 0, 0, 0.97), (2.0, 0, 0, 0.96), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.74), (5.0, 0, 0, 0.73)]
+    l3_cases = [
+        ('켜짐 전환 감지', 0.75, on_s, 'on', True, 3000),
+        ('변화 없음 → 실패', 0.75, flat_s, 'on', False, None),
+        ('점검 전 이미 켜짐 → 판정 불가', 0.96, on_s, 'on', False, None),
+        ('순간 스파이크 무시', 0.75, spike_s, 'on', False, None),
+        ('꺼짐 전환 감지', 0.97, off_s, 'off', True, 3000),
+    ]
+    for i, (name, before, series, expect, want_pass, want_lat) in enumerate(
+            l3_cases, start=10 + len(l2_cases) + len(slot_cases)):
+        v = vision.judge_light(before, series, thr, expect)
+        good = v['passed'] == want_pass and (want_lat is None or v['action_latency_ms'] == want_lat)
+        print(f'  [{i}] L3 {name:<20} → passed={v["passed"]} ({v["reason"]}) '
+              + ('OK' if good else 'FAIL'))
         ok &= good
 
     print('\n[selftest] ' + ('모두 통과' if ok else '실패 있음'))
