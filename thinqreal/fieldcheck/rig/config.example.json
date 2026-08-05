@@ -91,6 +91,24 @@
         "expect": "on",
         "sustain": 3
       }
+    },
+    {
+      "id": "l3_away_routine",
+      "label": "가전 제어 — 외출 모드 루틴 (꺼짐 판정 + 원상 복구)",
+      "level": "L3",
+      "wake_file": "phrases/wake.wav",
+      "phrase_file": "phrases/routine_away.wav",
+      "confirm_file": "phrases/confirm_yes.wav",
+      "listen_seconds": 8,
+      "expect_any": ["외출", "루틴", "실행"],
+      "camera": {
+        "device": 0,
+        "watch_seconds": 35,
+        "interval_seconds": 1.0,
+        "ratio_threshold": 0.905,
+        "expect": "off",
+        "sustain": 3
+      }
     }
   ]
 }
