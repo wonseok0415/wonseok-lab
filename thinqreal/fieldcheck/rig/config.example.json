@@ -87,7 +87,7 @@
         "device": 0,
         "watch_seconds": 35,
         "interval_seconds": 1.0,
-        "ratio_threshold": 0.905,
+        "min_delta": 0.15,
         "expect": "on",
         "sustain": 3
       }
@@ -105,7 +105,7 @@
         "device": 0,
         "watch_seconds": 35,
         "interval_seconds": 1.0,
-        "ratio_threshold": 0.905,
+        "min_delta": 0.15,
         "expect": "off",
         "sustain": 3
       }

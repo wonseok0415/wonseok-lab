@@ -168,43 +168,46 @@ def capture_series(device, roi, seconds, interval=1.0, prefix='l3'):
     return {'ok': True, 'problem': '', 'series': series, 'snapshot': snap}
 
 
-def judge_light(before_ratio, series, threshold, expect='on', sustain=3):
-    """조명 판정 — 순수 계산 (opencv 불필요, selftest 가능).
+def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
+    """조명 판정 — '변화량(Δ)' 기준, 순수 계산 (opencv 불필요, selftest 가능).
 
     before_ratio: 발화 전 상대값. series: capture_series의 series.
-    expect: 'on'(켜짐 기대) / 'off'(꺼짐 기대). sustain: 마지막 N표본 유지 요구.
+    expect: 'on'(밝아짐 기대) / 'off'(어두워짐 기대). sustain: 마지막 N표본 평균 사용.
 
-    판정 원칙: '변화'를 본다. 사전 상태가 이미 목표 상태면 명령이 실제로
-    먹혔는지 알 수 없으므로 실패(판정 불가)로 남긴다 — 매일 점검에 넣으려면
-    시작 상태를 되돌리는 단계가 필요하다는 뜻 (DESIGN.md §5).
+    절대 임계값이 아니라 **명령 직후의 변화량**을 본다 (2026-08-05 현장 발견):
+    상대값의 절대 수준은 시각·채광(커튼 상태)에 따라 통째로 떠다니지만
+    — 오전 꺼짐 0.746/켜짐 1.063, 낮 꺼짐 0.911/켜짐 1.225 —
+    ON↔OFF의 변화폭은 ~0.31로 안정적이었다. 채광은 천천히 변하고 루틴의
+    효과는 명령 직후 급변하므로, Δ 기준은 시각·날씨와 무관하게 성립한다.
+
+    판정 원칙: 사전 상태가 이미 목표 상태면 변화가 없어 실패(판정 불가)로
+    남는다 — 웰컴(켜짐)→외출(꺼짐+복구) 쌍 구성으로 시작 상태를 보장할 것.
     """
     want_on = (expect != 'off')
-
-    def matches(r):
-        return (r >= threshold) == want_on
+    label = '밝아짐(켜짐)' if want_on else '어두워짐(꺼짐)'
 
     ratios = [s[3] for s in series]
-    if not ratios:
+    if not ratios or before_ratio is None:
         return {'passed': False, 'reason': '측정 데이터 없음', 'action_latency_ms': None,
                 'before_ratio': before_ratio, 'after_ratio': None}
     tail = ratios[-sustain:]
     after = round(sum(tail) / len(tail), 3)
-    label = '켜짐' if want_on else '꺼짐'
+    delta = round(after - before_ratio, 3)
+    goal = (before_ratio + min_delta) if want_on else (before_ratio - min_delta)
 
-    if before_ratio is not None and matches(before_ratio):
-        return {'passed': False,
-                'reason': f'점검 전 이미 {label} 상태(상대값 {before_ratio}) — 변화 미관측, 판정 불가',
-                'action_latency_ms': None, 'before_ratio': before_ratio, 'after_ratio': after}
+    def reached(r):
+        return r >= goal if want_on else r <= goal
 
-    if all(matches(r) for r in tail):
-        crossed = next(s[0] for s in series if matches(s[3]))
+    if (delta >= min_delta) if want_on else (delta <= -min_delta):
+        crossed = next(s[0] for s in series if reached(s[3]))
         return {'passed': True,
-                'reason': f'{label} 확인 — 상대값 {before_ratio}→{after} (기준 {threshold})',
+                'reason': f'{label} 확인 — 상대값 {before_ratio}→{after} (Δ{delta:+}, 기준 ±{min_delta})',
                 'action_latency_ms': int(crossed * 1000),
                 'before_ratio': before_ratio, 'after_ratio': after}
 
     return {'passed': False,
-            'reason': f'{label} 미확인 — 상대값 {before_ratio}→{after} (기준 {threshold})',
+            'reason': f'{label} 미확인 — 상대값 {before_ratio}→{after} (Δ{delta:+}, 기준 ±{min_delta}). '
+                      '변화가 없으면 명령 미동작 또는 점검 전 이미 목표 상태',
             'action_latency_ms': None, 'before_ratio': before_ratio, 'after_ratio': after}
 
 

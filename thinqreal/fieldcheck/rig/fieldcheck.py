@@ -343,7 +343,7 @@ def run_scenario(cfg, scenario):
         if shot['ok']:
             l3_snapshot = shot['snapshot']
             l3_judge = vision.judge_light(before_ratio, shot['series'],
-                                          float(cam.get('ratio_threshold', 0.9)),
+                                          float(cam.get('min_delta', 0.15)),
                                           cam.get('expect', 'on'), int(cam.get('sustain', 3)))
             print(f'  L3 판정: {"통과" if l3_judge["passed"] else "실패"} — {l3_judge["reason"]}')
         else:
@@ -409,14 +409,14 @@ def run_scenario(cfg, scenario):
                 'detail': json.dumps({
                     'before_ratio': l3_judge['before_ratio'] if l3_judge else before_ratio,
                     'after_ratio': l3_judge['after_ratio'] if l3_judge else None,
-                    'threshold': cam.get('ratio_threshold'),
+                    'min_delta': cam.get('min_delta', 0.15),
                     'expect': cam.get('expect', 'on'),
                     'reason': l3_judge['reason'] if l3_judge else '',
                     'reask': reask,
                     'snapshot': l3_snapshot,
                 }, ensure_ascii=False),
                 'stt_text': '',
-                'expected': f'{"켜짐" if want_on else "꺼짐"} (상대값 기준 {cam.get("ratio_threshold")})',
+                'expected': f'{"밝아짐(켜짐)" if want_on else "어두워짐(꺼짐)"} — 상대값 변화 ±{cam.get("min_delta", 0.15)} 이상',
                 'note': '되물음 발생 → 확답으로 진행' if reask else '',
             })
         results.append(l3)
@@ -831,8 +831,8 @@ def cmd_selftest():
         print(f'  [{i}] 슬롯 {name:<22} → {state} ' + ('OK' if good else 'FAIL'))
         ok &= good
 
-    # ── L3 조명 판정 (카메라 없이 판정 로직만 검증 — 임계값은 08-04 실측 기반) ──
-    thr = 0.905
+    # ── L3 조명 판정 (카메라 없이 판정 로직만 검증 — Δ 기준은 08-05 실측 기반) ──
+    thr = 0.15  # min_delta
     on_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.76), (3.0, 0, 0, 0.96), (4.0, 0, 0, 0.97), (5.0, 0, 0, 0.98)]
     flat_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.76), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.76), (5.0, 0, 0, 0.75)]
     spike_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.95), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.76), (5.0, 0, 0, 0.75)]
