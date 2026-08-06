@@ -400,12 +400,7 @@ def run_scenario(cfg, scenario):
     # 같은 실패를 두 건으로 세면 통계가 왜곡된다. 따라서 L2 성공률은
     # "응답한 것 중 내용까지 맞은 비율"로 읽어야 한다.
     if verdict['responded'] and stt.available(cfg):
-        # L3 시나리오는 확답 이후 녹음(_post)의 앞 15초를 이어 붙여 판정한다 —
-        # 실행 선언("…실행할게요")은 확답 뒤에 나오므로 첫 창만으로는 못 본다.
-        l2_samples = samples
-        if post_samples is not None and len(post_samples):
-            l2_samples = np.concatenate([samples, post_samples[:int(15 * sr)]])
-        l2 = judge_content(cfg, scenario, l2_samples, sr, base)
+        l2 = judge_content(cfg, scenario, samples, sr, base, post_samples=post_samples)
         if l2:
             results.append(l2)
 
@@ -448,16 +443,31 @@ def run_scenario(cfg, scenario):
     return results
 
 
-def judge_content(cfg, scenario, samples, samplerate, base):
-    """녹음을 텍스트로 바꿔 내용을 판정한다. STT 엔진이 없으면 None."""
+def judge_content(cfg, scenario, samples, samplerate, base, post_samples=None):
+    """녹음을 텍스트로 바꿔 내용을 판정한다. STT 엔진이 없으면 None.
+
+    post_samples(L3의 확답 이후 녹음)가 있으면 두 창을 분리해 다룬다:
+    - 회피 표현("모르겠" 류)은 **명령에 대한 첫 응답에만** 적용 — 즉시 실행된
+      경우 뒤늦은 확답에 기기가 "무슨 말씀…"이라 답하는 것은 정상 동작이므로
+      (2026-08-05 현장 확인) 실패 사유가 되면 안 된다.
+    - 기대 키워드는 첫 창에서 못 찾았을 때 확답 이후 녹음(앞 15초)까지 합쳐
+      재탐색 — 실행 선언("…실행할게요")은 확답 뒤에 나오기 때문.
+    """
     print('  응답 내용 인식 중(STT)...')
     started = time.time()
     text = stt.transcribe(samples, samplerate, cfg)
     if text is None:
         return None
-    took = int((time.time() - started) * 1000)
+    shown = text
     verdict = stt.judge(text, scenario, cfg)
-    print(f'  인식 결과: "{text[:80]}{"…" if len(text) > 80 else ""}"')
+    if post_samples is not None and len(post_samples) and not verdict['passed'] \
+            and '회피 표현' not in verdict['reason']:
+        post_text = stt.transcribe(post_samples[:int(15 * samplerate)], samplerate, cfg) or ''
+        if post_text:
+            shown = text + ' ◦ ' + post_text
+            verdict = stt.judge(shown, dict(scenario, forbid_any=[]), cfg)
+    took = int((time.time() - started) * 1000)
+    print(f'  인식 결과: "{shown[:80]}{"…" if len(shown) > 80 else ""}"')
     print(f'  내용 판정: {"통과" if verdict["passed"] else "실패"} — {verdict["reason"]}')
     return dict(base, **{
         'level': 'L2',
@@ -465,7 +475,7 @@ def judge_content(cfg, scenario, samples, samplerate, base):
         'latency_ms': None,
         'detail': json.dumps({'engine': stt._ENGINE, 'stt_ms': took,
                               'reason': verdict['reason']}, ensure_ascii=False),
-        'stt_text': text,
+        'stt_text': shown,
         'expected': verdict['expected'],
     })
 
