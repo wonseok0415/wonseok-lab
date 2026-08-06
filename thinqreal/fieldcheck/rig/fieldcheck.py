@@ -282,9 +282,23 @@ def run_scenario(cfg, scenario):
                 else:
                     print(f'  [경고] 카메라 사전 촬영 실패: {cam_problem} — 점검 장비 문제로 기록됩니다')
 
+    # ── 스피커 자가 진단 (2026-08-07): 기동어를 재생하며 동시에 녹음 ──
+    # 재생 볼륨이 꺼져 있거나 너무 작으면 ThinQ ON이 명령을 못 듣고, 그 실패가
+    # 전부 ThinQ ON 탓으로 오보된다 — 마이크 무음 함정의 스피커판. 자기 스피커
+    # 소리가 자기 마이크에 충분히 들리는지로 출력 상태를 물리적으로 확인한다.
     print(f"  발화 재생 중... ({scenario['label']})")
-    sd.play(wake, wake_sr, device=out_dev)
+    echo = sd.playrec(wake, wake_sr, channels=1, dtype='int16',
+                      device=(in_dev, out_dev))
     sd.wait()
+    n = max(1, int(wake_sr * FRAME_MS / 1000))
+    e = echo[:, 0]
+    echo_peak = max((frame_dbfs(e[i:i + n]) for i in range(0, len(e) - n, n)), default=-120.0)
+    spk_min = float(cfg.get('speaker_min_dbfs', -35))
+    speaker_problem = echo_peak < spk_min
+    if speaker_problem:
+        print(f'  [경고] 스피커 출력이 너무 작습니다 (자가 녹음 최고 {echo_peak:.0f}dBFS < 기준 {spk_min:.0f}dBFS).')
+        print('         노트북 음량이 꺼져 있거나 매우 낮으면 ThinQ ON이 명령을 들을 수 없습니다.')
+        print('         이번 실패는 점검 장비 문제로 기록됩니다 (ThinQ ON 장애 아님).')
     time.sleep(gap)
     sd.play(phrase, phrase_sr, device=out_dev)
     sd.wait()
@@ -376,9 +390,11 @@ def run_scenario(cfg, scenario):
         'scenario_id': scenario['id'],
         'scenario_label': scenario['label'],
         'media_ref': rec_name,
-        # 무음은 점검 장비 자체의 문제이므로 ThinQ ON 장애와 구분되게 남긴다
-        'note': '마이크 무입력 — 점검 장비 설정/권한 문제 (ThinQ ON 장애 아님)'
-                if verdict.get('silent') else '',
+        # 장비 자체의 문제는 ThinQ ON 장애와 구분되게 남긴다 (자가 진단 원칙)
+        'note': ('마이크 무입력 — 점검 장비 설정/권한 문제 (ThinQ ON 장애 아님)'
+                 if verdict.get('silent') else
+                 f'스피커 출력 부족(자가 녹음 {echo_peak:.0f}dBFS) — 점검 장비 음량 문제 (ThinQ ON 장애 아님)'
+                 if speaker_problem else ''),
     }
     l1 = dict(base, **{
         'level': 'L1',
