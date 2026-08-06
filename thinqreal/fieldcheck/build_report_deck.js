@@ -100,7 +100,7 @@ function slide(dark) {
     x: 0.92, y: 4.5, w: 4.75, h: 0.62, margin: 0,
     fontFace: F, fontSize: 15, bold: true, color: WHITE, align: 'center', valign: 'middle',
   });
-  s.addText('2026. 08. 02.   |   작성: 강원석', {
+  s.addText('2026. 08. 05.   |   작성: 강원석', {
     x: 0.9, y: 5.6, w: 8, h: 0.4, margin: 0,
     fontFace: F, fontSize: 14, color: '8C9887',
   });
@@ -597,6 +597,153 @@ function slide(dark) {
   s.addNotes('팀원이 실제로 쓸 부분입니다. 메일 문구와 조치를 1:1로 대응시켰습니다.');
 }
 
+/* ══════════════ 13a. 구축 3단계 개요 ══════════════ */
+{
+  const s = slide();
+  head(s, "구축 3단계 착수 — '말'의 검증에서 '행동'의 검증으로",
+       '명령이 실제 물리 동작으로 이어졌는지를 카메라로 판정합니다 · 파이프라인 구축 완료, 현장 검증 중');
+
+  const lv = [
+    ['L1', '말을 했는가', '소리 에너지 분석', '✅ 운영 중', OLIVE],
+    ['L2', '맞는 말을 했는가', '로컬 STT + 키워드', '✅ 운영 중', OLIVE],
+    ['L3', '실제로 움직였는가', '카메라 픽셀 비교', '🔧 현장 검증 중', AMBER],
+  ];
+  lv.forEach((r, i) => {
+    const x = 0.7 + i * 4.03;
+    const hl = i === 2;
+    card(s, { x, y: 1.85, w: 3.82, h: 1.95, fill: hl ? 'FBF6EC' : WHITE, line: hl ? AMBER : undefined });
+    s.addText(r[0], { x: x + 0.25, y: 2.02, w: 1.2, h: 0.5, margin: 0, fontFace: F, fontSize: 26, bold: true, color: hl ? AMBER : OLIVE });
+    s.addText(r[1], { x: x + 0.25, y: 2.56, w: 3.35, h: 0.36, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: INK });
+    s.addText(r[2], { x: x + 0.25, y: 2.94, w: 3.35, h: 0.32, margin: 0, fontFace: F, fontSize: 11.5, color: MUTED });
+    s.addText(r[3], { x: x + 0.25, y: 3.32, w: 3.35, h: 0.32, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: r[4] });
+  });
+
+  card(s, { x: 0.7, y: 4.1, w: 5.85, h: 2.5, fill: BG_SOFT, flat: true });
+  s.addText('왜 API 조회가 아니라 카메라인가', { x: 1.0, y: 4.3, w: 5.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: OLIVE });
+  s.addText('API는 "서버가 명령을 받았는가"까지만 알려줍니다.\n명령은 접수됐는데 커튼 모터가 돌지 않는 경우 —\n방문객 눈에 보이는 것은 물리적 변화이고,\n시연 품질을 지키려면 그것을 봐야 합니다.',
+    { x: 1.0, y: 4.72, w: 5.3, h: 1.7, margin: 0, fontFace: F, fontSize: 12.5, color: INK, lineSpacing: 20 });
+
+  card(s, { x: 6.75, y: 4.1, w: 5.85, h: 2.5, fill: BG_SOFT, flat: true });
+  s.addText('AI 영상 인식 없이 — 산수만으로', { x: 7.05, y: 4.3, w: 5.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: OLIVE });
+  s.addText('카메라와 쇼룸 배치가 고정이라 "무엇인지 인식"이\n아니라 "아까와 달라졌는지 비교" 문제입니다.\n사각형 두 영역의 평균 밝기 비교 — 더하기와 나누기면\n충분하고, 그래서 검증·설명·재현이 가능합니다.',
+    { x: 7.05, y: 4.72, w: 5.3, h: 1.7, margin: 0, fontFace: F, fontSize: 12.5, color: INK, lineSpacing: 20 });
+  s.addNotes('L3의 핵심 선언: 물리 변화를 보되, AI 없이 결정적(deterministic) 연산만으로 판정합니다.');
+}
+
+/* ══════════════ 13b. 판정 원리 (상대값) ══════════════ */
+{
+  const s = slide();
+  head(s, "L3 판정 원리 — 두 영역의 밝기 '상대값'",
+       '점검 장비 카메라 화면에서 사각형 두 개만 봅니다');
+
+  // 카메라 프레임 목업
+  s.addShape(pres.ShapeType.roundRect, { x: 0.7, y: 1.8, w: 6.1, h: 3.6, rectRadius: 0.09, fill: { color: '2A3823' }, line: { color: OLIVE_MID, width: 1.5 }, shadow: shadow() });
+  s.addText('점검 장비 카메라 화면', { x: 0.9, y: 1.94, w: 3.5, h: 0.3, margin: 0, fontFace: F, fontSize: 10.5, color: SAGE });
+  // 대상 영역 (조명)
+  s.addShape(pres.ShapeType.rect, { x: 1.35, y: 2.45, w: 2.2, h: 1.15, fill: { color: 'A8803A', transparency: 55 }, line: { color: AMBER, width: 2.5, dashType: 'dash' } });
+  s.addText('☀', { x: 2.1, y: 2.62, w: 0.7, h: 0.7, margin: 0, fontFace: F, fontSize: 26, color: 'F5E4C0', align: 'center' });
+  s.addText('대상 영역 — 조명 기구', { x: 1.35, y: 3.66, w: 2.6, h: 0.3, margin: 0, fontFace: F, fontSize: 11, bold: true, color: 'E8CF9E' });
+  // 참조 영역 (벽)
+  s.addShape(pres.ShapeType.rect, { x: 4.45, y: 2.9, w: 1.8, h: 1.5, fill: { color: '97AC8E', transparency: 62 }, line: { color: SAGE, width: 2.5, dashType: 'dash' } });
+  s.addText('참조 영역 — 변하지\n않는 벽 한 조각', { x: 4.4, y: 4.44, w: 2.2, h: 0.55, margin: 0, fontFace: F, fontSize: 11, bold: true, color: 'C9D6C2', lineSpacing: 14 });
+
+  // 수식 카드
+  card(s, { x: 0.7, y: 5.62, w: 6.1, h: 1.0, fill: WHITE });
+  s.addText([
+    { text: '상대값', options: { bold: true, color: OLIVE } },
+    { text: '  =  대상 밝기 ÷ 참조 밝기', options: { color: INK } },
+  ], { x: 1.0, y: 5.62, w: 5.6, h: 0.55, margin: 0, fontFace: F, fontSize: 17, valign: 'middle' });
+  s.addText('실제 판정 스냅샷은 점검 장비에 자동 축적됩니다 (recordings/camera/)', { x: 1.0, y: 6.18, w: 5.6, h: 0.3, margin: 0, fontFace: F, fontSize: 10, color: MUTED });
+
+  // 오른쪽: 왜 비율인가
+  card(s, { x: 7.15, y: 1.8, w: 5.45, h: 2.4, fill: 'FBF6EC', line: AMBER, flat: true });
+  s.addText('왜 절대 밝기가 아니라 비율인가 — 자동 노출 함정', { x: 7.42, y: 1.98, w: 4.95, h: 0.55, margin: 0, fontFace: F, fontSize: 14, bold: true, color: AMBER });
+  s.addText('조명이 켜지면 카메라가 스스로 노출을 낮춰 화면 전체가\n도로 어두워집니다. 절대 밝기로 판정하면 "켜졌는데 변화\n없음"으로 오판합니다. 두 영역은 같은 노출을 공유하므로\n비율에서는 이 왜곡이 상쇄됩니다.',
+    { x: 7.42, y: 2.55, w: 4.95, h: 1.5, margin: 0, fontFace: F, fontSize: 12, color: INK, lineSpacing: 19 });
+
+  card(s, { x: 7.15, y: 4.42, w: 5.45, h: 2.2, fill: BG_SOFT, flat: true });
+  s.addText('첫 실측에서 함정과 대응책이 동시에 실증됐습니다', { x: 7.42, y: 4.6, w: 4.95, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
+  s.addText('조명을 켜자 참조 벽의 절대 밝기가 49나 출렁였지만(방 전체\n반사 + 자동 노출), 상대값은 꺼짐 0.75 ↔ 켜짐 1.06으로\n선명하게 갈라졌습니다 — 판정 가능성 확인.',
+    { x: 7.42, y: 5.0, w: 4.95, h: 1.4, margin: 0, fontFace: F, fontSize: 12, color: INK, lineSpacing: 19 });
+  s.addNotes('사진(실측 스냅샷)이 준비되면 왼쪽 목업을 실제 화면 캡처로 교체합니다.');
+}
+
+/* ══════════════ 13c. 판정 알고리즘 (|Δ|) ══════════════ */
+{
+  const s = slide();
+  head(s, "판정 알고리즘 — 절대값이 아니라 '명령 직후의 변화량'",
+       '현장 실측이 설계를 세 번 진화시켰습니다');
+
+  const rows = [
+    ['①  절대 임계값', '상대값 0.905 이상 = 켜짐', '커튼·시각에 따라 기준선 자체가 이동\n(오전 꺼짐 0.746/켜짐 1.063 ↔ 낮 0.911/1.225)', BRICK],
+    ['②  변화량 + 방향', '명령 후 Δ±0.15', '태양 각도에 따라 방향까지 뒤집힘\n(정상 동작인데 반대 부호 관측)', BRICK],
+    ['③  변화량 크기 — 최종', '명령 직후 60초 내  |Δ| ≥ 0.15', '시각·날씨·커튼 상태와 무관\n(ON↔OFF 변화폭은 ~0.31로 안정)', OLIVE],
+  ];
+  rows.forEach((r, i) => {
+    const y = 1.85 + i * 1.28;
+    const fin = i === 2;
+    card(s, { x: 0.7, y, w: 7.3, h: 1.12, fill: fin ? 'EFF3EC' : WHITE, line: fin ? OLIVE : undefined, flat: !fin });
+    s.addText(r[0], { x: 0.95, y: y + 0.1, w: 2.6, h: 0.36, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: fin ? OLIVE : INK });
+    s.addText(r[1], { x: 0.95, y: y + 0.5, w: 2.9, h: 0.5, margin: 0, fontFace: F, fontSize: 12, bold: fin, color: fin ? OLIVE : MUTED });
+    s.addText(r[2], { x: 3.95, y: y + 0.1, w: 3.85, h: 0.95, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED, lineSpacing: 15, valign: 'middle' });
+  });
+
+  card(s, { x: 8.35, y: 1.85, w: 4.25, h: 3.68, fill: BG_SOFT, flat: true });
+  s.addText('판정 근거의 시간 구조', { x: 8.6, y: 2.02, w: 3.8, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
+  s.addText('채광(햇빛·구름)은 천천히 변하고,\n가전은 명령 직후에 급변합니다.\n\n그래서 "명령 직후 60초" 안의 큰\n변화는 가전의 반응이라고 판단할\n수 있습니다 — 무인 점검에는 조명을\n만질 사람도 없습니다.\n\n변화가 시작되기까지의 시간은\n가전 반응 시간으로 함께 기록됩니다\n(응답 시작의 물리 동작판 지표).',
+    { x: 8.6, y: 2.42, w: 3.8, h: 3.0, margin: 0, fontFace: F, fontSize: 11.5, color: INK, lineSpacing: 18 });
+
+  card(s, { x: 0.7, y: 5.78, w: 11.9, h: 1.0, fill: 'EFF3EC', line: OLIVE, flat: true });
+  s.addText([
+    { text: '실측 → 수정 → 재실측. ', options: { bold: true, color: OLIVE } },
+    { text: '하루 세 번의 현장 실측이 판정 기준을 세 번 바꿨습니다 — 점검 시스템이 정교해지는 방식 그 자체입니다.', options: { color: INK } },
+  ], { x: 1.0, y: 5.78, w: 11.3, h: 1.0, margin: 0, fontFace: F, fontSize: 13.5, valign: 'middle' });
+  s.addNotes('①②는 실패작이 아니라 실측으로 한계가 드러나 진화한 중간 단계입니다. 이 서사가 팀장 질문(시스템화)의 실질적 답입니다.');
+}
+
+/* ══════════════ 13d. L3 시퀀스 ══════════════ */
+{
+  const s = slide();
+  head(s, 'L3 점검 시퀀스 — 되물음까지 흡수하는 자동 대화',
+       '한 시나리오가 약 90초 안에 촬영·대화·판정·전송을 마칩니다');
+
+  const steps = [
+    ['1', '사전 상태 촬영', '상대값 기록'],
+    ['2', '기동어 + 명령', '"조명 켜줘"'],
+    ['3', '응답 녹음', 'L1·L2 판정'],
+    ['4', '무조건 확답', '"응, 실행해줘"'],
+    ['5', '60초 연속 촬영', '+ 오디오 녹음'],
+    ['6', '|Δ| 판정 → 전송', '반응 시간 기록'],
+  ];
+  steps.forEach((p2, i) => {
+    const x = 0.7 + i * 2.0;
+    card(s, { x, y: 1.9, w: 1.82, h: 1.5, fill: i === 3 ? 'FBF6EC' : WHITE, line: i === 3 ? AMBER : undefined });
+    badge(s, x + 0.12, 2.02, p2[0], i === 3 ? AMBER : OLIVE);
+    s.addText(p2[1], { x: x + 0.1, y: 2.52, w: 1.62, h: 0.5, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: INK, align: 'center', lineSpacing: 14 });
+    s.addText(p2[2], { x: x + 0.1, y: 3.02, w: 1.62, h: 0.3, margin: 0, fontFace: F, fontSize: 9.5, color: MUTED, align: 'center' });
+    if (i < 5) s.addText('→', { x: x + 1.78, y: 2.4, w: 0.26, h: 0.4, margin: 0, fontFace: F, fontSize: 14, bold: true, color: SAGE, align: 'center' });
+  });
+
+  card(s, { x: 0.7, y: 3.85, w: 5.85, h: 2.75, fill: 'FBF6EC', line: AMBER, flat: true });
+  s.addText("④ 무조건 확답 — 되물음의 비대칭을 역이용", { x: 1.0, y: 4.03, w: 5.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14, bold: true, color: AMBER });
+  s.addText('ThinQ ON은 가전 명령에 "실행할까요?"라고 되묻는 경우가\n있습니다. 실시간으로 알아내 분기하는 대신, 항상 확답을\n재생합니다:', { x: 1.0, y: 4.44, w: 5.3, h: 0.95, margin: 0, fontFace: F, fontSize: 11.5, color: INK, lineSpacing: 17 });
+  const asym = [
+    ['되물었다면', '답을 기다리는 중 → 확답이 접수되어 실행'],
+    ['즉시 실행했다면', '기동어 없는 발화 → 부작용 없이 무시'],
+  ];
+  asym.forEach((a, i) => {
+    const y = 5.42 + i * 0.52;
+    s.addText('· ' + a[0], { x: 1.15, y, w: 1.85, h: 0.44, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: OLIVE, valign: 'middle' });
+    s.addText(a[1], { x: 3.05, y, w: 3.4, h: 0.44, margin: 0, fontFace: F, fontSize: 11, color: INK, valign: 'middle' });
+  });
+
+  card(s, { x: 6.75, y: 3.85, w: 5.85, h: 2.75, fill: BG_SOFT, flat: true });
+  s.addText('증거 보존 원칙 — 판정이 의심되면 원본으로', { x: 7.05, y: 4.03, w: 5.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14, bold: true, color: OLIVE });
+  s.addText('응답 녹음 · 확답 이후 녹음 · 판정 시점 스냅샷을 전부\n저장합니다. 판정 결과에 의문이 생기면 원본을 다시 듣고\n볼 수 있습니다.\n\n실제로 이 원칙 덕분에 "확답 이후의 실행 선언이 녹음 창\n밖"이라는 관측 맹점을 발견해 고쳤고, "음성 루틴 실행은\n인식이 취약하다"는 실전 이슈도 확보했습니다.',
+    { x: 7.05, y: 4.44, w: 5.3, h: 2.1, margin: 0, fontFace: F, fontSize: 11.5, color: INK, lineSpacing: 18 });
+  s.addNotes('되물음 대응과 증거 보존이 L3의 두 설계 포인트입니다. 루틴 인식 취약성 발견은 점검이 잡아낸 실제 이슈로 별도 보고 가치가 있습니다.');
+}
+
 /* ══════════════ 14. 비용 + 남은 계획 ══════════════ */
 {
   const s = slide();
@@ -619,7 +766,7 @@ function slide(dark) {
 
   s.addText('남은 계획', { x: 6.75, y: 1.72, w: 3, h: 0.32, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
   const plans = [
-    ['구축 3단계 (L3)', '가전 제어 전·후 촬영 판정 + 단독 제어 vs 서비스 연동 응답 시간 비교', '판정 방식 확정'],
+    ['구축 3단계 (L3)', '가전 제어의 물리 동작을 카메라로 판정 (조명 → 커튼 → 루틴)', '현장 검증 중'],
     ['운영 전환', '상주 Windows 이관 + 단일 실행파일 패키징 + 담당자 전체 알림', '대기'],
     ['Phase 2 격상', '수동 일일 점검을 자동 점검으로 대체', '병행 검증 후'],
   ];
