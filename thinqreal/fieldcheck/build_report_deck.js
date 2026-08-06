@@ -661,10 +661,26 @@ function slide(dark) {
   s.addText('조명이 켜지면 카메라가 스스로 노출을 낮춰 화면 전체가\n도로 어두워집니다. 절대 밝기로 판정하면 "켜졌는데 변화\n없음"으로 오판합니다. 두 영역은 같은 노출을 공유하므로\n비율에서는 이 왜곡이 상쇄됩니다.',
     { x: 7.42, y: 2.55, w: 4.95, h: 1.5, margin: 0, fontFace: F, fontSize: 12, color: INK, lineSpacing: 19 });
 
-  card(s, { x: 7.15, y: 4.42, w: 5.45, h: 2.2, fill: BG_SOFT, flat: true });
-  s.addText('현장 실측으로 판정 가능성이 확인됐습니다', { x: 7.42, y: 4.6, w: 4.95, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
-  s.addText('참조 벽의 절대 밝기가 49 출렁이는 동안(방 전체 반사 +\n자동 노출) 상대값은 꺼짐 0.75 ↔ 켜짐 1.06으로 선명하게\n갈라졌습니다 — 조명 상태가 수치로 구분됩니다.',
-    { x: 7.42, y: 5.0, w: 4.95, h: 1.4, margin: 0, fontFace: F, fontSize: 12, color: INK, lineSpacing: 19 });
+  card(s, { x: 7.15, y: 4.42, w: 5.45, h: 2.2, fill: 'EFF3EC', line: OLIVE, flat: true });
+  s.addText('실측 계산 예 — 이 숫자로 판정합니다 (현장 측정값)', { x: 7.42, y: 4.56, w: 4.95, h: 0.32, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
+  s.addText([
+    { text: '한 표본:  ', options: { color: MUTED } },
+    { text: '대상 74.5 ÷ 참조 78.3 = 0.951', options: { bold: true, color: INK } },
+  ], { x: 7.42, y: 4.92, w: 4.95, h: 0.34, margin: 0, fontFace: F, fontSize: 12.5 });
+  s.addText([
+    { text: '조명 꺼짐  ', options: { color: MUTED } },
+    { text: '0.746', options: { bold: true, color: INK } },
+    { text: '      조명 켜짐  ', options: { color: MUTED } },
+    { text: '1.063', options: { bold: true, color: INK } },
+  ], { x: 7.42, y: 5.3, w: 4.95, h: 0.34, margin: 0, fontFace: F, fontSize: 12.5 });
+  s.addShape(pres.ShapeType.line, { x: 7.42, y: 5.72, w: 4.9, h: 0, line: { color: SAGE, width: 0.75 } });
+  s.addText([
+    { text: '판정:  |1.063 − 0.746| = ', options: { color: INK } },
+    { text: '0.317 ≥ 0.15', options: { bold: true, color: OLIVE } },
+    { text: '  →  ', options: { color: INK } },
+    { text: '동작함', options: { bold: true, color: OLIVE } },
+  ], { x: 7.42, y: 5.82, w: 4.95, h: 0.38, margin: 0, fontFace: F, fontSize: 13.5 });
+  s.addText('실측 변화폭이 기준의 2배 — 판정 여유 충분', { x: 7.42, y: 6.22, w: 4.95, h: 0.3, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED });
   s.addNotes('사진(실측 스냅샷)이 준비되면 왼쪽 목업을 실제 화면 캡처로 교체합니다.');
 }
 
