@@ -639,10 +639,11 @@ function slide(dark) {
   // 실측 스냅샷 2장 (점검 장비가 판정 시점에 자동 저장한 실제 사진) + 영역 표시
   s.addImage({ path: 'images/l3_off.jpg', x: 0.7, y: 1.85, w: 2.95, h: 1.66 });
   s.addImage({ path: 'images/l3_on.jpg', x: 3.85, y: 1.85, w: 2.95, h: 1.66 });
+  // 영역 사각형은 camera_roi.json의 실제 판정 좌표(1280x720)를 그대로 환산한 것
   [0.7, 3.85].forEach(bx => {
-    s.addShape(pres.ShapeType.rect, { x: bx + 0.46, y: 2.31, w: 2.07, h: 0.23,
+    s.addShape(pres.ShapeType.rect, { x: bx + 0.25, y: 1.85 + 0.22, w: 2.45, h: 0.42,
       fill: { color: 'FFFFFF', transparency: 100 }, line: { color: AMBER, width: 2, dashType: 'dash' } });
-    s.addShape(pres.ShapeType.rect, { x: bx + 2.58, y: 2.54, w: 0.32, h: 0.60,
+    s.addShape(pres.ShapeType.rect, { x: bx + 0.11, y: 1.85 + 0.33, w: 0.24, h: 1.25,
       fill: { color: 'FFFFFF', transparency: 100 }, line: { color: SAGE, width: 2, dashType: 'dash' } });
   });
   s.addText('실측 스냅샷 — 조명 꺼짐', { x: 0.7, y: 3.55, w: 2.95, h: 0.3, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: INK, align: 'center' });
