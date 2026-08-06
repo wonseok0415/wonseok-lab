@@ -636,24 +636,34 @@ function slide(dark) {
   head(s, "L3 판정 원리 — 두 영역의 밝기 '상대값'",
        '점검 장비 카메라 화면에서 사각형 두 개만 봅니다');
 
-  // 카메라 프레임 목업
-  s.addShape(pres.ShapeType.roundRect, { x: 0.7, y: 1.8, w: 6.1, h: 3.6, rectRadius: 0.09, fill: { color: '2A3823' }, line: { color: OLIVE_MID, width: 1.5 }, shadow: shadow() });
-  s.addText('점검 장비 카메라 화면', { x: 0.9, y: 1.94, w: 3.5, h: 0.3, margin: 0, fontFace: F, fontSize: 10.5, color: SAGE });
-  // 대상 영역 (조명)
-  s.addShape(pres.ShapeType.rect, { x: 1.35, y: 2.45, w: 2.2, h: 1.15, fill: { color: 'A8803A', transparency: 55 }, line: { color: AMBER, width: 2.5, dashType: 'dash' } });
-  s.addText('☀', { x: 2.1, y: 2.62, w: 0.7, h: 0.7, margin: 0, fontFace: F, fontSize: 26, color: 'F5E4C0', align: 'center' });
-  s.addText('대상 영역 — 조명 기구', { x: 1.35, y: 3.66, w: 2.6, h: 0.3, margin: 0, fontFace: F, fontSize: 11, bold: true, color: 'E8CF9E' });
-  // 참조 영역 (벽)
-  s.addShape(pres.ShapeType.rect, { x: 4.45, y: 2.9, w: 1.8, h: 1.5, fill: { color: '97AC8E', transparency: 62 }, line: { color: SAGE, width: 2.5, dashType: 'dash' } });
-  s.addText('참조 영역 — 변하지\n않는 벽 한 조각', { x: 4.4, y: 4.44, w: 2.2, h: 0.55, margin: 0, fontFace: F, fontSize: 11, bold: true, color: 'C9D6C2', lineSpacing: 14 });
+  // 실측 스냅샷 2장 (점검 장비가 판정 시점에 자동 저장한 실제 사진) + 영역 표시
+  s.addImage({ path: 'images/l3_off.jpg', x: 0.7, y: 1.85, w: 2.95, h: 1.66 });
+  s.addImage({ path: 'images/l3_on.jpg', x: 3.85, y: 1.85, w: 2.95, h: 1.66 });
+  [0.7, 3.85].forEach(bx => {
+    s.addShape(pres.ShapeType.rect, { x: bx + 0.46, y: 2.31, w: 2.07, h: 0.23,
+      fill: { color: 'FFFFFF', transparency: 100 }, line: { color: AMBER, width: 2, dashType: 'dash' } });
+    s.addShape(pres.ShapeType.rect, { x: bx + 2.58, y: 2.54, w: 0.32, h: 0.60,
+      fill: { color: 'FFFFFF', transparency: 100 }, line: { color: SAGE, width: 2, dashType: 'dash' } });
+  });
+  s.addText('실측 스냅샷 — 조명 꺼짐', { x: 0.7, y: 3.55, w: 2.95, h: 0.3, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: INK, align: 'center' });
+  s.addText('실측 스냅샷 — 조명 켜짐', { x: 3.85, y: 3.55, w: 2.95, h: 0.3, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: INK, align: 'center' });
+
+  // 범례
+  s.addShape(pres.ShapeType.rect, { x: 0.9, y: 3.98, w: 0.34, h: 0.2, fill: { color: 'FFFFFF', transparency: 100 }, line: { color: AMBER, width: 2, dashType: 'dash' } });
+  s.addText('대상 영역 — 조명', { x: 1.32, y: 3.93, w: 2.1, h: 0.3, margin: 0, fontFace: F, fontSize: 11, color: INK, valign: 'middle' });
+  s.addShape(pres.ShapeType.rect, { x: 3.6, y: 3.98, w: 0.34, h: 0.2, fill: { color: 'FFFFFF', transparency: 100 }, line: { color: SAGE, width: 2, dashType: 'dash' } });
+  s.addText('참조 영역 — 변하지 않는 벽', { x: 4.02, y: 3.93, w: 2.8, h: 0.3, margin: 0, fontFace: F, fontSize: 11, color: INK, valign: 'middle' });
 
   // 수식 카드
-  card(s, { x: 0.7, y: 5.62, w: 6.1, h: 1.0, fill: WHITE });
+  card(s, { x: 0.7, y: 4.42, w: 6.1, h: 1.0, fill: WHITE });
   s.addText([
     { text: '상대값', options: { bold: true, color: OLIVE } },
     { text: '  =  대상 밝기 ÷ 참조 밝기', options: { color: INK } },
-  ], { x: 1.0, y: 5.62, w: 5.6, h: 0.55, margin: 0, fontFace: F, fontSize: 17, valign: 'middle' });
-  s.addText('실제 판정 스냅샷은 점검 장비에 자동 축적됩니다 (recordings/camera/)', { x: 1.0, y: 6.18, w: 5.6, h: 0.3, margin: 0, fontFace: F, fontSize: 10, color: MUTED });
+  ], { x: 1.0, y: 4.42, w: 5.6, h: 0.55, margin: 0, fontFace: F, fontSize: 17, valign: 'middle' });
+  s.addText('두 영역의 평균 밝기(픽셀값 0~255)를 매초 계산합니다', { x: 1.0, y: 4.98, w: 5.6, h: 0.3, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED });
+
+  s.addText('위 사진은 연출이 아니라 점검 장비가 판정 시점에 자동 저장한 실제 스냅샷입니다 (recordings/camera/)',
+    { x: 0.7, y: 5.62, w: 6.1, h: 0.6, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED, lineSpacing: 15 });
 
   // 오른쪽: 왜 비율인가
   card(s, { x: 7.15, y: 1.8, w: 5.45, h: 2.4, fill: 'FBF6EC', line: AMBER, flat: true });
@@ -681,7 +691,7 @@ function slide(dark) {
     { text: '동작함', options: { bold: true, color: OLIVE } },
   ], { x: 7.42, y: 5.82, w: 4.95, h: 0.38, margin: 0, fontFace: F, fontSize: 13.5 });
   s.addText('실측 변화폭이 기준의 2배 — 판정 여유 충분', { x: 7.42, y: 6.22, w: 4.95, h: 0.3, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED });
-  s.addNotes('사진(실측 스냅샷)이 준비되면 왼쪽 목업을 실제 화면 캡처로 교체합니다.');
+  s.addNotes('두 스냅샷은 점검 장비가 자동 저장한 실제 사진이고, 점선 사각형이 판정에 쓰는 두 영역입니다.');
 }
 
 /* ══════════════ 13c. 판정 알고리즘 (|Δ|) ══════════════ */
