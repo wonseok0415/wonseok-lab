@@ -662,8 +662,8 @@ function slide(dark) {
     { x: 7.42, y: 2.55, w: 4.95, h: 1.5, margin: 0, fontFace: F, fontSize: 12, color: INK, lineSpacing: 19 });
 
   card(s, { x: 7.15, y: 4.42, w: 5.45, h: 2.2, fill: BG_SOFT, flat: true });
-  s.addText('첫 실측에서 함정과 대응책이 동시에 실증됐습니다', { x: 7.42, y: 4.6, w: 4.95, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
-  s.addText('조명을 켜자 참조 벽의 절대 밝기가 49나 출렁였지만(방 전체\n반사 + 자동 노출), 상대값은 꺼짐 0.75 ↔ 켜짐 1.06으로\n선명하게 갈라졌습니다 — 판정 가능성 확인.',
+  s.addText('현장 실측으로 판정 가능성이 확인됐습니다', { x: 7.42, y: 4.6, w: 4.95, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
+  s.addText('참조 벽의 절대 밝기가 49 출렁이는 동안(방 전체 반사 +\n자동 노출) 상대값은 꺼짐 0.75 ↔ 켜짐 1.06으로 선명하게\n갈라졌습니다 — 조명 상태가 수치로 구분됩니다.',
     { x: 7.42, y: 5.0, w: 4.95, h: 1.4, margin: 0, fontFace: F, fontSize: 12, color: INK, lineSpacing: 19 });
   s.addNotes('사진(실측 스냅샷)이 준비되면 왼쪽 목업을 실제 화면 캡처로 교체합니다.');
 }
@@ -671,34 +671,45 @@ function slide(dark) {
 /* ══════════════ 13c. 판정 알고리즘 (|Δ|) ══════════════ */
 {
   const s = slide();
-  head(s, "판정 알고리즘 — 절대값이 아니라 '명령 직후의 변화량'",
-       '현장 실측이 설계를 세 번 진화시켰습니다');
+  head(s, "판정 알고리즘 — '명령 직후의 변화량'",
+       '얼마나 밝은가가 아니라, 명령 직후 얼마나 변했는가를 봅니다');
 
-  const rows = [
-    ['①  절대 임계값', '상대값 0.905 이상 = 켜짐', '커튼·시각에 따라 기준선 자체가 이동\n(오전 꺼짐 0.746/켜짐 1.063 ↔ 낮 0.911/1.225)', BRICK],
-    ['②  변화량 + 방향', '명령 후 Δ±0.15', '태양 각도에 따라 방향까지 뒤집힘\n(정상 동작인데 반대 부호 관측)', BRICK],
-    ['③  변화량 크기 — 최종', '명령 직후 60초 내  |Δ| ≥ 0.15', '시각·날씨·커튼 상태와 무관\n(ON↔OFF 변화폭은 ~0.31로 안정)', OLIVE],
+  // 판정 기준 카드 (크게)
+  card(s, { x: 0.7, y: 1.85, w: 7.3, h: 1.7, fill: 'EFF3EC', line: OLIVE });
+  s.addText('판정 기준', { x: 1.0, y: 2.05, w: 2.5, h: 0.34, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE });
+  s.addText([
+    { text: '명령 직후 60초 안에  ', options: { color: INK } },
+    { text: '상대값 변화 0.15 이상', options: { bold: true, color: OLIVE } },
+  ], { x: 1.0, y: 2.42, w: 6.8, h: 0.5, margin: 0, fontFace: F, fontSize: 20 });
+  s.addText('마지막 3초 평균과 명령 전 값을 비교 · 실측된 조명 ON↔OFF 변화폭은 약 0.3 — 기준의 2배 여유',
+    { x: 1.0, y: 2.98, w: 6.8, h: 0.4, margin: 0, fontFace: F, fontSize: 11.5, color: MUTED });
+
+  // 왜 변화량인가 — 시간 구조
+  card(s, { x: 0.7, y: 3.85, w: 7.3, h: 1.85, fill: WHITE });
+  s.addText('절대값이 아니라 변화량을 쓰는 이유 — 시간 구조', { x: 1.0, y: 4.03, w: 6.8, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
+  const tw = [
+    ['채광 (햇빛·구름·커튼)', '천천히 변합니다 — 절대 밝기의 기준선을 계속 움직이는 요인', SAGE],
+    ['가전 (조명·커튼 모터)', '명령 직후 급변합니다 — 60초 안의 큰 변화는 가전의 반응', OLIVE],
   ];
-  rows.forEach((r, i) => {
-    const y = 1.85 + i * 1.28;
-    const fin = i === 2;
-    card(s, { x: 0.7, y, w: 7.3, h: 1.12, fill: fin ? 'EFF3EC' : WHITE, line: fin ? OLIVE : undefined, flat: !fin });
-    s.addText(r[0], { x: 0.95, y: y + 0.1, w: 2.6, h: 0.36, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: fin ? OLIVE : INK });
-    s.addText(r[1], { x: 0.95, y: y + 0.5, w: 2.9, h: 0.5, margin: 0, fontFace: F, fontSize: 12, bold: fin, color: fin ? OLIVE : MUTED });
-    s.addText(r[2], { x: 3.95, y: y + 0.1, w: 3.85, h: 0.95, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED, lineSpacing: 15, valign: 'middle' });
+  tw.forEach((t, i) => {
+    const y = 4.48 + i * 0.58;
+    s.addShape(pres.ShapeType.roundRect, { x: 1.0, y, w: 2.65, h: 0.46, rectRadius: 0.08, fill: { color: t[2] }, line: { width: 0 } });
+    s.addText(t[0], { x: 1.0, y, w: 2.65, h: 0.46, margin: 0, fontFace: F, fontSize: 11, bold: true, color: WHITE, align: 'center', valign: 'middle' });
+    s.addText(t[1], { x: 3.85, y, w: 4.05, h: 0.46, margin: 0, fontFace: F, fontSize: 11, color: INK, valign: 'middle' });
   });
 
-  card(s, { x: 8.35, y: 1.85, w: 4.25, h: 3.68, fill: BG_SOFT, flat: true });
-  s.addText('판정 근거의 시간 구조', { x: 8.6, y: 2.02, w: 3.8, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
-  s.addText('채광(햇빛·구름)은 천천히 변하고,\n가전은 명령 직후에 급변합니다.\n\n그래서 "명령 직후 60초" 안의 큰\n변화는 가전의 반응이라고 판단할\n수 있습니다 — 무인 점검에는 조명을\n만질 사람도 없습니다.\n\n변화가 시작되기까지의 시간은\n가전 반응 시간으로 함께 기록됩니다\n(응답 시작의 물리 동작판 지표).',
-    { x: 8.6, y: 2.42, w: 3.8, h: 3.0, margin: 0, fontFace: F, fontSize: 11.5, color: INK, lineSpacing: 18 });
+  // 오른쪽: 부가 지표 + 시각 무관성
+  card(s, { x: 8.35, y: 1.85, w: 4.25, h: 3.85, fill: BG_SOFT, flat: true });
+  s.addText('이 기준의 성질', { x: 8.6, y: 2.02, w: 3.8, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
+  s.addText('시각·날씨·커튼 상태와 무관하게\n같은 기준이 성립합니다 — 아침\n점검과 낮 시험에 다른 임계값이\n필요 없습니다.\n\n무인 점검에는 조명을 만질 사람이\n없으므로, 명령 직후의 급격한 변화\n= 가전이 반응했다는 증거입니다.\n\n변화가 시작되기까지의 시간은\n가전 반응 시간으로 함께 기록됩니다\n(응답 시작의 물리 동작판 지표).',
+    { x: 8.6, y: 2.42, w: 3.8, h: 3.2, margin: 0, fontFace: F, fontSize: 11.5, color: INK, lineSpacing: 18 });
 
-  card(s, { x: 0.7, y: 5.78, w: 11.9, h: 1.0, fill: 'EFF3EC', line: OLIVE, flat: true });
+  card(s, { x: 0.7, y: 5.95, w: 11.9, h: 0.85, fill: 'EFF3EC', line: OLIVE, flat: true });
   s.addText([
-    { text: '실측 → 수정 → 재실측. ', options: { bold: true, color: OLIVE } },
-    { text: '하루 세 번의 현장 실측이 판정 기준을 세 번 바꿨습니다 — 점검 시스템이 정교해지는 방식 그 자체입니다.', options: { color: INK } },
-  ], { x: 1.0, y: 5.78, w: 11.3, h: 1.0, margin: 0, fontFace: F, fontSize: 13.5, valign: 'middle' });
-  s.addNotes('①②는 실패작이 아니라 실측으로 한계가 드러나 진화한 중간 단계입니다. 이 서사가 팀장 질문(시스템화)의 실질적 답입니다.');
+    { text: '판정에 쓰는 연산은 평균과 나눗셈뿐입니다. ', options: { bold: true, color: OLIVE } },
+    { text: '같은 입력에는 항상 같은 결과 — 검증·설명·재현이 가능한 결정적 판정입니다.', options: { color: INK } },
+  ], { x: 1.0, y: 5.95, w: 11.3, h: 0.85, margin: 0, fontFace: F, fontSize: 13, valign: 'middle' });
+  s.addNotes('판정 기준은 |Δ|≥0.15 하나입니다. 채광은 느리고 가전은 빠르다는 시간 구조가 이 기준의 근거입니다.');
 }
 
 /* ══════════════ 13d. L3 시퀀스 ══════════════ */
@@ -739,9 +750,9 @@ function slide(dark) {
 
   card(s, { x: 6.75, y: 3.85, w: 5.85, h: 2.75, fill: BG_SOFT, flat: true });
   s.addText('증거 보존 원칙 — 판정이 의심되면 원본으로', { x: 7.05, y: 4.03, w: 5.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14, bold: true, color: OLIVE });
-  s.addText('응답 녹음 · 확답 이후 녹음 · 판정 시점 스냅샷을 전부\n저장합니다. 판정 결과에 의문이 생기면 원본을 다시 듣고\n볼 수 있습니다.\n\n실제로 이 원칙 덕분에 "확답 이후의 실행 선언이 녹음 창\n밖"이라는 관측 맹점을 발견해 고쳤고, "음성 루틴 실행은\n인식이 취약하다"는 실전 이슈도 확보했습니다.',
+  s.addText('응답 녹음 · 확답 이후 녹음 · 판정 시점 스냅샷을 전부\n저장합니다.\n\n판정 결과에 의문이 생기면 언제든 원본을 다시 듣고 볼 수\n있어, 실패 원인 추적과 판정 신뢰성 확인이 가능합니다.\nL2의 인식 문장 기록과 함께, 모든 판정이 "왜 그렇게\n판정했는지"를 증거로 설명할 수 있는 구조입니다.',
     { x: 7.05, y: 4.44, w: 5.3, h: 2.1, margin: 0, fontFace: F, fontSize: 11.5, color: INK, lineSpacing: 18 });
-  s.addNotes('되물음 대응과 증거 보존이 L3의 두 설계 포인트입니다. 루틴 인식 취약성 발견은 점검이 잡아낸 실제 이슈로 별도 보고 가치가 있습니다.');
+  s.addNotes('되물음 대응과 증거 보존이 L3의 두 설계 포인트입니다.');
 }
 
 /* ══════════════ 14. 비용 + 남은 계획 ══════════════ */
