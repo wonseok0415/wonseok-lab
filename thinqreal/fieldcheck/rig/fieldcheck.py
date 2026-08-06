@@ -339,14 +339,23 @@ def run_scenario(cfg, scenario):
         wait_for_quiet(cfg, sd)
 
     # ── L3: 가전 동작 구간 연속 촬영 + 판정 ──
+    # 영상과 함께 오디오도 녹음한다 (2026-08-05 현장 발견): 확답 이후에 나오는
+    # 기기의 실행 선언("…실행할게요")이 첫 녹음 창(6초) 밖이라 증거가 안 남고,
+    # STT 판정도 확답 이전의 말만 보게 되는 맹점이 있었다. 이 녹음은 _post.wav로
+    # 저장되고, 앞부분이 L2 판정 텍스트에 합쳐진다.
     l3_judge = None
     l3_snapshot = ''
+    post_samples = None
     if cam and not cam_problem:
         watch_s = float(cam.get('watch_seconds', 35))
         interval_s = float(cam.get('interval_seconds', 1.0))
-        print(f'  가전 동작 촬영 중... ({watch_s:.0f}초, {interval_s:.0f}초 간격)')
+        print(f'  가전 동작 촬영 중... ({watch_s:.0f}초, {interval_s:.0f}초 간격, 오디오 동시 녹음)')
+        rec2 = sd.rec(int(watch_s * sr), samplerate=sr, channels=1, dtype='int16', device=in_dev)
         shot = vision.capture_series(int(cam.get('device', cam_roi.get('device', 0))), cam_roi,
                                      watch_s, interval_s, prefix=scenario['id'])
+        sd.wait()
+        post_samples = rec2[:, 0]
+        write_wav(os.path.join(REC_DIR, rec_name.replace('.wav', '_post.wav')), post_samples, sr)
         if shot['ok']:
             l3_snapshot = shot['snapshot']
             l3_judge = vision.judge_light(before_ratio, shot['series'],
@@ -391,7 +400,12 @@ def run_scenario(cfg, scenario):
     # 같은 실패를 두 건으로 세면 통계가 왜곡된다. 따라서 L2 성공률은
     # "응답한 것 중 내용까지 맞은 비율"로 읽어야 한다.
     if verdict['responded'] and stt.available(cfg):
-        l2 = judge_content(cfg, scenario, samples, sr, base)
+        # L3 시나리오는 확답 이후 녹음(_post)의 앞 15초를 이어 붙여 판정한다 —
+        # 실행 선언("…실행할게요")은 확답 뒤에 나오므로 첫 창만으로는 못 본다.
+        l2_samples = samples
+        if post_samples is not None and len(post_samples):
+            l2_samples = np.concatenate([samples, post_samples[:int(15 * sr)]])
+        l2 = judge_content(cfg, scenario, l2_samples, sr, base)
         if l2:
             results.append(l2)
 
@@ -422,6 +436,8 @@ def run_scenario(cfg, scenario):
                     'reason': l3_judge['reason'] if l3_judge else '',
                     'reask': reask,
                     'snapshot': l3_snapshot,
+                    'post_audio': rec_name.replace('.wav', '_post.wav')
+                                  if post_samples is not None else '',
                 }, ensure_ascii=False),
                 'stt_text': '',
                 'expected': f'명령 직후 물리 변화 |Δ|≥{cam.get("min_delta", 0.15)} '
