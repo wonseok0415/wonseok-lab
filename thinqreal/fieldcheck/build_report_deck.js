@@ -458,7 +458,7 @@ function slide(dark) {
     { x: 7.42, y: 2.55, w: 4.95, h: 1.5, margin: 0, fontFace: F, fontSize: 12, color: INK, lineSpacing: 19 });
 
   card(s, { x: 7.15, y: 4.42, w: 5.45, h: 2.2, fill: 'EFF3EC', line: OLIVE, flat: true });
-  s.addText('실측 계산 예 — 이 숫자로 판정합니다 (현장 측정값)', { x: 7.42, y: 4.56, w: 4.95, h: 0.32, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
+  s.addText('실측 계산 예 — 단독 조명 (현장 측정값)', { x: 7.42, y: 4.56, w: 4.95, h: 0.32, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
   s.addText([
     { text: '한 표본:  ', options: { color: MUTED } },
     { text: '대상 74.5 ÷ 참조 78.3 = 0.951', options: { bold: true, color: INK } },
@@ -483,17 +483,17 @@ function slide(dark) {
 /* ══════════════ 12. 판정 알고리즘 (|Δ|) ══════════════ */
 {
   const s = slide();
-  head(s, "L3 판정 기준 — '명령 직후의 변화량'",
-       '얼마나 밝은가가 아니라, 명령 직후 얼마나 변했는가를 봅니다');
+  head(s, "L3 판정 기준 — '촬영 구간 안의 지속된 변화'",
+       '얼마나 밝은가가 아니라, 명령 뒤 얼마나 변했는가를 촬영 구간 전체에서 봅니다');
 
   // 판정 기준 카드 (크게)
   card(s, { x: 0.7, y: 1.85, w: 7.3, h: 1.7, fill: 'EFF3EC', line: OLIVE });
   s.addText('판정 기준', { x: 1.0, y: 2.05, w: 2.5, h: 0.34, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE });
   s.addText([
-    { text: '명령 직후 60초 안에  ', options: { color: INK } },
-    { text: '상대값 변화 0.15 이상', options: { bold: true, color: OLIVE } },
-  ], { x: 1.0, y: 2.42, w: 6.8, h: 0.5, margin: 0, fontFace: F, fontSize: 20 });
-  s.addText('마지막 3초 평균과 명령 전 값을 비교 · 실측된 조명 ON↔OFF 변화폭은 약 0.3 — 기준의 2배 여유',
+    { text: '촬영 구간(50초) 안에  ', options: { color: INK } },
+    { text: '상대값 변화 0.15 이상, 3초 지속', options: { bold: true, color: OLIVE } },
+  ], { x: 1.0, y: 2.42, w: 6.8, h: 0.5, margin: 0, fontFace: F, fontSize: 19 });
+  s.addText('명령 전 값 대비, 구간 중 어느 시점이든 인정 · 순간 스파이크(사람 통과)는 3초 지속 조건으로 배제',
     { x: 1.0, y: 2.98, w: 6.8, h: 0.4, margin: 0, fontFace: F, fontSize: 11.5, color: MUTED });
 
   // 왜 변화량인가 — 시간 구조
@@ -501,7 +501,7 @@ function slide(dark) {
   s.addText('절대값이 아니라 변화량을 쓰는 이유 — 시간 구조', { x: 1.0, y: 4.03, w: 6.8, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
   const tw = [
     ['채광 (햇빛·구름·커튼)', '천천히 변합니다 — 절대 밝기의 기준선을 계속 움직이는 요인', SAGE],
-    ['가전 (조명·커튼 모터)', '명령 직후 급변합니다 — 60초 안의 큰 변화는 가전의 반응', OLIVE],
+    ['가전 (조명·커튼 모터)', '명령 직후 급변합니다 — 촬영 구간 안의 큰 변화는 가전의 반응', OLIVE],
   ];
   tw.forEach((t, i) => {
     const y = 4.48 + i * 0.58;
@@ -510,18 +510,18 @@ function slide(dark) {
     s.addText(t[1], { x: 3.85, y, w: 4.05, h: 0.46, margin: 0, fontFace: F, fontSize: 11, color: INK, valign: 'middle' });
   });
 
-  // 오른쪽: 부가 지표 + 시각 무관성
-  card(s, { x: 8.35, y: 1.85, w: 4.25, h: 3.85, fill: BG_SOFT, flat: true });
-  s.addText('이 기준의 성질', { x: 8.6, y: 2.02, w: 3.8, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: OLIVE });
-  s.addText('시각·날씨·커튼 상태와 무관하게\n같은 기준이 성립합니다 — 아침\n점검과 낮 시험에 다른 임계값이\n필요 없습니다.\n\n무인 점검에는 조명을 만질 사람이\n없으므로, 명령 직후의 급격한 변화\n= 가전이 반응했다는 증거입니다.\n\n변화가 시작되기까지의 시간은\n가전 반응 시간으로 함께 기록됩니다\n(응답 시작의 물리 동작판 지표).',
-    { x: 8.6, y: 2.42, w: 3.8, h: 3.2, margin: 0, fontFace: F, fontSize: 11.5, color: INK, lineSpacing: 18 });
+  // 오른쪽: 왜 끝값이 아니라 구간 전체인가 (복합 명령의 상쇄 — 현장 실측)
+  card(s, { x: 8.35, y: 1.85, w: 4.25, h: 3.85, fill: 'FBF6EC', line: AMBER, flat: true });
+  s.addText('왜 끝값이 아니라 구간 전체인가', { x: 8.6, y: 2.02, w: 3.8, h: 0.34, margin: 0, fontFace: F, fontSize: 13.5, bold: true, color: AMBER });
+  s.addText('복합 명령("다운라이트 켜고 커튼도\n열어줘")은 두 효과가 반대로 작용해\n서로 상쇄됩니다 — 조명은 대상을\n밝히고(↑), 커튼이 들인 채광은 참조\n벽을 밝힙니다(↓).\n\n실측: 둘 다 정상 동작했는데\n촬영 종료 시점 순변화는 −0.10,\n구간 최대 변위는 −0.201.\n\n그래서 구간 중 어느 시점의 지속된\n변화든 인정하며, 판정에 쓴 측정\n시계열 전체가 기록으로 남습니다.',
+    { x: 8.6, y: 2.42, w: 3.8, h: 3.2, margin: 0, fontFace: F, fontSize: 11, color: INK, lineSpacing: 16.5 });
 
   card(s, { x: 0.7, y: 5.95, w: 11.9, h: 0.85, fill: 'EFF3EC', line: OLIVE, flat: true });
   s.addText([
     { text: '판정에 쓰는 연산은 평균과 나눗셈뿐입니다. ', options: { bold: true, color: OLIVE } },
-    { text: '같은 입력에는 항상 같은 결과 — 검증·설명·재현이 가능한 결정적 판정입니다.', options: { color: INK } },
-  ], { x: 1.0, y: 5.95, w: 11.3, h: 0.85, margin: 0, fontFace: F, fontSize: 13, valign: 'middle' });
-  s.addNotes('판정 기준은 |Δ|≥0.15 하나입니다. 채광은 느리고 가전은 빠르다는 시간 구조가 이 기준의 근거입니다.');
+    { text: '같은 입력에는 항상 같은 결과 — 검증·설명·재현이 가능한 결정적 판정입니다. 시각·날씨·커튼 상태와 무관하게 같은 기준이 성립하고, 변화 시작까지의 시간은 가전 반응 시간으로 기록됩니다.', options: { color: INK } },
+  ], { x: 1.0, y: 5.95, w: 11.3, h: 0.85, margin: 0, fontFace: F, fontSize: 12.5, valign: 'middle' });
+  s.addNotes('판정 기준은 |Δ|≥0.15의 3초 지속 하나입니다. 복합 명령의 상쇄 실측이 "끝값이 아니라 구간 전체"의 근거입니다.');
 }
 
 /* ══════════════ 13. L3 시퀀스 ══════════════ */
@@ -532,11 +532,11 @@ function slide(dark) {
 
   const steps = [
     ['1', '사전 상태 촬영', '상대값 기록'],
-    ['2', '기동어 + 명령', '"조명 켜줘"'],
+    ['2', '기동어 + 명령', '"다운라이트 켜고,\n커튼도 열어줘"'],
     ['3', '응답 녹음', 'L1·L2 판정'],
     ['4', '무조건 확답', '"응, 실행해줘"'],
-    ['5', '60초 연속 촬영', '+ 오디오 녹음'],
-    ['6', '|Δ| 판정 → 전송', '반응 시간 기록'],
+    ['5', '50초 연속 촬영', '+ 오디오 녹음'],
+    ['6', '구간 변위 판정', '반응 시간 기록·전송'],
   ];
   steps.forEach((p2, i) => {
     const x = 0.7 + i * 2.0;
@@ -562,9 +562,9 @@ function slide(dark) {
 
   card(s, { x: 6.75, y: 3.85, w: 5.85, h: 2.75, fill: BG_SOFT, flat: true });
   s.addText('증거 보존 원칙 — 판정이 의심되면 원본으로', { x: 7.05, y: 4.03, w: 5.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14, bold: true, color: OLIVE });
-  s.addText('응답 녹음 · 확답 이후 녹음 · 판정 시점 스냅샷을 전부\n저장합니다.\n\n판정 결과에 의문이 생기면 언제든 원본을 다시 듣고 볼 수\n있어, 실패 원인 추적과 판정 신뢰성 확인이 가능합니다.\nL2의 인식 문장 기록과 함께, 모든 판정이 "왜 그렇게\n판정했는지"를 증거로 설명할 수 있는 구조입니다.',
-    { x: 7.05, y: 4.44, w: 5.3, h: 2.1, margin: 0, fontFace: F, fontSize: 11.5, color: INK, lineSpacing: 18 });
-  s.addNotes('되물음 대응과 증거 보존이 L3의 두 설계 포인트입니다.');
+  s.addText('장비가 스스로 소리 내지 않는 모든 구간을 녹음합니다 —\n응답 녹음 · 확답 대기~촬영 녹음 · 판정 시점 스냅샷 ·\n측정 시계열 전부 저장. (복합 명령은 연산이 길어 실행\n선언이 첫 청취 창 밖에 나올 수 있어, 이 녹음이 응답·내용\n판정의 근거가 됩니다.)\n\n판정에 의문이 생기면 언제든 원본을 다시 듣고 볼 수 있어\n— 실제로 현장 검증의 실패 3건을 원본으로 당일 판독했고,\n모든 판정이 "왜"를 증거로 설명할 수 있는 구조입니다.',
+    { x: 7.05, y: 4.44, w: 5.3, h: 2.2, margin: 0, fontFace: F, fontSize: 11, color: INK, lineSpacing: 16 });
+  s.addNotes('되물음 대응과 증거 보존이 L3의 두 설계 포인트입니다. "소리 내지 않는 구간은 전부 녹음"이 관측 사각을 없앱니다.');
 }
 
 /* ══════════════ 14. 신뢰성 ① 자가 진단 ══════════════ */
@@ -718,9 +718,9 @@ function slide(dark) {
 
   const kpi = [
     ['12건', '일일 판정', 'L1·L2·L3 × 시나리오 5개'],
-    ['0건', 'L1·L2 실패', '전 시나리오 통과'],
-    ['0.317', 'L3 실측 |Δ|', '기준 0.15의 2배 여유'],
-    ['26건', '자체 시험', '전원 통과'],
+    ['0건', '실패', 'L1·L2·L3 전 단계 통과'],
+    ['0.613', 'L3 최대 실측 |Δ|', '기준 0.15의 4배 여유'],
+    ['29건', '자체 시험', '전원 통과'],
   ];
   kpi.forEach((k, i) => {
     const x = 0.7 + i * 3.03;
@@ -745,7 +745,7 @@ function slide(dark) {
     ['시간 질문', '기기 내 즉답 — AI 엔진 미호출', '150 ms', '"지금은 9시 33분이에요"'],
     ['일상 대화', '생성 엔진 경유', '2,910 ms', '"저는 항상 기분이 좋아요…"'],
     ['날씨', '생성 엔진 + 외부 서비스 연동', '4,620 ms', '"오늘 등천동…기온은 최고 34.2도…"'],
-    ['조명 제어 (L3)', '음성 명령 → 물리 동작', '반응 시간 기록', '상대값 0.746 ↔ 1.063 (|Δ| 0.317)'],
+    ['가전 제어 (L3)', '복합 명령(다중 의도) + 루틴 일괄 제어', '반응 시간 기록', '최대 변위 |Δ| 0.201(켜기) · 0.613(외출 복구)'],
   ];
   recs.forEach((r, i) => {
     const y = 3.96 + i * 0.62;
