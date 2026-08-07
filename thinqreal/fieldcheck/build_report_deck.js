@@ -100,7 +100,7 @@ function slide(dark) {
     x: 0.92, y: 4.5, w: 4.75, h: 0.62, margin: 0,
     fontFace: F, fontSize: 15, bold: true, color: WHITE, align: 'center', valign: 'middle',
   });
-  s.addText('2026. 08. 05.   |   작성: 강원석', {
+  s.addText('2026. 08. 07.   |   작성: 강원석', {
     x: 0.9, y: 5.6, w: 8, h: 0.4, margin: 0,
     fontFace: F, fontSize: 14, color: '8C9887',
   });
@@ -122,7 +122,7 @@ function slide(dark) {
   const stats = [
     ['6일', '지시 → 자동 운영', '07-27 장애 → 08-02'],
     ['0원', '신규 비용', '유휴 노트북 + 기존 인프라'],
-    ['6건 / 0건', '일일 판정 / 실패', 'L1 3건 + L2 3건'],
+    ['3계층', '판정 체계', '말 · 내용 · 동작 (L1·L2·L3)'],
     ['1통', '사람이 볼 것', '아침 요약 메일'],
   ];
   stats.forEach((t, i) => {
@@ -189,7 +189,7 @@ function slide(dark) {
   head(s, '시스템 구성', '기존 예약 관리 시스템의 백엔드·메일 인프라를 그대로 재활용 — 신규 서버·계정·과금 없음');
 
   const rows = [
-    ['점검 장비', '상주 노트북 + (3단계) USB 웹캠', '① 음성 재생 "하이엘지" → 점검 질문   ② 내장 마이크로 응답 녹음   ③ 웹캠으로 가전 제어 전·후 촬영', OLIVE],
+    ['점검 장비', '상주 노트북 + 카메라', '① 음성 재생 "하이엘지" → 점검 질문   ② 내장 마이크로 응답 녹음   ③ 카메라로 가전 제어 전·후 촬영', OLIVE],
     ['판정', '점검 장비에서 즉시 실행', 'L1 응답 유무·시간   /   L2 내용 정확성 (로컬 STT)   /   L3 실제 동작', OLIVE_MID],
     ['기록', 'Apps Script → Google Sheets', 'health_checks 탭에 판정 결과·응답 시간·인식 문장 누적', SAGE],
     ['보고', '메일 + 관리자 페이지', '매일 아침 요약 메일 1통   +   관리자 🩺 자동 점검 탭', OLIVE],
@@ -206,52 +206,22 @@ function slide(dark) {
   s.addNotes('신규 인프라 없이 기존 시스템 위에 얹었다는 점이 비용 0원의 근거입니다.');
 }
 
-/* ══════════════ 5. 하루가 어떻게 돌아가는가 ══════════════ */
+/* ══════════════ 5. 판정 체계 ══════════════ */
 {
   const s = slide();
-  head(s, '일일 운영 흐름', '사람이 할 일은 아침에 메일 한 번 보는 것뿐입니다');
-
-  const day = [
-    ['07:00', '자동 점검', '점검 장비가 스스로 깨어나\nThinQ ON에게 3개 질문\n→ 판정 후 서버 전송', '사람 할 일 없음', OLIVE],
-    ['07:40', '요약 메일', '정상 / 실패가\n헤더 색으로 구분되어\n메일로 도착', '메일 한 번 보기', AMBER],
-    ['상시', '관리자 페이지', '🩺 자동 점검 탭에서\n최근 7 / 14 / 30일\n추이 확인', '필요할 때만', OLIVE_MID],
-    ['예약 시간', '자동 스킵', '확정 예약·차단 슬롯에는\n점검을 걸지 않음\n(시작 20분 전 ~ 종료 10분 후)', '사람 할 일 없음', SAGE],
-  ];
-  day.forEach((d, i) => {
-    const x = 0.7 + i * 3.03;
-    card(s, { x, y: 1.8, w: 2.83, h: 3.4 });
-    s.addShape(pres.ShapeType.roundRect, { x, y: 1.8, w: 2.83, h: 0.62, rectRadius: 0.09, fill: { color: d[4] }, line: { color: d[4], width: 0 } });
-    s.addText(d[0], { x: x + 0.18, y: 1.8, w: 2.47, h: 0.62, margin: 0, fontFace: F, fontSize: 16, bold: true, color: WHITE, valign: 'middle' });
-    s.addText(d[1], { x: x + 0.22, y: 2.58, w: 2.4, h: 0.36, margin: 0, fontFace: F, fontSize: 17, bold: true, color: INK });
-    s.addText(d[2], { x: x + 0.22, y: 3.02, w: 2.4, h: 1.25, margin: 0, fontFace: F, fontSize: 12.5, color: MUTED, lineSpacing: 18 });
-    s.addShape(pres.ShapeType.roundRect, { x: x + 0.22, y: 4.42, w: 2.4, h: 0.44, rectRadius: 0.22, fill: { color: BG_SOFT }, line: { width: 0 } });
-    s.addText(d[3], { x: x + 0.22, y: 4.42, w: 2.4, h: 0.44, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: OLIVE, align: 'center', valign: 'middle' });
-  });
-
-  card(s, { x: 0.7, y: 5.45, w: 11.9, h: 1.2, fill: BG_SOFT, flat: true });
-  s.addText('왜 07:00인가', { x: 1.0, y: 5.62, w: 2.2, h: 0.3, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE });
-  s.addText('사내 메일은 보안 게이트웨이를 거치며 수십 분 늦게 도착합니다. 점검 07:00 → 발송 07:40으로 앞당겨,\n지연을 감안해도 09:00 1회차 시연 전에 「오늘 정상」을 확인하고 대응할 여유를 확보했습니다.', {
-    x: 1.0, y: 5.95, w: 11.3, h: 0.62, margin: 0, fontFace: F, fontSize: 13.5, color: INK, lineSpacing: 20,
-  });
-  s.addNotes('팀원 입장에서 실제로 무엇이 바뀌는지를 보여주는 슬라이드입니다.');
-}
-
-/* ══════════════ 6. 판정 3단계 ══════════════ */
-{
-  const s = slide();
-  head(s, '판정 체계 — 3단계', '단계마다 보는 계층이 다릅니다. 어느 단계에서 실패했는지가 곧 원인 진단입니다');
+  head(s, '판정 체계 — 세 가지 질문', '말했는가 · 맞는 말인가 · 움직였는가 — 실패한 단계가 곧 원인 계층입니다');
 
   const lv = [
     ['L1', '말을 했는가', '소리 에너지만 분석\nSTT 불필요 · 즉시 판정', '7월 ATOM 장애가\n정확히 이 단계', '운영 중', OLIVE],
     ['L2', '맞는 말을 했는가', '녹음 → 로컬 STT\n→ 기대 키워드 대조', '오응답, "죄송해요\n모르겠어요", 연동 장애', '운영 중', OLIVE_MID],
-    ['L3', '실제로 움직였는가', '가전 제어 전·후\n촬영 이미지 비교', '제어 경로 장애\n루틴 미실행', '설계 완료', SAGE],
+    ['L3', '실제로 움직였는가', '명령 전·후 카메라 촬영\n픽셀 밝기 비교', '제어 경로 장애\n루틴 미실행', '운영 중', SAGE],
   ];
   lv.forEach((l, i) => {
     const x = 0.7 + i * 4.07;
     card(s, { x, y: 1.8, w: 3.82, h: 3.32 });
     s.addShape(pres.ShapeType.roundRect, { x: x + 0.28, y: 2.05, w: 0.92, h: 0.55, rectRadius: 0.12, fill: { color: l[5] }, line: { width: 0 } });
     s.addText(l[0], { x: x + 0.28, y: 2.05, w: 0.92, h: 0.55, margin: 0, fontFace: F, fontSize: 20, bold: true, color: WHITE, align: 'center', valign: 'middle' });
-    s.addText(l[4], { x: x + 2.4, y: 2.12, w: 1.15, h: 0.42, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: i < 2 ? OLIVE : MUTED, align: 'right', valign: 'middle' });
+    s.addText(l[4], { x: x + 2.4, y: 2.12, w: 1.15, h: 0.42, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: OLIVE, align: 'right', valign: 'middle' });
     s.addText(l[1], { x: x + 0.28, y: 2.78, w: 3.26, h: 0.42, margin: 0, fontFace: F, fontSize: 19, bold: true, color: INK });
     s.addText(l[2], { x: x + 0.28, y: 3.3, w: 3.26, h: 0.72, margin: 0, fontFace: F, fontSize: 12.5, color: MUTED, lineSpacing: 18 });
     s.addShape(pres.ShapeType.roundRect, { x: x + 0.28, y: 4.08, w: 3.26, h: 0.88, rectRadius: 0.09, fill: { color: BG_SOFT }, line: { width: 0 } });
@@ -276,7 +246,7 @@ function slide(dark) {
   s.addNotes('한 덩어리로 "실패"라고만 적으면 원인 구분이 사라집니다. 3단계로 나눈 실익이 여기 있습니다.');
 }
 
-/* ══════════════ 7. L1 vs L2 ══════════════ */
+/* ══════════════ 6. L1 vs L2 ══════════════ */
 {
   const s = slide();
   head(s, 'L1 · L2 판정의 역할 구분', '같은 실패가 아니라, 서로 다른 계층의 실패를 잡습니다');
@@ -316,7 +286,7 @@ function slide(dark) {
   s.addNotes('무응답을 L1·L2 두 건으로 세면 통계가 왜곡되므로 L2는 L1 통과 건에만 돌립니다.');
 }
 
-/* ══════════════ 8. 응답 시작 도식 ══════════════ */
+/* ══════════════ 7. 응답 시작 도식 ══════════════ */
 {
   const s = slide();
   head(s, "'응답 시작' 측정 기준", '메일과 대시보드에 나오는 밀리초(ms) 수치가 무엇을 재는지');
@@ -352,10 +322,10 @@ function slide(dark) {
   s.addNotes('숫자만 있고 정의가 없으면 오해되므로 요약 메일 안에도 같은 도식을 넣었습니다.');
 }
 
-/* ══════════════ 8a. L1 판정 로직 ══════════════ */
+/* ══════════════ 8. L1 판정 로직 ══════════════ */
 {
   const s = slide();
-  head(s, "L1 판정 로직 — 소리에서 '말'을 가려내는 방법", '쇼룸에는 에어컨 소음과 ThinQ ON 자신의 효과음이 섞여 있습니다 — 세 겹의 필터로 목소리만 남깁니다');
+  head(s, "L1 판정 원리 — 소리에서 '말'을 가려내는 3겹 필터", '쇼룸에는 에어컨 소음과 ThinQ ON 자신의 효과음이 섞여 있습니다 — 세 겹의 필터로 목소리만 남깁니다');
 
   const flt = [
     ['①', '대역 필터', '사람 목소리 대역\n250~4,000Hz의\n에너지만 측정', '에어컨·선풍기의 저주파 팬 소음\n— 아무리 커도 측정에서 제외', OLIVE],
@@ -384,13 +354,13 @@ function slide(dark) {
   s.addNotes('판정에 AI가 없습니다 — 전부 신호 처리(산술)라 결과가 재현 가능하고 빠릅니다. 자체 시험 20건으로 각 필터를 검증했습니다.');
 }
 
-/* ══════════════ 8b. L2 Whisper ══════════════ */
+/* ══════════════ 9. L2 원리 (STT) ══════════════ */
 {
   const s = slide();
-  head(s, 'L2 판정 로직 — Whisper 음성 인식', '팀에서 처음 접하는 솔루션이라 소개합니다');
+  head(s, 'L2 판정 원리 — 음성 인식(STT)과 키워드 판정', '받아쓰기는 STT 엔진이, 판정은 키워드 규칙이 합니다');
 
   card(s, { x: 0.7, y: 1.78, w: 5.6, h: 3.15 });
-  s.addText('Whisper란', { x: 1.0, y: 1.98, w: 5.0, h: 0.36, margin: 0, fontFace: F, fontSize: 17, bold: true, color: OLIVE });
+  s.addText('채택 엔진 — Whisper (오픈소스)', { x: 1.0, y: 1.98, w: 5.0, h: 0.36, margin: 0, fontFace: F, fontSize: 17, bold: true, color: OLIVE });
   s.addText([
     { text: 'OpenAI가 2022년 공개한 음성 인식(STT) AI 모델', options: { bullet: true, breakLine: true } },
     { text: '68만 시간 다국어 음성으로 학습 (한국어 포함) · 오픈소스 무료', options: { bullet: true, breakLine: true } },
@@ -409,7 +379,7 @@ function slide(dark) {
   s.addText('판정 연동 흐름', { x: 0.7, y: 5.12, w: 4, h: 0.34, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
   const flow = [
     ['①  응답 녹음', 'WAV 파일', WHITE, INK],
-    ['②  Whisper 전사', '"오늘 등천동 날씨는…\n기온은 최고 34.2도…"', WHITE, INK],
+    ['②  STT 전사', '"오늘 등천동 날씨는…\n기온은 최고 34.2도…"', WHITE, INK],
     ['③  키워드 판정', '회피 표현(죄송·모르겠) → 실패\n기대 키워드(날씨·기온) → 통과', 'F4F6F2', INK],
     ['④  기록·보고', '결과 + 인식 문장을 시트에,\n실패 시 메일에 문장 표시', WHITE, INK],
   ];
@@ -423,217 +393,32 @@ function slide(dark) {
   s.addNotes('Whisper는 받아쓰기까지만 하고 판정은 단순 키워드 규칙입니다 — AI의 판단이 아니라 규칙이므로 같은 녹음엔 항상 같은 결과(재현 가능)이고, 왜 실패인지 설명할 수 있습니다.');
 }
 
-/* ══════════════ 9. 현장에서 해결한 문제 ══════════════ */
+/* ══════════════ 10. L3 설계 근거 ══════════════ */
 {
   const s = slide();
-  head(s, '현장 검증 중 발견·개선 사항', '설계 단계에서는 나오지 않고 현장에서만 나온 문제들입니다 — 판정 신뢰도의 근거');
+  head(s, 'L3 판정 원리 — 왜 카메라이고, 왜 AI가 없는가',
+       '명령이 실제 물리 동작으로 이어졌는지를 확인합니다');
 
-  const issues = [
-    ['기동어 직후 명령이 씹힘', "ThinQ ON이 '띵' 반응 전에는 듣지 못함", '기동어·질문을 분리 재생 + 1.5초 대기'],
-    ["연산 대기음('띵띵띵')을 응답으로 오판", 'TTS 장애를 정상으로 판정할 구멍', '발성 비율 판정 — 1초 창의 70% 이상이 소리일 때만 말소리로 인정'],
-    ['긴 답변이 다음 점검의 기동어를 씹음', '생성형이라 답변 길이가 크게 변동', '시나리오 사이 “조용해질 때까지 대기” — 판정 결과와 무관하게 항상'],
-    ['소음 환경에서 정상 응답을 실패로 오판', '절대 음량 기준이 에어컨·선풍기 소음 위로 잡힘', '적응형 판정 — 음성 대역만 측정 + 기저 소음 자동 추정 + 기저 +8dB'],
-  ];
-  issues.forEach((it, i) => {
-    const y = 1.8 + i * 1.2;
-    card(s, { x: 0.7, y, w: 11.9, h: 1.0 });
-    badge(s, 0.95, y + 0.29, String(i + 1));
-    s.addText(it[0], { x: 1.55, y: y + 0.12, w: 4.35, h: 0.38, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: INK, valign: 'middle' });
-    s.addText(it[1], { x: 1.55, y: y + 0.52, w: 4.35, h: 0.36, margin: 0, fontFace: F, fontSize: 11.5, color: MUTED, valign: 'middle' });
-    s.addText('→', { x: 6.0, y, w: 0.35, h: 1.0, margin: 0, fontFace: F, fontSize: 14, color: SAGE, align: 'center', valign: 'middle' });
-    s.addText(it[2], { x: 6.45, y, w: 5.95, h: 1.0, margin: 0, fontFace: F, fontSize: 13, color: OLIVE, bold: true, valign: 'middle' });
-  });
-
-  s.addText('그리고 가장 위험했던 다섯 번째 — 다음 장', {
-    x: 0.7, y: 6.72, w: 11.9, h: 0.35, margin: 0, fontFace: F, fontSize: 13, bold: true, color: AMBER,
-  });
-  s.addNotes('현장 검증에서만 드러난 문제들이라, 실제로 돌려보지 않았으면 전부 놓쳤을 항목입니다.');
-}
-
-/* ══════════════ 10. 마이크 권한 함정 ══════════════ */
-{
-  const s = slide();
-  head(s, '자가 진단 설계 — 점검 장비 이상의 오보 방지');
-
-  card(s, { x: 0.7, y: 1.6, w: 11.9, h: 0.92, fill: BRICK, line: BRICK, flat: true });
-  s.addText('자동 실행 첫날 점검 3건 전부 실패 — 그런데 ThinQ ON은 정상이었습니다', {
-    x: 1.0, y: 1.6, w: 11.3, h: 0.92, margin: 0, fontFace: F, fontSize: 19, bold: true, color: WHITE, valign: 'middle',
-  });
-
-  const box = [
-    ['원인', 'macOS는 앱이 아닌 실행 파일(python)에는 마이크 권한 창을 띄우지 않고, 오류도 없이 무음을 반환합니다.\n시스템 설정 목록에도 나타나지 않아 수동 허용조차 불가능했습니다.', BRICK],
-    ['판별 단서', '세 시나리오의 소음 측정값이 소수점까지 동일(2.4 / −32.6 dBA)하고 최고값이 기저값보다 낮았습니다.\n보정값을 빼면 −120dB — 에너지가 정확히 0, 즉 완전한 디지털 무음이었습니다.', AMBER],
-    ['해결', '① 정식 앱(터미널)을 경유해 실행 → 권한 창이 정상 표시\n② 무음 자동 감지 → “점검 장비 설정/권한 문제(ThinQ ON 장애 아님)”로 별도 표기   ③ 진단 명령 추가', OLIVE],
-  ];
-  box.forEach((b, i) => {
-    const y = 2.72 + i * 1.15;
-    card(s, { x: 0.7, y, w: 11.9, h: 0.98 });
-    s.addShape(pres.ShapeType.roundRect, { x: 0.7, y, w: 1.5, h: 0.98, rectRadius: 0.09, fill: { color: b[2] }, line: { width: 0 } });
-    s.addText(b[0], { x: 0.7, y, w: 1.5, h: 0.98, margin: 0, fontFace: F, fontSize: 14, bold: true, color: WHITE, align: 'center', valign: 'middle' });
-    s.addText(b[1], { x: 2.4, y, w: 9.95, h: 0.98, margin: 0, fontFace: F, fontSize: 12.5, color: INK, valign: 'middle', lineSpacing: 19 });
-  });
-
-  card(s, { x: 0.7, y: 6.18, w: 11.9, h: 0.85, fill: BG_SOFT, flat: true });
-  s.addText([
-    { text: '교훈 — ', options: { bold: true, color: OLIVE } },
-    { text: '점검 시스템은 자기 자신의 고장을 스스로 진단할 수 있어야 합니다. 그러지 못하면 자기 고장을 대상의 장애로 오보합니다.', options: { bold: true, color: INK } },
-  ], { x: 1.0, y: 6.18, w: 11.3, h: 0.85, margin: 0, fontFace: F, fontSize: 14.5, valign: 'middle' });
-  s.addNotes('같은 원리를 L3에도 적용합니다 — 카메라 미연결·렌즈 가림을 가전 장애로 오보하지 않도록.');
-}
-
-/* ══════════════ 11. 검증 결과 ══════════════ */
-{
-  const s = slide();
-  head(s, '현장 검증 결과', '2026-08-01 L1+L2 통합 판정 · 2026-08-02 07:30 자동 실행');
-
-  const kpi = [
-    ['6건', '일일 판정', 'L1 3건 + L2 3건'],
-    ['0건', '실패', '전원 통과'],
-    ['20건', '자체 시험', '전원 통과'],
-    ['07:30', '자동 실행', '사람 개입 없이 성공'],
-  ];
-  kpi.forEach((k, i) => {
-    const x = 0.7 + i * 3.03;
-    card(s, { x, y: 1.78, w: 2.83, h: 1.35, fill: BG_SOFT, flat: true });
-    s.addText(k[0], { x: x + 0.22, y: 1.9, w: 2.4, h: 0.55, margin: 0, fontFace: F, fontSize: 28, bold: true, color: OLIVE });
-    s.addText(k[1], { x: x + 0.22, y: 2.47, w: 2.4, h: 0.3, margin: 0, fontFace: F, fontSize: 13, bold: true, color: INK });
-    s.addText(k[2], { x: x + 0.22, y: 2.75, w: 2.4, h: 0.3, margin: 0, fontFace: F, fontSize: 11, color: MUTED });
-  });
-
-  s.addText([
-    { text: '실측 상세 — ', options: { bold: true, color: OLIVE } },
-    { text: '응답 시간의 차이는 성능 편차가 아니라 ', options: { color: MUTED } },
-    { text: '처리 경로의 차이', options: { bold: true, color: OLIVE } },
-    { text: '입니다', options: { color: MUTED } },
-  ], { x: 0.7, y: 3.3, w: 11.9, h: 0.35, margin: 0, fontFace: F, fontSize: 14 });
-
-  const cols = [[0.7, 2.1], [2.85, 3.35], [6.25, 1.5], [7.8, 3.6], [11.45, 1.15]];
-  ['시나리오', '추정 처리 경로', '응답 시작', '인식된 문장', '판정'].forEach((h, i) => {
-    s.addText(h, { x: cols[i][0] + 0.2, y: 3.72, w: cols[i][1] - 0.3, h: 0.3, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: MUTED });
-  });
-  const recs = [
-    ['시간 질문', '기기 내 즉답 — AI 엔진 미호출', '150 ms', '"지금은 9시 33분이에요"'],
-    ['일상 대화', '생성 엔진 경유', '2,910 ms', '"저는 항상 기분이 좋아요…"'],
-    ['날씨', '생성 엔진 + 외부 서비스 연동', '4,620 ms', '"오늘 등천동…기온은 최고 34.2도…"'],
-  ];
-  recs.forEach((r, i) => {
-    const y = 4.08 + i * 0.72;
-    card(s, { x: 0.7, y, w: 11.9, h: 0.6, flat: true });
-    s.addText(r[0], { x: 0.9, y, w: 1.95, h: 0.6, margin: 0, fontFace: F, fontSize: 12.5, bold: true, color: INK, valign: 'middle' });
-    s.addText(r[1], { x: 3.05, y, w: 3.15, h: 0.6, margin: 0, fontFace: F, fontSize: 11.5, color: INK, valign: 'middle' });
-    s.addText(r[2], { x: 6.45, y, w: 1.3, h: 0.6, margin: 0, fontFace: F, fontSize: 13, color: OLIVE, bold: true, valign: 'middle' });
-    s.addText(r[3], { x: 8.0, y, w: 3.4, h: 0.6, margin: 0, fontFace: F, fontSize: 11, color: MUTED, valign: 'middle' });
-    s.addText('통과', { x: 11.65, y, w: 0.85, h: 0.6, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE, valign: 'middle' });
-  });
-
-  card(s, { x: 0.7, y: 6.28, w: 11.9, h: 0.88, fill: BG_SOFT, flat: true });
-  s.addText([
-    { text: '경로별 기준선이 다르므로 시나리오별 추이로 봅니다 — ', options: { bold: true, color: OLIVE } },
-    { text: '“시간 질문이 3초”는 절대값으론 정상이어도 이상 신호입니다. 날씨만 느려지면 외부 연동, 전부 느려지면 엔진·인프라로 지연 위치를 특정합니다.\n', options: { color: INK } },
-    { text: '받아쓰기 오류는 감수합니다 — ', options: { bold: true, color: OLIVE } },
-    { text: '“등촌동”→“등천동” 오인식에도 기대 키워드(날씨·기온)가 살아남아 판정은 정확합니다 (다중 키워드 완충).', options: { color: INK } },
-  ], { x: 1.0, y: 6.28, w: 11.3, h: 0.88, margin: 0, fontFace: F, fontSize: 12, valign: 'middle', lineSpacing: 19 });
-  s.addNotes('판정 대상은 "질문에 맞는 답을 했는가"이지 "받아쓰기가 정확한가"가 아닙니다.');
-}
-
-/* ══════════════ 12. 무엇을 받게 되는가 ══════════════ */
-{
-  const s = slide();
-  head(s, '운영 산출물 — 요약 메일 · 관리자 탭', '건별 알림은 없습니다 — 정상일 때는 아침 요약 한 통뿐입니다');
-
-  card(s, { x: 0.7, y: 1.8, w: 5.85, h: 3.4 });
-  s.addShape(pres.ShapeType.roundRect, { x: 0.7, y: 1.8, w: 5.85, h: 0.72, rectRadius: 0.09, fill: { color: OLIVE }, line: { width: 0 } });
-  s.addText('①   매일 아침 요약 메일', { x: 1.0, y: 1.8, w: 5.25, h: 0.72, margin: 0, fontFace: F, fontSize: 17, bold: true, color: WHITE, valign: 'middle' });
-  s.addText([
-    { text: '헤더 색으로 상태 구분 — 정상은 올리브, 실패·기록 없음은 경고색', options: { bullet: true, breakLine: true } },
-    { text: '판정 건수 · 성공률 · 평균 응답 시작 KPI + 단계별 성공률', options: { bullet: true, breakLine: true } },
-    { text: '실패 시 [L1]/[L2] 배지 + 인식된 문장 + 사유 + 녹음 파일명', options: { bullet: true, breakLine: true } },
-    { text: "'응답 시작' 측정 구간 도식을 메일 안에 포함", options: { bullet: true } },
-  ], { x: 1.0, y: 2.72, w: 5.25, h: 2.3, margin: 0, fontFace: F, fontSize: 13, color: INK, paraSpaceAfter: 10, lineSpacing: 19 });
-
-  card(s, { x: 6.75, y: 1.8, w: 5.85, h: 3.4 });
-  s.addShape(pres.ShapeType.roundRect, { x: 6.75, y: 1.8, w: 5.85, h: 0.72, rectRadius: 0.09, fill: { color: OLIVE_MID }, line: { width: 0 } });
-  s.addText('②   관리자 페이지 🩺 자동 점검 탭', { x: 7.05, y: 1.8, w: 5.25, h: 0.72, margin: 0, fontFace: F, fontSize: 17, bold: true, color: WHITE, valign: 'middle' });
-  s.addText([
-    { text: '오늘 상태 / L1·L2 성공률 / 평균 응답 시작', options: { bullet: true, breakLine: true } },
-    { text: '일자별 성공률 — 점검이 없던 날은 빈칸으로 남겨 "안 돌았음"이 드러남', options: { bullet: true, breakLine: true } },
-    { text: '단계·시나리오별 성공률, 최근 실패 20건', options: { bullet: true, breakLine: true } },
-    { text: '기간 7 / 14 / 30일 전환', options: { bullet: true } },
-  ], { x: 7.05, y: 2.72, w: 5.25, h: 2.3, margin: 0, fontFace: F, fontSize: 13, color: INK, paraSpaceAfter: 10, lineSpacing: 19 });
-
-  card(s, { x: 0.7, y: 5.4, w: 11.9, h: 1.55, fill: OLIVE, line: OLIVE, flat: true });
-  s.addText('침묵을 정상으로 오인하지 않습니다', { x: 1.0, y: 5.6, w: 11.3, h: 0.36, margin: 0, fontFace: F, fontSize: 17, bold: true, color: WHITE });
-  s.addText('24시간 동안 점검 기록이 없으면 「점검 장비 미가동 의심」 경고가 나갑니다. 실제로 이 경고 덕분에 자동 실행이 빠져 있다는 것을 발견했습니다.\n※ 현재는 테스트 단계라 운영자 1인에게만 발송합니다. 정식 운영 시 담당자 전체로 전환합니다.', {
-    x: 1.0, y: 6.02, w: 11.3, h: 0.85, margin: 0, fontFace: F, fontSize: 12.5, color: SAGE, lineSpacing: 19,
-  });
-  s.addNotes('알림 피로를 만들지 않는 것이 설계 원칙이었습니다. 매번 성공을 알리면 아무도 안 보게 됩니다.');
-}
-
-/* ══════════════ 13. 실패 메일을 받으면 ══════════════ */
-{
-  const s = slide();
-  head(s, '실패 알림 대응 가이드', '알림 문구별 첫 조치 — 실패 1건이 곧 장애는 아닙니다');
-
-  const acts = [
-    ['[L1] 무응답', 'ThinQ ON이 말을 하지 않음', '현장에서 직접 "하이엘지" 발화 → 재현되면 TTS·네트워크 이슈로 보고', BRICK],
-    ['[L2] 실패', '말은 했는데 내용이 다름', '인식 문장 확인 → "죄송/모르겠" 계열이면 엔진 이슈, 날씨만 실패면 외부 연동 의심', AMBER],
-    ['⚠ 점검 장비 설정/권한 문제', 'ThinQ ON 장애가 아님', '점검 장비의 마이크 권한·입력 장치 확인 (--mic-test 명령)', OLIVE_MID],
-    ['⚠ 점검 기록 없음', '그날 한 번도 실행되지 않음', '점검 장비 전원·절전 상태 확인 (덮개만 닫고 전원 연결 유지)', OLIVE_MID],
-  ];
-  acts.forEach((a, i) => {
-    const y = 1.8 + i * 1.16;
-    card(s, { x: 0.7, y, w: 11.9, h: 0.98 });
-    s.addShape(pres.ShapeType.roundRect, { x: 0.9, y: y + 0.26, w: 2.85, h: 0.46, rectRadius: 0.09, fill: { color: a[3] }, line: { width: 0 } });
-    s.addText(a[0], { x: 0.9, y: y + 0.26, w: 2.85, h: 0.46, margin: 0, fontFace: F, fontSize: 12.5, bold: true, color: WHITE, align: 'center', valign: 'middle' });
-    s.addText(a[1], { x: 4.0, y, w: 3.2, h: 0.98, margin: 0, fontFace: F, fontSize: 12.5, color: MUTED, valign: 'middle' });
-    s.addText(a[2], { x: 7.35, y, w: 5.0, h: 0.98, margin: 0, fontFace: F, fontSize: 12.5, bold: true, color: INK, valign: 'middle', lineSpacing: 18 });
-  });
-
-  card(s, { x: 0.7, y: 6.5, w: 11.9, h: 0.62, fill: BG_SOFT, flat: true });
-  s.addText([
-    { text: '실패 1건이 곧 장애는 아닙니다. ', options: { bold: true, color: BRICK } },
-    { text: '현장 재현 확인이 항상 첫 단계이고, 판단 근거가 되는 녹음 파일은 점검 장비에 그대로 남아 있습니다.', options: { color: INK } },
-  ], { x: 1.0, y: 6.5, w: 11.3, h: 0.62, margin: 0, fontFace: F, fontSize: 13, valign: 'middle' });
-  s.addNotes('팀원이 실제로 쓸 부분입니다. 메일 문구와 조치를 1:1로 대응시켰습니다.');
-}
-
-/* ══════════════ 13a. 구축 3단계 개요 ══════════════ */
-{
-  const s = slide();
-  head(s, "구축 3단계 착수 — '말'의 검증에서 '행동'의 검증으로",
-       '명령이 실제 물리 동작으로 이어졌는지를 카메라로 판정합니다 · 파이프라인 구축 완료, 현장 검증 중');
-
-  const lv = [
-    ['L1', '말을 했는가', '소리 에너지 분석', '✅ 운영 중', OLIVE],
-    ['L2', '맞는 말을 했는가', '로컬 STT + 키워드', '✅ 운영 중', OLIVE],
-    ['L3', '실제로 움직였는가', '카메라 픽셀 비교', '🔧 현장 검증 중', AMBER],
-  ];
-  lv.forEach((r, i) => {
-    const x = 0.7 + i * 4.03;
-    const hl = i === 2;
-    card(s, { x, y: 1.85, w: 3.82, h: 1.95, fill: hl ? 'FBF6EC' : WHITE, line: hl ? AMBER : undefined });
-    s.addText(r[0], { x: x + 0.25, y: 2.02, w: 1.2, h: 0.5, margin: 0, fontFace: F, fontSize: 26, bold: true, color: hl ? AMBER : OLIVE });
-    s.addText(r[1], { x: x + 0.25, y: 2.56, w: 3.35, h: 0.36, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: INK });
-    s.addText(r[2], { x: x + 0.25, y: 2.94, w: 3.35, h: 0.32, margin: 0, fontFace: F, fontSize: 11.5, color: MUTED });
-    s.addText(r[3], { x: x + 0.25, y: 3.32, w: 3.35, h: 0.32, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: r[4] });
-  });
-
-  card(s, { x: 0.7, y: 4.1, w: 5.85, h: 2.5, fill: BG_SOFT, flat: true });
-  s.addText('왜 API 조회가 아니라 카메라인가', { x: 1.0, y: 4.3, w: 5.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: OLIVE });
+  card(s, { x: 0.7, y: 1.85, w: 5.85, h: 2.9, fill: BG_SOFT, flat: true });
+  s.addText('왜 API 조회가 아니라 카메라인가', { x: 1.0, y: 2.1, w: 5.3, h: 0.36, margin: 0, fontFace: F, fontSize: 15.5, bold: true, color: OLIVE });
   s.addText('API는 "서버가 명령을 받았는가"까지만 알려줍니다.\n명령은 접수됐는데 커튼 모터가 돌지 않는 경우 —\n방문객 눈에 보이는 것은 물리적 변화이고,\n시연 품질을 지키려면 그것을 봐야 합니다.',
-    { x: 1.0, y: 4.72, w: 5.3, h: 1.7, margin: 0, fontFace: F, fontSize: 12.5, color: INK, lineSpacing: 20 });
+    { x: 1.0, y: 2.6, w: 5.3, h: 1.9, margin: 0, fontFace: F, fontSize: 13, color: INK, lineSpacing: 22 });
 
-  card(s, { x: 6.75, y: 4.1, w: 5.85, h: 2.5, fill: BG_SOFT, flat: true });
-  s.addText('AI 영상 인식 없이 — 산수만으로', { x: 7.05, y: 4.3, w: 5.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: OLIVE });
-  s.addText('카메라와 쇼룸 배치가 고정이라 "무엇인지 인식"이\n아니라 "아까와 달라졌는지 비교" 문제입니다.\n사각형 두 영역의 평균 밝기 비교 — 더하기와 나누기면\n충분하고, 그래서 검증·설명·재현이 가능합니다.',
-    { x: 7.05, y: 4.72, w: 5.3, h: 1.7, margin: 0, fontFace: F, fontSize: 12.5, color: INK, lineSpacing: 20 });
-  s.addNotes('L3의 핵심 선언: 물리 변화를 보되, AI 없이 결정적(deterministic) 연산만으로 판정합니다.');
+  card(s, { x: 6.75, y: 1.85, w: 5.85, h: 2.9, fill: BG_SOFT, flat: true });
+  s.addText('AI 영상 인식 없이 — 산수만으로', { x: 7.05, y: 2.1, w: 5.3, h: 0.36, margin: 0, fontFace: F, fontSize: 15.5, bold: true, color: OLIVE });
+  s.addText('카메라와 쇼룸 배치가 고정이라 "무엇인지 인식"이\n아니라 "아까와 달라졌는지 비교" 문제입니다.\n두 영역의 평균 밝기 비교 — 더하기와 나누기면\n충분하고, 그래서 검증·설명·재현이 가능합니다.',
+    { x: 7.05, y: 2.6, w: 5.3, h: 1.9, margin: 0, fontFace: F, fontSize: 13, color: INK, lineSpacing: 22 });
+
+  card(s, { x: 0.7, y: 5.05, w: 11.9, h: 1.65, fill: WHITE, line: OLIVE });
+  s.addText('판정 대상과 확대 순서', { x: 1.0, y: 5.24, w: 11.3, h: 0.34, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: OLIVE });
+  s.addText('조명 켜기 → 끄기 쌍(끄기가 원상 복구 겸용 — 점검이 항상 꺼진 상태로 끝나 다음날 시작 상태가 보장됩니다)으로 운영하고,\n커튼 → 루틴(여러 가전 동시 제어) 순으로 한 번에 한 변수씩 확대합니다. 숫자 판독(에어컨 설정온도)만 AI/OCR 영역이라 제외합니다.',
+    { x: 1.0, y: 5.64, w: 11.3, h: 0.9, margin: 0, fontFace: F, fontSize: 13, color: INK, lineSpacing: 21 });
+  s.addNotes('L3의 두 가지 설계 선언 — 물리 변화를 보되, 결정적 연산만으로 판정한다.');
 }
-
-/* ══════════════ 13b. 판정 원리 (상대값) ══════════════ */
+/* ══════════════ 11. 판정 원리 (상대값) ══════════════ */
 {
   const s = slide();
-  head(s, "L3 판정 원리 — 두 영역의 밝기 '상대값'",
+  head(s, "L3 판정 지표 — 두 영역의 밝기 '상대값'",
        '점검 장비 카메라 화면에서 사각형 두 개만 봅니다');
 
   // 실측 스냅샷 2장 (점검 장비가 판정 시점에 자동 저장한 실제 사진) + 영역 표시
@@ -695,10 +480,10 @@ function slide(dark) {
   s.addNotes('두 스냅샷은 점검 장비가 자동 저장한 실제 사진이고, 점선 사각형이 판정에 쓰는 두 영역입니다.');
 }
 
-/* ══════════════ 13c. 판정 알고리즘 (|Δ|) ══════════════ */
+/* ══════════════ 12. 판정 알고리즘 (|Δ|) ══════════════ */
 {
   const s = slide();
-  head(s, "판정 알고리즘 — '명령 직후의 변화량'",
+  head(s, "L3 판정 기준 — '명령 직후의 변화량'",
        '얼마나 밝은가가 아니라, 명령 직후 얼마나 변했는가를 봅니다');
 
   // 판정 기준 카드 (크게)
@@ -739,7 +524,7 @@ function slide(dark) {
   s.addNotes('판정 기준은 |Δ|≥0.15 하나입니다. 채광은 느리고 가전은 빠르다는 시간 구조가 이 기준의 근거입니다.');
 }
 
-/* ══════════════ 13d. L3 시퀀스 ══════════════ */
+/* ══════════════ 13. L3 시퀀스 ══════════════ */
 {
   const s = slide();
   head(s, 'L3 점검 시퀀스 — 되물음까지 흡수하는 자동 대화',
@@ -782,17 +567,214 @@ function slide(dark) {
   s.addNotes('되물음 대응과 증거 보존이 L3의 두 설계 포인트입니다.');
 }
 
-/* ══════════════ 14. 비용 + 남은 계획 ══════════════ */
+/* ══════════════ 14. 신뢰성 ① 자가 진단 ══════════════ */
 {
   const s = slide();
-  head(s, '소요 비용 및 향후 계획');
+  head(s, '신뢰성 설계 ① — 자기 고장의 자가 진단',
+       '자기 고장을 진단하지 못하는 점검 시스템은, 자기 고장을 대상의 장애로 오보합니다');
+
+  const sensors = [
+    ['마이크 — 듣기', 'OS가 권한을 거부하면\n오류 없이 무음만 반환\n→ 전부 실패로 오보 위험', '완전 무음(에너지 0)을 감지해\n"점검 장비 권한 문제"로 표기\n+ 전용 진단 명령 제공', OLIVE],
+    ['스피커 — 말하기', '음량이 꺼져 있으면\nThinQ ON이 명령을 못 들음\n→ 실패가 기기 탓으로 보임', '기동어를 재생하며 동시에 자기\n마이크로 녹음 — 자기 소리가 안\n들리면 "장비 음량 문제" 표기', OLIVE_MID],
+    ['카메라 — 보기', '미연결·렌즈 가림이면\n전·후 화면이 같아\n가전 장애로 오보 위험', '카메라 열기 실패·검은 화면을\n감지해 "점검 장비 문제(카메라)"\n로 표기', AMBER],
+  ];
+  sensors.forEach((f, i) => {
+    const x = 0.7 + i * 4.07;
+    card(s, { x, y: 1.8, w: 3.82, h: 3.6 });
+    s.addText(f[0], { x: x + 0.28, y: 2.0, w: 3.26, h: 0.4, margin: 0, fontFace: F, fontSize: 16.5, bold: true, color: f[3] });
+    s.addText([
+      { text: '고장 모드\n', options: { bold: true, color: MUTED, fontSize: 10.5 } },
+      { text: f[1], options: { color: INK, fontSize: 12 } },
+    ], { x: x + 0.28, y: 2.5, w: 3.26, h: 1.25, margin: 0, fontFace: F, lineSpacing: 17 });
+    s.addShape(pres.ShapeType.roundRect, { x: x + 0.28, y: 3.9, w: 3.26, h: 1.3, rectRadius: 0.09, fill: { color: BG_SOFT }, line: { width: 0 } });
+    s.addText([
+      { text: '자가 진단\n', options: { bold: true, color: f[3], fontSize: 10.5 } },
+      { text: f[2], options: { color: INK, fontSize: 11.5 } },
+    ], { x: x + 0.45, y: 3.9, w: 2.95, h: 1.3, margin: 0, fontFace: F, valign: 'middle', lineSpacing: 16 });
+  });
+
+  card(s, { x: 0.7, y: 5.72, w: 11.9, h: 1.0, fill: OLIVE, line: OLIVE, flat: true });
+  s.addText('세 경우 모두 "ThinQ ON 장애 아님"으로 구분 표기됩니다 — 아침 메일에서 기기 장애와 장비 문제가 섞이지 않습니다.',
+    { x: 1.0, y: 5.72, w: 11.3, h: 1.0, margin: 0, fontFace: F, fontSize: 14.5, bold: true, color: WHITE, valign: 'middle' });
+  s.addNotes('실제 사례로 검증된 설계입니다 — 마이크 권한 무음, 스피커 저음량, 카메라 권한 문제를 각각 현장에서 겪고 자가 진단으로 흡수했습니다.');
+}
+/* ══════════════ 15. 신뢰성 ② 운영 장치 ══════════════ */
+{
+  const s = slide();
+  head(s, '신뢰성 설계 ② — 오판을 막는 운영 장치',
+       '판정을 신뢰할 수 있게 하는 네 가지 원칙');
+
+  const guards = [
+    ['증거 보존', '응답 녹음 · 확답 이후 녹음 · 판정 시점 스냅샷을 전부 저장합니다. 판정에 의문이 생기면 언제든 원본을 다시 보고 들을 수 있어, 모든 판정이 "왜 그렇게 판정했는지"를 증거로 설명할 수 있습니다.', OLIVE],
+    ['입력 재현성', '점검 음성은 한 번 만든 WAV 파일로 고정합니다. 매번 같은 입력이어야 "오늘 실패 = ThinQ ON 쪽 변화"라고 말할 수 있습니다. 스피커 볼륨·장비 위치도 캘리브레이션 후 고정입니다.', OLIVE_MID],
+    ['예약 시간대 자동 회피', '발화 직전에 예약 시스템을 조회해, 확정 예약·차단 슬롯(시작 20분 전~종료 10분 후)에는 점검하지 않습니다. 조회에 실패해도 건너뜁니다 — 시연 방해 방지가 점검 1회보다 우선입니다.', SAGE],
+    ['무기록 감지', '24시간 동안 점검 기록이 없으면 그 사실 자체가 "⚠ 점검 기록 없음" 경고로 발송됩니다. 침묵을 정상으로 오인하지 않습니다 — 실제로 이 경고가 자동 실행 누락을 잡아냈습니다.', AMBER],
+  ];
+  guards.forEach((g, i) => {
+    const x = 0.7 + (i % 2) * 6.05;
+    const y = 1.85 + Math.floor(i / 2) * 2.45;
+    card(s, { x, y, w: 5.85, h: 2.25 });
+    s.addShape(pres.ShapeType.roundRect, { x: x + 0.25, y: y + 0.22, w: 0.16, h: 0.42, rectRadius: 0.05, fill: { color: g[2] }, line: { width: 0 } });
+    s.addText(g[0], { x: x + 0.55, y: y + 0.22, w: 5.0, h: 0.42, margin: 0, fontFace: F, fontSize: 16, bold: true, color: INK, valign: 'middle' });
+    s.addText(g[1], { x: x + 0.28, y: y + 0.78, w: 5.3, h: 1.35, margin: 0, fontFace: F, fontSize: 12, color: INK, lineSpacing: 19 });
+  });
+  s.addNotes('알림 피로 방지도 같은 계열의 원칙입니다 — 건별 성공 알림은 없고, 정상일 때는 아침 요약 한 통뿐입니다.');
+}
+/* ══════════════ 16. 하루가 어떻게 돌아가는가 ══════════════ */
+{
+  const s = slide();
+  head(s, '일일 운영 흐름', '사람이 할 일은 아침에 메일 한 번 보는 것뿐입니다');
+
+  const day = [
+    ['07:00', '자동 점검', '점검 장비가 스스로 깨어나\n질문·가전 제어 시나리오 실행\n→ 판정 후 서버 전송', '사람 할 일 없음', OLIVE],
+    ['07:40', '요약 메일', '정상 / 실패가\n헤더 색으로 구분되어\n메일로 도착', '메일 한 번 보기', AMBER],
+    ['상시', '관리자 페이지', '🩺 자동 점검 탭에서\n최근 7 / 14 / 30일\n추이 확인', '필요할 때만', OLIVE_MID],
+    ['예약 시간', '자동 스킵', '확정 예약·차단 슬롯에는\n점검을 걸지 않음\n(시작 20분 전 ~ 종료 10분 후)', '사람 할 일 없음', SAGE],
+  ];
+  day.forEach((d, i) => {
+    const x = 0.7 + i * 3.03;
+    card(s, { x, y: 1.8, w: 2.83, h: 3.4 });
+    s.addShape(pres.ShapeType.roundRect, { x, y: 1.8, w: 2.83, h: 0.62, rectRadius: 0.09, fill: { color: d[4] }, line: { color: d[4], width: 0 } });
+    s.addText(d[0], { x: x + 0.18, y: 1.8, w: 2.47, h: 0.62, margin: 0, fontFace: F, fontSize: 16, bold: true, color: WHITE, valign: 'middle' });
+    s.addText(d[1], { x: x + 0.22, y: 2.58, w: 2.4, h: 0.36, margin: 0, fontFace: F, fontSize: 17, bold: true, color: INK });
+    s.addText(d[2], { x: x + 0.22, y: 3.02, w: 2.4, h: 1.25, margin: 0, fontFace: F, fontSize: 12.5, color: MUTED, lineSpacing: 18 });
+    s.addShape(pres.ShapeType.roundRect, { x: x + 0.22, y: 4.42, w: 2.4, h: 0.44, rectRadius: 0.22, fill: { color: BG_SOFT }, line: { width: 0 } });
+    s.addText(d[3], { x: x + 0.22, y: 4.42, w: 2.4, h: 0.44, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: OLIVE, align: 'center', valign: 'middle' });
+  });
+
+  card(s, { x: 0.7, y: 5.45, w: 11.9, h: 1.2, fill: BG_SOFT, flat: true });
+  s.addText('왜 07:00인가', { x: 1.0, y: 5.62, w: 2.2, h: 0.3, margin: 0, fontFace: F, fontSize: 13, bold: true, color: OLIVE });
+  s.addText('사내 메일은 보안 게이트웨이를 거치며 수십 분 늦게 도착합니다. 점검 07:00 → 발송 07:40으로 앞당겨,\n지연을 감안해도 09:00 1회차 시연 전에 「오늘 정상」을 확인하고 대응할 여유를 확보했습니다.', {
+    x: 1.0, y: 5.95, w: 11.3, h: 0.62, margin: 0, fontFace: F, fontSize: 13.5, color: INK, lineSpacing: 20,
+  });
+  s.addNotes('팀원 입장에서 실제로 무엇이 바뀌는지를 보여주는 슬라이드입니다.');
+}
+
+/* ══════════════ 17. 무엇을 받게 되는가 ══════════════ */
+{
+  const s = slide();
+  head(s, '운영 산출물 — 요약 메일 · 관리자 탭', '건별 알림은 없습니다 — 정상일 때는 아침 요약 한 통뿐입니다');
+
+  card(s, { x: 0.7, y: 1.8, w: 5.85, h: 3.4 });
+  s.addShape(pres.ShapeType.roundRect, { x: 0.7, y: 1.8, w: 5.85, h: 0.72, rectRadius: 0.09, fill: { color: OLIVE }, line: { width: 0 } });
+  s.addText('①   매일 아침 요약 메일', { x: 1.0, y: 1.8, w: 5.25, h: 0.72, margin: 0, fontFace: F, fontSize: 17, bold: true, color: WHITE, valign: 'middle' });
+  s.addText([
+    { text: '헤더 색으로 상태 구분 — 정상은 올리브, 실패·기록 없음은 경고색', options: { bullet: true, breakLine: true } },
+    { text: '판정 건수 · 성공률 · 평균 응답 시작 KPI + 단계별 성공률', options: { bullet: true, breakLine: true } },
+    { text: '실패 시 [L1]/[L2]/[L3] 배지 + 인식 문장 · 사유 · 근거 파일명', options: { bullet: true, breakLine: true } },
+    { text: "'응답 시작' 측정 구간 도식을 메일 안에 포함", options: { bullet: true } },
+  ], { x: 1.0, y: 2.72, w: 5.25, h: 2.3, margin: 0, fontFace: F, fontSize: 13, color: INK, paraSpaceAfter: 10, lineSpacing: 19 });
+
+  card(s, { x: 6.75, y: 1.8, w: 5.85, h: 3.4 });
+  s.addShape(pres.ShapeType.roundRect, { x: 6.75, y: 1.8, w: 5.85, h: 0.72, rectRadius: 0.09, fill: { color: OLIVE_MID }, line: { width: 0 } });
+  s.addText('②   관리자 페이지 🩺 자동 점검 탭', { x: 7.05, y: 1.8, w: 5.25, h: 0.72, margin: 0, fontFace: F, fontSize: 17, bold: true, color: WHITE, valign: 'middle' });
+  s.addText([
+    { text: '오늘 상태 / 단계별(L1·L2·L3) 성공률 / 평균 응답 시작', options: { bullet: true, breakLine: true } },
+    { text: '일자별 성공률 — 점검이 없던 날은 빈칸으로 남겨 "안 돌았음"이 드러남', options: { bullet: true, breakLine: true } },
+    { text: '단계·시나리오별 성공률, 최근 실패 20건', options: { bullet: true, breakLine: true } },
+    { text: '기간 7 / 14 / 30일 전환', options: { bullet: true } },
+  ], { x: 7.05, y: 2.72, w: 5.25, h: 2.3, margin: 0, fontFace: F, fontSize: 13, color: INK, paraSpaceAfter: 10, lineSpacing: 19 });
+
+  card(s, { x: 0.7, y: 5.4, w: 11.9, h: 1.55, fill: OLIVE, line: OLIVE, flat: true });
+  s.addText('침묵을 정상으로 오인하지 않습니다', { x: 1.0, y: 5.6, w: 11.3, h: 0.36, margin: 0, fontFace: F, fontSize: 17, bold: true, color: WHITE });
+  s.addText('24시간 동안 점검 기록이 없으면 「점검 장비 미가동 의심」 경고가 나갑니다. 실제로 이 경고 덕분에 자동 실행이 빠져 있다는 것을 발견했습니다.\n※ 현재는 테스트 단계라 운영자 1인에게만 발송합니다. 정식 운영 시 담당자 전체로 전환합니다.', {
+    x: 1.0, y: 6.02, w: 11.3, h: 0.85, margin: 0, fontFace: F, fontSize: 12.5, color: SAGE, lineSpacing: 19,
+  });
+  s.addNotes('알림 피로를 만들지 않는 것이 설계 원칙이었습니다. 매번 성공을 알리면 아무도 안 보게 됩니다.');
+}
+
+/* ══════════════ 18. 실패 메일을 받으면 ══════════════ */
+{
+  const s = slide();
+  head(s, '실패 알림 대응 가이드', '알림 문구별 첫 조치 — 실패 1건이 곧 장애는 아닙니다');
+
+  const acts = [
+    ['[L1] 무응답', 'ThinQ ON이 말을 하지 않음', '현장에서 직접 "하이엘지" 발화 → 재현되면 TTS·네트워크 이슈로 보고', BRICK],
+    ['[L2] 실패', '말은 했는데 내용이 다름', '인식 문장 확인 → "죄송/모르겠" 계열이면 엔진 이슈, 날씨만 실패면 외부 연동 의심', AMBER],
+    ['[L3] 동작 미확인', '말은 맞는데 가전이 안 움직임', '현장에서 같은 명령 육성 재현 → 재현되면 가전 제어 경로 이슈로 보고', BRICK],
+    ['⚠ 점검 장비 문제', 'ThinQ ON 장애가 아님', '장비의 마이크·카메라 권한, 스피커 음량 확인 (자가 진단이 원인을 표기)', OLIVE_MID],
+    ['⚠ 점검 기록 없음', '그날 한 번도 실행되지 않음', '점검 장비 전원·절전 상태 확인 (덮개만 닫고 전원 연결 유지)', OLIVE_MID],
+  ];
+  acts.forEach((a, i) => {
+    const y = 1.75 + i * 0.97;
+    card(s, { x: 0.7, y, w: 11.9, h: 0.84 });
+    s.addShape(pres.ShapeType.roundRect, { x: 0.9, y: y + 0.2, w: 2.85, h: 0.44, rectRadius: 0.09, fill: { color: a[3] }, line: { width: 0 } });
+    s.addText(a[0], { x: 0.9, y: y + 0.2, w: 2.85, h: 0.44, margin: 0, fontFace: F, fontSize: 12, bold: true, color: WHITE, align: 'center', valign: 'middle' });
+    s.addText(a[1], { x: 4.0, y, w: 3.2, h: 0.84, margin: 0, fontFace: F, fontSize: 12, color: MUTED, valign: 'middle' });
+    s.addText(a[2], { x: 7.35, y, w: 5.0, h: 0.84, margin: 0, fontFace: F, fontSize: 12, bold: true, color: INK, valign: 'middle', lineSpacing: 16 });
+  });
+
+  card(s, { x: 0.7, y: 6.62, w: 11.9, h: 0.58, fill: BG_SOFT, flat: true });
+  s.addText([
+    { text: '실패 1건이 곧 장애는 아닙니다. ', options: { bold: true, color: BRICK } },
+    { text: '현장 재현 확인이 항상 첫 단계이고, 판단 근거(녹음·촬영)는 점검 장비에 그대로 남아 있습니다.', options: { color: INK } },
+  ], { x: 1.0, y: 6.62, w: 11.3, h: 0.58, margin: 0, fontFace: F, fontSize: 12.5, valign: 'middle' });
+  s.addNotes('팀원이 실제로 쓸 부분입니다. 메일 문구와 조치를 1:1로 대응시켰습니다.');
+}
+/* ══════════════ 19. 검증 결과 ══════════════ */
+{
+  const s = slide();
+  head(s, '현장 검증 결과', 'L1 · L2 · L3 실측');
+
+  const kpi = [
+    ['12건', '일일 판정', 'L1·L2·L3 × 시나리오 5개'],
+    ['0건', 'L1·L2 실패', '전 시나리오 통과'],
+    ['0.317', 'L3 실측 |Δ|', '기준 0.15의 2배 여유'],
+    ['26건', '자체 시험', '전원 통과'],
+  ];
+  kpi.forEach((k, i) => {
+    const x = 0.7 + i * 3.03;
+    card(s, { x, y: 1.78, w: 2.83, h: 1.35, fill: BG_SOFT, flat: true });
+    s.addText(k[0], { x: x + 0.22, y: 1.9, w: 2.4, h: 0.55, margin: 0, fontFace: F, fontSize: 28, bold: true, color: OLIVE });
+    s.addText(k[1], { x: x + 0.22, y: 2.47, w: 2.4, h: 0.3, margin: 0, fontFace: F, fontSize: 13, bold: true, color: INK });
+    s.addText(k[2], { x: x + 0.22, y: 2.75, w: 2.4, h: 0.3, margin: 0, fontFace: F, fontSize: 11, color: MUTED });
+  });
+
+  s.addText([
+    { text: '실측 상세 — ', options: { bold: true, color: OLIVE } },
+    { text: '응답 시간의 차이는 성능 편차가 아니라 ', options: { color: MUTED } },
+    { text: '처리 경로의 차이', options: { bold: true, color: OLIVE } },
+    { text: '입니다', options: { color: MUTED } },
+  ], { x: 0.7, y: 3.28, w: 11.9, h: 0.32, margin: 0, fontFace: F, fontSize: 14 });
+
+  const cols = [[0.7, 2.1], [2.85, 3.35], [6.25, 1.5], [7.8, 3.6], [11.45, 1.15]];
+  ['시나리오', '추정 처리 경로', '응답 시작', '실측 근거', '판정'].forEach((h, i) => {
+    s.addText(h, { x: cols[i][0] + 0.2, y: 3.64, w: cols[i][1] - 0.3, h: 0.3, margin: 0, fontFace: F, fontSize: 11.5, bold: true, color: MUTED });
+  });
+  const recs = [
+    ['시간 질문', '기기 내 즉답 — AI 엔진 미호출', '150 ms', '"지금은 9시 33분이에요"'],
+    ['일상 대화', '생성 엔진 경유', '2,910 ms', '"저는 항상 기분이 좋아요…"'],
+    ['날씨', '생성 엔진 + 외부 서비스 연동', '4,620 ms', '"오늘 등천동…기온은 최고 34.2도…"'],
+    ['조명 제어 (L3)', '음성 명령 → 물리 동작', '반응 시간 기록', '상대값 0.746 ↔ 1.063 (|Δ| 0.317)'],
+  ];
+  recs.forEach((r, i) => {
+    const y = 3.96 + i * 0.62;
+    card(s, { x: 0.7, y, w: 11.9, h: 0.52, flat: true });
+    s.addText(r[0], { x: 0.9, y, w: 1.95, h: 0.52, margin: 0, fontFace: F, fontSize: 12, bold: true, color: INK, valign: 'middle' });
+    s.addText(r[1], { x: 3.05, y, w: 3.15, h: 0.52, margin: 0, fontFace: F, fontSize: 11, color: INK, valign: 'middle' });
+    s.addText(r[2], { x: 6.45, y, w: 1.35, h: 0.52, margin: 0, fontFace: F, fontSize: 12, color: OLIVE, bold: true, valign: 'middle' });
+    s.addText(r[3], { x: 8.0, y, w: 3.4, h: 0.52, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED, valign: 'middle' });
+    s.addText('통과', { x: 11.65, y, w: 0.85, h: 0.52, margin: 0, fontFace: F, fontSize: 12, bold: true, color: OLIVE, valign: 'middle' });
+  });
+
+  card(s, { x: 0.7, y: 6.55, w: 11.9, h: 0.62, fill: BG_SOFT, flat: true });
+  s.addText([
+    { text: '시나리오별 추이로 봅니다 — ', options: { bold: true, color: OLIVE } },
+    { text: '날씨만 느려지면 외부 연동, 전부 느려지면 엔진·인프라. 받아쓰기 오류("등촌동"→"등천동")는 다중 키워드로 완충되어 판정은 정확합니다.', options: { color: INK } },
+  ], { x: 1.0, y: 6.55, w: 11.3, h: 0.62, margin: 0, fontFace: F, fontSize: 12, valign: 'middle' });
+  s.addNotes('L3의 "반응 시간"은 명령 후 가전이 몇 초 만에 움직였는지 — L1 응답 시작의 물리 동작판 지표입니다.');
+}
+/* ══════════════ 20. 비용·확대 로드맵 ══════════════ */
+{
+  const s = slide();
+  head(s, '소요 비용 및 확대 로드맵');
 
   s.addText('비용', { x: 0.7, y: 1.72, w: 3, h: 0.32, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
   const costs = [
     ['점검 장비', '0원', '유휴 노트북 활용'],
     ['백엔드 · 메일', '0원', '기존 예약 시스템 재활용'],
     ['음성 인식(STT)', '0원', '로컬 실행 — 과금·계정 없음'],
-    ['USB 웹캠 (3단계)', '수만 원', '유일한 신규 구매'],
+    ['USB 웹캠', '수만 원', '구매 진행 중 — 유일한 신규 구매'],
   ];
   costs.forEach((c, i) => {
     const y = 2.12 + i * 0.76;
@@ -802,11 +784,11 @@ function slide(dark) {
     s.addText(c[2], { x: 4.68, y, w: 1.75, h: 0.64, margin: 0, fontFace: F, fontSize: 10.5, color: MUTED, valign: 'middle' });
   });
 
-  s.addText('남은 계획', { x: 6.75, y: 1.72, w: 3, h: 0.32, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
+  s.addText('확대 로드맵', { x: 6.75, y: 1.72, w: 3, h: 0.32, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
   const plans = [
-    ['구축 3단계 (L3)', '가전 제어의 물리 동작을 카메라로 판정 (조명 → 커튼 → 루틴)', '현장 검증 중'],
-    ['운영 전환', '상주 Windows 이관 + 단일 실행파일 패키징 + 담당자 전체 알림', '대기'],
-    ['Phase 2 격상', '수동 일일 점검을 자동 점검으로 대체', '병행 검증 후'],
+    ['판정 대상 확대', '조명 → 커튼 → 루틴(여러 가전 동시 제어) 순으로 검증 범위 확대', '진행 중'],
+    ['장비 정식 전환', 'USB 웹캠 + 상주 Windows 이관 + 단일 실행파일(exe) 패키징', '웹캠 구매 중'],
+    ['운영 격상', '담당자 전체 알림 전환 + 수동 일일 점검 대체 (Phase 2)', '병행 검증 후'],
   ];
   plans.forEach((p, i) => {
     const y = 2.12 + i * 1.04;
@@ -818,16 +800,16 @@ function slide(dark) {
   });
 
   card(s, { x: 0.7, y: 5.38, w: 11.9, h: 1.6, fill: BG_SOFT, flat: true });
-  s.addText('L3는 AI 엔진 없이 구현합니다', { x: 1.0, y: 5.56, w: 11.3, h: 0.34, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
+  s.addText('확장하더라도 구조는 그대로입니다', { x: 1.0, y: 5.56, w: 11.3, h: 0.34, margin: 0, fontFace: F, fontSize: 15, bold: true, color: OLIVE });
   s.addText(
-    '카메라와 쇼룸 배치가 고정이므로 “무엇인지 인식”이 아니라 “달라졌는지 비교” 문제입니다 — 관심영역의 픽셀 차이 계산으로 충분합니다.\n' +
-    'API 대신 카메라를 택한 이유: API는 “서버가 명령을 받았는가”만 봅니다. 명령은 접수됐는데 커튼 모터가 안 도는 경우, 방문객 눈에 보이는 것은 물리적 변화입니다.',
+    '판정 대상이 늘어도 「촬영 → 비교 → 판정 → 기록」 파이프라인은 동일합니다.\n' +
+    '사내 이관을 전제로 서버 주소·인증·저장 위치가 전부 설정으로 분리되어 있어, 이관 시 설정 교체만으로 동작합니다.',
     { x: 1.0, y: 5.96, w: 11.3, h: 0.95, margin: 0, fontFace: F, fontSize: 12.5, color: INK, lineSpacing: 20 }
   );
-  s.addNotes('3단계에 드는 신규 비용은 웹캠 1대뿐이고, AI 엔진 도입이 필요 없다는 점이 핵심입니다.');
+  s.addNotes('신규 비용은 웹캠 1대뿐이고, 확장이 구조 변경을 요구하지 않는다는 점이 핵심입니다.');
 }
 
-/* ══════════════ 15. 마무리 ══════════════ */
+/* ══════════════ 21. 마무리 ══════════════ */
 {
   const s = slide(true);
   s.addShape(pres.ShapeType.ellipse, { x: -2.0, y: 3.6, w: 6.2, h: 6.2, fill: { color: OLIVE }, line: { width: 0 } });
