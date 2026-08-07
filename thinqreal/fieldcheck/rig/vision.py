@@ -172,7 +172,8 @@ def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
     """조명 판정 — '변화량(Δ)' 기준, 순수 계산 (opencv 불필요, selftest 가능).
 
     before_ratio: 발화 전 상대값. series: capture_series의 series.
-    expect: 'on'(밝아짐 기대) / 'off'(어두워짐 기대). sustain: 마지막 N표본 평균 사용.
+    expect: 'on'(밝아짐 기대) / 'off'(어두워짐 기대).
+    sustain: 변위가 이 표본 수만큼 연속 지속되어야 변화로 인정 (스파이크 배제).
 
     절대 임계값이 아니라 **명령 직후의 변화량**을 본다 (2026-08-05 현장 발견):
     상대값의 절대 수준은 시각·채광(커튼 상태)에 따라 통째로 떠다니지만
@@ -181,40 +182,65 @@ def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
     효과는 명령 직후 급변하므로, Δ 기준은 시각·날씨와 무관하게 성립한다.
 
     판정 원칙: 사전 상태가 이미 목표 상태면 변화가 없어 실패(판정 불가)로
-    남는다 — 웰컴(켜짐)→외출(꺼짐+복구) 쌍 구성으로 시작 상태를 보장할 것.
+    남는다 — 켜기(복합 명령)→외출(꺼짐+복구) 쌍 구성으로 시작 상태를 보장할 것.
     """
-    # 판정은 변화의 '크기'만 본다 (2026-08-05 16:31 실측 교훈): 태양 각도에 따라
-    # 같은 가전 동작이 상대값을 올리기도 내리기도 한다 — 외출 루틴(어두워짐)이
-    # 정상 동작했는데 Δ+0.433이 나온 사례. 방향은 진단 참고값으로만 기록한다.
-    # 무인 점검에서는 사람 개입이 없으므로, 명령 직후의 급격한 |Δ|는 가전이
-    # 물리적으로 반응했다는 증거로 충분하다.
+    # 판정 기준의 진화 (전부 현장 실측이 근거):
+    # ① 크기만 본다 (2026-08-05): 태양 각도에 따라 같은 가전 동작이 상대값을
+    #    올리기도 내리기도 한다 — 외출 루틴(어두워짐) 정상 동작에 Δ+0.433.
+    #    방향은 진단 참고값(direction_match)으로만 기록한다.
+    # ② 최종 상태가 아니라 촬영 구간 전체의 '최대 지속 변위'를 본다 (2026-08-07):
+    #    복합 명령(다운라이트 켜기+커튼 열기)은 두 효과가 상대값에 반대 방향으로
+    #    작용한다 — 조명은 대상을 밝히고(↑), 커튼 채광은 참조 벽을 밝힌다(↓).
+    #    실제로 둘 다 동작했는데 순변화가 Δ-0.1에 그쳐 실패로 오판된 사례.
+    #    구간 중 어느 시점이든 |Δ|≥min_delta가 sustain표본 연속이면 물리 변화다.
     want_on = (expect != 'off')
 
     ratios = [s[3] for s in series]
     if not ratios or before_ratio is None:
         return {'passed': False, 'reason': '측정 데이터 없음', 'action_latency_ms': None,
-                'before_ratio': before_ratio, 'after_ratio': None, 'direction_match': None}
+                'before_ratio': before_ratio, 'after_ratio': None,
+                'peak_delta': None, 'direction_match': None}
     tail = ratios[-sustain:]
     after = round(sum(tail) / len(tail), 3)
-    delta = round(after - before_ratio, 3)
+    final_delta = round(after - before_ratio, 3)
 
-    if abs(delta) >= min_delta:
-        crossed = next(s[0] for s in series if abs(s[3] - before_ratio) >= min_delta)
-        direction_match = (delta > 0) == want_on
-        note = '' if direction_match else \
-            ' ※ 변화 방향이 기대와 반대 — 태양 각도에 따라 방향은 뒤집힐 수 있어 참고만'
+    peak_delta = 0.0
+    run = 0
+    hit_idx = None
+    for i, r in enumerate(ratios):
+        d = r - before_ratio
+        if abs(d) > abs(peak_delta):
+            peak_delta = d
+        if abs(d) >= min_delta:
+            run += 1
+            if run >= sustain and hit_idx is None:
+                hit_idx = i - run + 1
+        else:
+            run = 0
+    peak_delta = round(peak_delta, 3)
+
+    if hit_idx is not None:
+        crossed = series[hit_idx][0]
+        direction_match = (peak_delta > 0) == want_on
+        notes = []
+        if not direction_match:
+            notes.append('※ 변화 방향이 기대와 반대 — 태양 각도에 따라 방향은 뒤집힐 수 있어 참고만')
+        if abs(final_delta) < min_delta:
+            notes.append('※ 종료 시점엔 변화가 상쇄됨 — 조명·커튼 동시 동작의 상반 효과(정상)')
+        note = (' ' + ' '.join(notes)) if notes else ''
         return {'passed': True,
-                'reason': f'물리 변화 감지 — 상대값 {before_ratio}→{after} '
-                          f'(Δ{delta:+}, 기준 |Δ|≥{min_delta}){note}',
+                'reason': f'물리 변화 감지 — 상대값 {before_ratio} 기준 최대 변위 Δ{peak_delta:+} '
+                          f'(기준 |Δ|≥{min_delta} {sustain}표본 지속, 종료 시 {after}){note}',
                 'action_latency_ms': int(crossed * 1000),
                 'before_ratio': before_ratio, 'after_ratio': after,
-                'direction_match': direction_match}
+                'peak_delta': peak_delta, 'direction_match': direction_match}
 
     return {'passed': False,
-            'reason': f'물리 변화 미감지 — 상대값 {before_ratio}→{after} (Δ{delta:+}, 기준 |Δ|≥{min_delta}). '
+            'reason': f'물리 변화 미감지 — 상대값 {before_ratio}→{after} '
+                      f'(최대 변위 Δ{peak_delta:+}, 기준 |Δ|≥{min_delta} {sustain}표본 지속). '
                       '명령 미동작 또는 점검 전 이미 목표 상태',
             'action_latency_ms': None, 'before_ratio': before_ratio, 'after_ratio': after,
-            'direction_match': None}
+            'peak_delta': peak_delta, 'direction_match': None}
 
 
 # ── 독립 도구 (수동 측정) ───────────────────────────────────

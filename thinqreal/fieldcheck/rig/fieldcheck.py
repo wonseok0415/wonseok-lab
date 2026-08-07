@@ -341,10 +341,13 @@ def run_scenario(cfg, scenario):
     # 단, 되물음의 청취 창은 짧다 — 첫 통합 시험(08-05)에서 일반 대기(2초 무음
     # 확인)를 거친 확답이 창을 놓쳐 루틴이 불발됐다. 확답 앞에서는 무음 1초만
     # 확인되면 즉시 재생하고, listen_seconds도 짧게(6~8초) 둘 것.
+    quiet_waited = 0.0
+    confirm_ms = 0
     if scenario.get('confirm_file'):
         print('  응답이 멎는 즉시 확답을 재생합니다 (되물음 청취 창 대응)...')
-        wait_for_quiet(cfg, sd, post_silence=1.0, max_wait=8)
+        quiet_waited = wait_for_quiet(cfg, sd, post_silence=1.0, max_wait=8)
         confirm, confirm_sr = read_wav(os.path.join(BASE_DIR, scenario['confirm_file']))
+        confirm_ms = int(len(confirm) / confirm_sr * 1000)
         print('  확답 재생 — 되물음이면 접수되고, 이미 실행 중이면 무시됩니다')
         sd.play(confirm, confirm_sr, device=out_dev)
         sd.wait()
@@ -359,6 +362,7 @@ def run_scenario(cfg, scenario):
     # 저장되고, 앞부분이 L2 판정 텍스트에 합쳐진다.
     l3_judge = None
     l3_snapshot = ''
+    l3_series = []
     post_samples = None
     if cam and not cam_problem:
         watch_s = float(cam.get('watch_seconds', 35))
@@ -372,9 +376,14 @@ def run_scenario(cfg, scenario):
         write_wav(os.path.join(REC_DIR, rec_name.replace('.wav', '_post.wav')), post_samples, sr)
         if shot['ok']:
             l3_snapshot = shot['snapshot']
+            # 시계열은 (경과초, 상대값)만 추려 판정 근거로 함께 전송한다 —
+            # 실패 원인 판독(상쇄·임계값 미달·무변화 구분)은 이 데이터가 전부다
+            l3_series = [[s[0], s[3]] for s in shot['series']]
             l3_judge = vision.judge_light(before_ratio, shot['series'],
                                           float(cam.get('min_delta', 0.15)),
                                           cam.get('expect', 'on'), int(cam.get('sustain', 3)))
+            ratios_only = [s[3] for s in shot['series']]
+            print(f'  측정 요약: 상대값 최소 {min(ratios_only)} / 최대 {max(ratios_only)} ({len(ratios_only)}표본)')
             print(f'  L3 판정: {"통과" if l3_judge["passed"] else "실패"} — {l3_judge["reason"]}')
         else:
             cam_problem = shot['problem']
@@ -382,6 +391,26 @@ def run_scenario(cfg, scenario):
         # 커튼·에어컨 가동음과 확답에 대한 응답 멘트가 끝나기를 기다린다
         print('  가전 동작음이 잦아들 때까지 대기...')
         wait_for_quiet(cfg, sd)
+
+    # ── 늦은 응답 구제 (2026-08-07 현장 발견) ──
+    # 복합 명령(다중 의도)은 첫 응답 시작이 첫 청취 창(6초)을 넘길 수 있다.
+    # 창 안에서 응답을 못 찾았어도 확답 이후 녹음(앞 15초)에서 말소리가 확인되면
+    # 무응답이 아니다 — 실제 응답이 있었는데 L1 FAIL로 오보된 사례(복합 명령).
+    # 반응 시간은 청취 창 + 확답 대기 + 확답 길이를 합산한 근사값으로 기록한다.
+    late_ms = None
+    if post_samples is not None and not verdict['responded'] and not verdict.get('silent'):
+        late_verdict = analyze_recording(
+            post_samples[:int(15 * sr)], sr,
+            float(cfg.get('voice_over_floor_db', 8.0)),
+            float(cfg.get('speech_window_seconds', 1.0)),
+            float(cfg.get('speech_voiced_ratio', 0.7)),
+            cal,
+        )
+        if late_verdict['responded']:
+            late_ms = int(listen * 1000 + quiet_waited * 1000 + confirm_ms
+                          + late_verdict['latency_ms'])
+            print(f'  [참고] 첫 청취 창엔 응답이 없었지만 확답 이후 녹음에서 응답을 확인했습니다'
+                  f' — 응답 시작 약 {late_ms}ms (근사값)')
 
     base = {
         'type': 'health_check',
@@ -398,11 +427,12 @@ def run_scenario(cfg, scenario):
     }
     l1 = dict(base, **{
         'level': 'L1',
-        'result': 'pass' if verdict['responded'] else 'fail',
-        'latency_ms': verdict['latency_ms'],
+        'result': 'pass' if (verdict['responded'] or late_ms is not None) else 'fail',
+        'latency_ms': verdict['latency_ms'] if verdict['responded'] else late_ms,
         'detail': json.dumps({'floor_dba': verdict['floor_dba'],
                               'peak_dba': verdict['peak_dba'],
                               'silent': bool(verdict.get('silent')),
+                              'late_response': late_ms is not None,
                               'cal_offset': cal,
                               'over_floor_db': cfg.get('voice_over_floor_db', 8.0),
                               'voiced_ratio': cfg.get('speech_voiced_ratio', 0.7)},
@@ -410,12 +440,16 @@ def run_scenario(cfg, scenario):
         'stt_text': '',
         'expected': '',
     })
+    if late_ms is not None and not base['note']:
+        l1['note'] = '응답이 첫 청취 창 이후 시작(복합 명령 처리 지연 가능) — 반응 시간은 근사값'
     results = [l1]
 
     # L2(내용 판정)는 L1이 통과했을 때만 — 응답 자체가 없으면 판정할 말이 없고,
     # 같은 실패를 두 건으로 세면 통계가 왜곡된다. 따라서 L2 성공률은
     # "응답한 것 중 내용까지 맞은 비율"로 읽어야 한다.
-    if verdict['responded'] and stt.available(cfg):
+    # 늦은 응답 구제 건도 응답은 있었던 것이므로 L2 대상 — 첫 창 텍스트가 비면
+    # judge_content가 확답 이후 녹음을 합쳐 재판정한다.
+    if (verdict['responded'] or late_ms is not None) and stt.available(cfg):
         l2 = judge_content(cfg, scenario, samples, sr, base, post_samples=post_samples)
         if l2:
             results.append(l2)
@@ -441,17 +475,20 @@ def run_scenario(cfg, scenario):
                 'detail': json.dumps({
                     'before_ratio': l3_judge['before_ratio'] if l3_judge else before_ratio,
                     'after_ratio': l3_judge['after_ratio'] if l3_judge else None,
+                    'peak_delta': l3_judge.get('peak_delta') if l3_judge else None,
                     'min_delta': cam.get('min_delta', 0.15),
                     'expect': cam.get('expect', 'on'),
                     'direction_match': l3_judge.get('direction_match') if l3_judge else None,
                     'reason': l3_judge['reason'] if l3_judge else '',
                     'reask': reask,
                     'snapshot': l3_snapshot,
+                    'series': l3_series,
                     'post_audio': rec_name.replace('.wav', '_post.wav')
                                   if post_samples is not None else '',
                 }, ensure_ascii=False),
                 'stt_text': '',
-                'expected': f'명령 직후 물리 변화 |Δ|≥{cam.get("min_delta", 0.15)} '
+                'expected': f'촬영 구간 내 물리 변화 |Δ|≥{cam.get("min_delta", 0.15)} '
+                            f'{int(cam.get("sustain", 3))}표본 지속 '
                             f'(기대 방향: {"밝아짐" if want_on else "어두워짐"} — 참고용)',
                 'note': '되물음 발생 → 확답으로 진행' if reask else '',
             })
@@ -889,6 +926,11 @@ def cmd_selftest():
     spike_s = [(1.0, 0, 0, 0.75), (2.0, 0, 0, 0.95), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.76), (5.0, 0, 0, 0.75)]
     off_s = [(1.0, 0, 0, 0.97), (2.0, 0, 0, 0.96), (3.0, 0, 0, 0.75), (4.0, 0, 0, 0.74), (5.0, 0, 0, 0.73)]
     dark_s = [(1.0, 0, 0, 0.74), (2.0, 0, 0, 0.73), (3.0, 0, 0, 0.55), (4.0, 0, 0, 0.54), (5.0, 0, 0, 0.53)]
+    # 복합 명령의 상쇄 (2026-08-07 실측): 조명 켜짐으로 올랐다가 커튼 채광이
+    # 참조 벽을 밝혀 도로 내려온다 — 순변화는 작아도 물리 변화는 실재했다
+    cancel_s = [(1.0, 0, 0, 0.76), (2.0, 0, 0, 0.77), (3.0, 0, 0, 0.95), (4.0, 0, 0, 0.96),
+                (5.0, 0, 0, 0.95), (6.0, 0, 0, 0.80), (7.0, 0, 0, 0.76)]
+    short_s = [(1.0, 0, 0, 0.95), (2.0, 0, 0, 0.95), (3.0, 0, 0, 0.76), (4.0, 0, 0, 0.75), (5.0, 0, 0, 0.76)]
     l3_cases = [
         ('켜짐 전환 감지', 0.75, on_s, 'on', True, 3000),
         ('변화 없음 → 실패', 0.75, flat_s, 'on', False, None),
@@ -896,6 +938,8 @@ def cmd_selftest():
         ('순간 스파이크 무시', 0.75, spike_s, 'on', False, None),
         ('꺼짐 전환 감지', 0.97, off_s, 'off', True, 3000),
         ('방향 반대여도 |Δ| 크면 통과', 0.75, dark_s, 'on', True, 3000),
+        ('상쇄 복귀(복합 명령) 감지', 0.75, cancel_s, 'on', True, 3000),
+        ('2표본 변위는 지속 미달 → 실패', 0.75, short_s, 'on', False, None),
     ]
     for i, (name, before, series, expect, want_pass, want_lat) in enumerate(
             l3_cases, start=10 + len(l2_cases) + len(slot_cases)):
