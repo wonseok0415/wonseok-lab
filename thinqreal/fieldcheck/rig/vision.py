@@ -220,18 +220,24 @@ def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
     peak_delta = round(peak_delta, 3)
 
     if hit_idx is not None:
-        crossed = series[hit_idx][0]
         direction_match = (peak_delta > 0) == want_on
         notes = []
         if not direction_match:
             notes.append('※ 변화 방향이 기대와 반대 — 태양 각도에 따라 방향은 뒤집힐 수 있어 참고만')
         if abs(final_delta) < min_delta:
             notes.append('※ 종료 시점엔 변화가 상쇄됨 — 조명·커튼 동시 동작의 상반 효과(정상)')
+        # 첫 표본부터 이미 기준을 넘겼다면 변화는 촬영 시작 전(발화·확답 구간)에
+        # 끝난 것 — 0ms로 기록하면 반응 시간 통계가 오염되므로 미측정으로 남긴다
+        if hit_idx == 0:
+            latency = None
+            notes.append('※ 촬영 시작 시점에 이미 변화 완료 — 반응이 확답·촬영 준비 구간보다 빨라 반응 시간 미측정')
+        else:
+            latency = int(series[hit_idx][0] * 1000)
         note = (' ' + ' '.join(notes)) if notes else ''
         return {'passed': True,
                 'reason': f'물리 변화 감지 — 상대값 {before_ratio} 기준 최대 변위 Δ{peak_delta:+} '
                           f'(기준 |Δ|≥{min_delta} {sustain}표본 지속, 종료 시 {after}){note}',
-                'action_latency_ms': int(crossed * 1000),
+                'action_latency_ms': latency,
                 'before_ratio': before_ratio, 'after_ratio': after,
                 'peak_delta': peak_delta, 'direction_match': direction_match}
 

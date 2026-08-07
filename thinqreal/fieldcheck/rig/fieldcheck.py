@@ -940,6 +940,8 @@ def cmd_selftest():
         ('방향 반대여도 |Δ| 크면 통과', 0.75, dark_s, 'on', True, 3000),
         ('상쇄 복귀(복합 명령) 감지', 0.75, cancel_s, 'on', True, 3000),
         ('2표본 변위는 지속 미달 → 실패', 0.75, short_s, 'on', False, None),
+        ('촬영 전 이미 변화 완료 → 통과·반응 시간 미측정', 0.75,
+         [(0.0, 0, 0, 0.95), (1.0, 0, 0, 0.96), (2.0, 0, 0, 0.95), (3.0, 0, 0, 0.96)], 'on', True, None),
     ]
     for i, (name, before, series, expect, want_pass, want_lat) in enumerate(
             l3_cases, start=10 + len(l2_cases) + len(slot_cases)):
