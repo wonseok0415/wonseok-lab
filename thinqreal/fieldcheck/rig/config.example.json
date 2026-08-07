@@ -35,7 +35,7 @@
     "model": "small",
     "language": "ko",
     "min_chars": 4,
-    "vocabulary_hint": "ThinQ ON, 하이 엘지, 사용자님, 마곡, 등촌동, 강서구, 기온, 습도, 강수확률, 미세먼지, 흐림, 소나기, 천둥, 에어컨, 공기청정기, 세탁기, 건조기, 스타일러, 정수기, 조명, 커튼, 웰컴모드, 외출 모드, 루틴",
+    "vocabulary_hint": "ThinQ ON, 하이 엘지, 사용자님, 마곡, 등촌동, 강서구, 기온, 습도, 강수확률, 미세먼지, 흐림, 소나기, 천둥, 에어컨, 공기청정기, 세탁기, 건조기, 스타일러, 정수기, 조명, 커튼, 웰컴모드, 외출 모드, 루틴, 다운라이트",
     "forbid_any_default": [
       "모르겠",
       "죄송",
@@ -93,41 +93,62 @@
     },
     {
       "id": "l3_light_on",
-      "label": "가전 제어 — 조명 켜기 (단독 명령)",
+      "label": "가전 제어 — 거실 다운라이트 켜기 (단독 명령)",
       "level": "L3",
       "wake_file": "phrases/wake.wav",
       "phrase_file": "phrases/light_on.wav",
       "confirm_file": "phrases/confirm_yes.wav",
       "listen_seconds": 6,
       "expect_any": [
+        "다운라이트",
         "조명"
       ],
       "camera": {
         "device": 0,
-        "watch_seconds": 35,
         "interval_seconds": 1.0,
         "min_delta": 0.15,
         "sustain": 3,
+        "watch_seconds": 35,
         "expect": "on"
       }
     },
     {
-      "id": "l3_light_off",
-      "label": "가전 제어 — 조명 끄기 (원상 복구)",
+      "id": "l3_curtain_open",
+      "label": "가전 제어 — 거실 커튼 열기 (단독 명령)",
       "level": "L3",
       "wake_file": "phrases/wake.wav",
-      "phrase_file": "phrases/light_off.wav",
+      "phrase_file": "phrases/curtain_open.wav",
       "confirm_file": "phrases/confirm_yes.wav",
       "listen_seconds": 6,
       "expect_any": [
-        "조명"
+        "커튼"
       ],
       "camera": {
         "device": 0,
-        "watch_seconds": 35,
         "interval_seconds": 1.0,
         "min_delta": 0.15,
         "sustain": 3,
+        "watch_seconds": 50,
+        "expect": "on"
+      }
+    },
+    {
+      "id": "l3_away_routine",
+      "label": "가전 제어 — 외출 모드 (일괄 복구 + 루틴 판정)",
+      "level": "L3",
+      "wake_file": "phrases/wake.wav",
+      "phrase_file": "phrases/routine_away.wav",
+      "confirm_file": "phrases/confirm_yes.wav",
+      "listen_seconds": 6,
+      "expect_any": [
+        "외출"
+      ],
+      "camera": {
+        "device": 0,
+        "interval_seconds": 1.0,
+        "min_delta": 0.15,
+        "sustain": 3,
+        "watch_seconds": 50,
         "expect": "off"
       }
     }
