@@ -92,36 +92,17 @@
       ]
     },
     {
-      "id": "l3_light_on",
-      "label": "가전 제어 — 거실 다운라이트 켜기 (단독 명령)",
+      "id": "l3_combo_on",
+      "label": "가전 제어 — 복합 명령 (다운라이트 켜기 + 커튼 열기)",
       "level": "L3",
       "wake_file": "phrases/wake.wav",
-      "phrase_file": "phrases/light_on.wav",
+      "phrase_file": "phrases/combo_on.wav",
       "confirm_file": "phrases/confirm_yes.wav",
       "listen_seconds": 6,
       "expect_any": [
         "다운라이트",
+        "커튼",
         "조명"
-      ],
-      "camera": {
-        "device": 0,
-        "interval_seconds": 1.0,
-        "min_delta": 0.15,
-        "sustain": 3,
-        "watch_seconds": 35,
-        "expect": "on"
-      }
-    },
-    {
-      "id": "l3_curtain_open",
-      "label": "가전 제어 — 거실 커튼 열기 (단독 명령)",
-      "level": "L3",
-      "wake_file": "phrases/wake.wav",
-      "phrase_file": "phrases/curtain_open.wav",
-      "confirm_file": "phrases/confirm_yes.wav",
-      "listen_seconds": 6,
-      "expect_any": [
-        "커튼"
       ],
       "camera": {
         "device": 0,

@@ -330,15 +330,15 @@ python3 vision.py --watch 60
 ### 점검 음성 만들기
 
 ```
-python3 synthesize_phrases.py "거실 다운라이트 켜줘" phrases/light_on.wav
-python3 synthesize_phrases.py "거실 커튼 열어줘" phrases/curtain_open.wav
+python3 synthesize_phrases.py "거실 다운라이트 켜고, 거실 커튼도 열어줘" phrases/combo_on.wav
 python3 synthesize_phrases.py "외출 모드 실행해줘" phrases/routine_away.wav
 python3 synthesize_phrases.py "응. 실행해줘" phrases/confirm_yes.wav
 ```
-시나리오는 **켜기 2종(다운라이트·커튼) → 외출 모드 일괄 복구**의 3연쇄입니다.
-외출 모드가 조명·커튼·에어컨을 모두 꺼서 원상 복구를 겸하고, 점검이 항상
-꺼진 상태로 끝나 다음날 시작 상태가 보장됩니다. 단독 제어 2건 + 루틴 1건이라
-제어 경로별 반응 시간 비교 데이터도 함께 쌓입니다.
+시나리오는 **복합 명령 켜기(다운라이트+커튼 한 문장) → 외출 모드 일괄 복구**의
+2연쇄입니다. ThinQ ON의 복합 명령(다중 의도) 처리 자체가 점검 대상이 되고,
+외출 모드가 조명·커튼·에어컨을 모두 꺼서 원상 복구를 겸하므로 점검이 항상
+꺼진 상태로 끝나 다음날 시작 상태가 보장됩니다. 복합 명령 1건 + 루틴 1건의
+반응 시간이 제어 경로 비교 데이터로 쌓입니다.
 - **명령 문구는 먼저 육성으로 시험해 잘 통하는 것으로 확정**한 뒤 그 문구로
   만드세요 (기기 등록명에 따라 "거실 조명"이 아닐 수 있음).
 - **첫 대상은 루틴이 아니라 단독 명령**: "웰컴모드" 같은 루틴 고유명은
