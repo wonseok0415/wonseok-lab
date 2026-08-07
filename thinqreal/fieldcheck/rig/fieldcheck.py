@@ -218,7 +218,7 @@ def audio():
         sys.exit('[오류] sounddevice가 설치되지 않았습니다. 명령창에서:  pip install sounddevice numpy')
 
 
-def wait_for_quiet(cfg, sd, post_silence=None, max_wait=None):
+def wait_for_quiet(cfg, sd, post_silence=None, max_wait=None, collect=False):
     """앞 시나리오의 응답(생성형 AI라 길이가 크게 변동)이 끝날 때까지 대기.
 
     마이크를 0.5초 단위로 살피다가 post_silence_seconds(기본 2초) 동안
@@ -227,6 +227,11 @@ def wait_for_quiet(cfg, sd, post_silence=None, max_wait=None):
 
     post_silence/max_wait 인자로 설정값을 덮어쓸 수 있다 — 되물음 확답처럼
     청취 창이 닫히기 전에 서둘러야 하는 구간에서 짧은 값을 쓴다.
+
+    collect=True면 대기 중 들은 소리를 (경과 초, 샘플 배열)로 함께 반환한다
+    (2026-08-07 현장 발견): 복합 명령은 연산음이 첫 청취 창을 다 채우고
+    실행 선언("…켜고 …열게요")이 이 대기 구간에 떨어질 수 있다 — 대기
+    구간을 버리면 실행 선언이 어느 녹음에도 안 남는 관측 사각이 된다.
     """
     sr = int(cfg.get('samplerate', 16000))
     thr = float(cfg.get('voice_threshold_dbfs', -45))
@@ -235,10 +240,13 @@ def wait_for_quiet(cfg, sd, post_silence=None, max_wait=None):
     chunk = 0.5
     waited = 0.0
     quiet = 0.0
+    chunks = []
     while waited < max_wait and quiet < quiet_needed:
         rec = sd.rec(int(chunk * sr), samplerate=sr, channels=1, dtype='int16',
                      device=cfg.get('input_device'))
         sd.wait()
+        if collect:
+            chunks.append(rec[:, 0].copy())
         if frame_dbfs(rec[:, 0]) < thr:
             quiet += chunk
         else:
@@ -246,6 +254,9 @@ def wait_for_quiet(cfg, sd, post_silence=None, max_wait=None):
         waited += chunk
     if waited >= max_wait:
         print(f'  [주의] {max_wait:.0f}초가 지나도 소리가 이어져 대기를 종료합니다 (다음 점검에 영향 가능).')
+    if collect:
+        gap = np.concatenate(chunks) if chunks else np.zeros(0, dtype=np.int16)
+        return waited, gap
     return waited
 
 
@@ -343,9 +354,11 @@ def run_scenario(cfg, scenario):
     # 확인되면 즉시 재생하고, listen_seconds도 짧게(6~8초) 둘 것.
     quiet_waited = 0.0
     confirm_ms = 0
+    gap_samples = None
     if scenario.get('confirm_file'):
         print('  응답이 멎는 즉시 확답을 재생합니다 (되물음 청취 창 대응)...')
-        quiet_waited = wait_for_quiet(cfg, sd, post_silence=1.0, max_wait=8)
+        # 대기 구간도 녹음(collect) — 복합 명령의 실행 선언이 여기 떨어질 수 있다
+        quiet_waited, gap_samples = wait_for_quiet(cfg, sd, post_silence=1.0, max_wait=8, collect=True)
         confirm, confirm_sr = read_wav(os.path.join(BASE_DIR, scenario['confirm_file']))
         confirm_ms = int(len(confirm) / confirm_sr * 1000)
         print('  확답 재생 — 되물음이면 접수되고, 이미 실행 중이면 무시됩니다')
@@ -373,6 +386,10 @@ def run_scenario(cfg, scenario):
                                      watch_s, interval_s, prefix=scenario['id'])
         sd.wait()
         post_samples = rec2[:, 0]
+        # 확답 대기 구간 녹음을 앞에 이어붙인다 — 실행 선언이 대기 중에 나온
+        # 경우의 증거·L2 재판정 근거 (확답 재생 자체는 녹음되지 않아 그 길이만 공백)
+        if gap_samples is not None and len(gap_samples):
+            post_samples = np.concatenate([gap_samples, post_samples])
         write_wav(os.path.join(REC_DIR, rec_name.replace('.wav', '_post.wav')), post_samples, sr)
         if shot['ok']:
             l3_snapshot = shot['snapshot']
@@ -394,9 +411,9 @@ def run_scenario(cfg, scenario):
 
     # ── 늦은 응답 구제 (2026-08-07 현장 발견) ──
     # 복합 명령(다중 의도)은 첫 응답 시작이 첫 청취 창(6초)을 넘길 수 있다.
-    # 창 안에서 응답을 못 찾았어도 확답 이후 녹음(앞 15초)에서 말소리가 확인되면
-    # 무응답이 아니다 — 실제 응답이 있었는데 L1 FAIL로 오보된 사례(복합 명령).
-    # 반응 시간은 청취 창 + 확답 대기 + 확답 길이를 합산한 근사값으로 기록한다.
+    # 창 안에서 응답을 못 찾았어도 이후 녹음(확답 대기 구간 + 촬영 구간, 앞 15초)
+    # 에서 말소리가 확인되면 무응답이 아니다 — 실제 응답이 있었는데 L1 FAIL로
+    # 오보된 사례(복합 명령). 반응 시간은 구간 배치로 환산한 근사값으로 기록한다.
     late_ms = None
     if post_samples is not None and not verdict['responded'] and not verdict.get('silent'):
         late_verdict = analyze_recording(
@@ -407,9 +424,12 @@ def run_scenario(cfg, scenario):
             cal,
         )
         if late_verdict['responded']:
-            late_ms = int(listen * 1000 + quiet_waited * 1000 + confirm_ms
-                          + late_verdict['latency_ms'])
-            print(f'  [참고] 첫 청취 창엔 응답이 없었지만 확답 이후 녹음에서 응답을 확인했습니다'
+            # _post는 [확답 대기 구간][촬영 구간] 순서 — 확답 재생 길이만 공백이므로
+            # 응답 시작이 대기 구간이면 그대로, 촬영 구간이면 확답 길이를 더한다
+            gap_ms = int(len(gap_samples) / sr * 1000) if gap_samples is not None else 0
+            offset = late_verdict['latency_ms']
+            late_ms = int(listen * 1000 + offset + (confirm_ms if offset >= gap_ms else 0))
+            print(f'  [참고] 첫 청취 창엔 응답이 없었지만 이후 녹음에서 응답을 확인했습니다'
                   f' — 응답 시작 약 {late_ms}ms (근사값)')
 
     base = {
