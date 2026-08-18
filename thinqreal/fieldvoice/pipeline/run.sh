@@ -17,15 +17,17 @@ echo "[2/3] 의존성 확인 중..."
 ./venv/bin/pip install --quiet --upgrade pip
 ./venv/bin/pip install --quiet -r requirements.txt
 
-# Claude API 인증 확인 (ANTHROPIC_API_KEY 또는 ant 프로필 — 없어도 UI는 뜨지만 분석 단계에서 실패)
-if [ -z "${ANTHROPIC_API_KEY:-}" ]; then
-  if ! command -v ant >/dev/null 2>&1 || ! ant auth status >/dev/null 2>&1; then
-    echo ""
-    echo "⚠ Claude API 인증이 아직 없습니다. 둘 중 하나를 준비하세요 (README §2):"
-    echo "    export ANTHROPIC_API_KEY=발급받은키"
-    echo "    ant auth login"
-    echo ""
-  fi
+# 분석 백엔드 확인 — Claude Code CLI(구독, 크레딧 불필요) 또는 Claude API 키
+if [ -n "${ANTHROPIC_API_KEY:-}" ]; then
+  echo "ℹ 분석 백엔드: Claude API (ANTHROPIC_API_KEY)"
+elif command -v claude >/dev/null 2>&1; then
+  echo "ℹ 분석 백엔드: Claude Code CLI (구독 사용량 — API 크레딧 불필요)"
+else
+  echo ""
+  echo "⚠ 분석 백엔드가 없습니다. 둘 중 하나를 준비하세요 (README §2):"
+  echo "    Claude Code CLI 설치·로그인 (구독 활용 — 추가 비용 없음, 권장)"
+  echo "    export ANTHROPIC_API_KEY=발급받은키 (API 크레딧 과금)"
+  echo ""
 fi
 
 echo "[3/3] 웹 UI 시작 — 브라우저가 자동으로 열립니다."

@@ -26,23 +26,30 @@ bash run.sh
 처음 실행이면 가상환경 생성과 설치로 1~2분 걸린다. 브라우저가 자동으로 열린다
 (`http://127.0.0.1:8765`). 종료는 터미널에서 `Ctrl+C`.
 
-## 2. Claude API 인증 (최초 1회)
+## 2. 분석 백엔드 (최초 1회)
 
-분석 에이전트들이 Claude API를 호출하므로 인증이 필요하다. 둘 중 하나:
+분석 에이전트가 Claude를 호출하는 경로는 두 가지 — 기본 설정(auto)이 자동으로 고른다:
 
-- **Claude 구독이 있으면** (권장):
+- **경로 A — Claude Code CLI (권장, 추가 비용 없음)**: Claude 구독(Pro/Max)에 포함된
+  Claude Code를 분석 엔진으로 사용한다. 맥에 Claude Code가 설치·로그인되어 있으면
+  **할 일이 없다** — 확인만:
 
 ```
-ant auth login
+claude --version
 ```
 
-- **API 키 방식**: console.anthropic.com에서 키 발급 후, 실행 전에:
+- **경로 B — Claude API 크레딧 (과금)**: platform.claude.com(구 console)에서 크레딧
+  구매 + 키 발급 후 실행 전에:
 
 ```
 export ANTHROPIC_API_KEY=발급받은키
 ```
 
-키를 코드·config·저장소에 적지 않는다 (FieldCheck의 Script Properties 원칙과 동일).
+  키를 코드·config·저장소에 적지 않는다 (FieldCheck의 Script Properties 원칙과 동일).
+  API 경로는 프롬프트 캐시·스트리밍 등이 켜져 있어 대량·정기 운영에 유리하다.
+
+속도·품질 차이: 두 경로 모두 같은 프롬프트를 쓰며 품질은 동급. A는 구독 사용량
+한도를 소모하고, B는 크레딧을 소모한다. 파일럿·개인 사용은 A로 충분하다.
 
 ## 3. 오디오 전사(STT)까지 쓰려면 (선택)
 
@@ -77,7 +84,9 @@ export ANTHROPIC_API_KEY=발급받은키
 
 | 항목 | 기본값 | 설명 |
 |---|---|---|
-| `model` | `claude-opus-5` | 분석 에이전트 모델 |
+| `llm_backend` | `auto` | `auto`(API 키 있으면 api, 아니면 claude_cli) / `api` / `claude_cli` |
+| `model` | `claude-opus-5` | 분석 모델 (api 백엔드용) |
+| `claude_cli_model` | (비움) | claude_cli 백엔드 모델 지정 (비우면 Claude Code 기본 모델) |
 | `whisper_model` | `small` | STT 모델 (`medium`이 더 정확, 더 느림) |
 | `vocabulary_hint` | ThinQ 등 | STT 고유명사 힌트 (FieldCheck 선례 — 첫 실녹음 오인식 실측 반영) |
 | `whisper_condition_on_previous_text` | `false` | `false`면 환청 반복 루프 완화 (기본 유지 권장) |
@@ -87,7 +96,9 @@ export ANTHROPIC_API_KEY=발급받은키
 
 | 증상 | 원인·조치 |
 |---|---|
-| "API 인증 실패" | §2 인증 미설정 — `ant auth status`로 확인 |
+| "분석 백엔드가 없습니다" | §2 — Claude Code CLI 설치·로그인(무료 경로)이 가장 간단 |
+| "Claude CLI 오류" | 터미널에서 `claude` 단독 실행 → 로그인 상태 확인 후 재시도 |
+| "API 인증 실패" (api 백엔드) | §2 경로 B — 키·크레딧 확인 |
 | "faster-whisper가 설치되어 있지 않습니다" | §3 설치, 또는 .txt로 우회 |
 | 전사에 이상한 단어 | `config.json`의 `vocabulary_hint`에 해당 고유명사 추가 |
 | 전사에 "(위 발화가 …회 반복됨)" 표기 | 정상 — 무음·기계음 구간의 STT 환청을 자동 압축한 것 |
