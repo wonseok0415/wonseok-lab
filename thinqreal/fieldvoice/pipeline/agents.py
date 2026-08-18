@@ -1,14 +1,35 @@
 """FieldVoice LLM 에이전트 계층 — 화자 라벨링 / 요약 / 맥락 분석 / 인사이트 도출.
 
 Whisper는 전사만 담당하고(transcribe.py), 이 파일의 에이전트들이 그 위의 분석을
-담당한다 (DESIGN.md §4 역할 분담). 모든 호출은 Claude API(claude-opus-5)로,
-스트리밍 + 적응형 사고 + 서버측 안전 폴백을 켠 상태로 나간다.
+담당한다 (DESIGN.md §4 역할 분담). 분석 백엔드는 둘 중 하나 (README §2):
 
-인증: ANTHROPIC_API_KEY 환경변수 또는 `ant auth login` 프로필 (README §2).
+- claude_cli: Claude Code CLI 헤드리스(-p) 호출 — **구독 사용량으로 처리, API 크레딧 불필요**
+- api: Claude API 직접 호출(claude-opus-5, 스트리밍+적응형 사고+안전 폴백) — 크레딧 과금
+
+기본(auto)은 API 자격 증명이 있으면 api, 없고 claude 명령이 있으면 claude_cli.
 """
+import os
+import shutil
+import subprocess
+import tempfile
+
 import anthropic
 
 _client = None
+
+
+def _resolve_backend(cfg):
+    choice = cfg.get("llm_backend", "auto")
+    if choice in ("api", "claude_cli"):
+        return choice
+    if os.environ.get("ANTHROPIC_API_KEY") or os.environ.get("ANTHROPIC_AUTH_TOKEN"):
+        return "api"
+    if shutil.which("claude"):
+        return "claude_cli"
+    raise RuntimeError(
+        "분석 백엔드가 없습니다 — Claude Code CLI 설치(구독 활용, 크레딧 불필요) 또는 "
+        "ANTHROPIC_API_KEY 설정 중 하나가 필요합니다 (README §2)."
+    )
 
 
 def _get_client():
@@ -58,7 +79,46 @@ BACKGROUND = """당신은 FieldVoice의 분석 엔진이다. FieldVoice는 LG Th
 
 
 def _call(system_blocks, user_text, cfg, max_tokens=64000):
-    """공통 호출부 — 스트리밍으로 긴 입출력 안전, stop_reason 검사 포함."""
+    """공통 호출부 — 설정된 백엔드로 라우팅."""
+    if _resolve_backend(cfg) == "claude_cli":
+        return _call_claude_cli(system_blocks, user_text, cfg)
+    return _call_api(system_blocks, user_text, cfg, max_tokens)
+
+
+def _call_claude_cli(system_blocks, user_text, cfg):
+    """Claude Code CLI 헤드리스(-p) 호출 — 구독 사용량으로 처리되어 API 크레딧 불필요.
+
+    cwd를 저장소 밖(임시 폴더)으로 두어 CLAUDE.md 등 프로젝트 컨텍스트가
+    분석 프롬프트에 섞이지 않게 한다.
+    """
+    prompt = "\n\n".join([b["text"] for b in system_blocks] + ["---", user_text])
+    cmd = ["claude", "-p", "--output-format", "text"]
+    model = cfg.get("claude_cli_model", "")
+    if model:
+        cmd += ["--model", model]
+    try:
+        res = subprocess.run(
+            cmd, input=prompt, capture_output=True, text=True,
+            timeout=int(cfg.get("claude_cli_timeout_sec", 1800)),
+            cwd=tempfile.gettempdir(),
+        )
+    except FileNotFoundError:
+        raise RuntimeError("claude 명령을 찾을 수 없습니다 — Claude Code CLI 설치가 필요합니다 (README §2).")
+    except subprocess.TimeoutExpired:
+        raise RuntimeError("Claude CLI 응답 시간 초과 — 잠시 후 다시 시도하세요.")
+    if res.returncode != 0:
+        err = (res.stderr or res.stdout or "").strip()
+        raise RuntimeError(
+            f"Claude CLI 오류: {err[:300] or '원인 미상'} — 터미널에서 `claude` 단독 실행으로 로그인 상태를 확인하세요."
+        )
+    out = res.stdout.strip()
+    if not out:
+        raise RuntimeError("Claude CLI가 빈 응답을 반환했습니다 — 다시 시도하세요.")
+    return out
+
+
+def _call_api(system_blocks, user_text, cfg, max_tokens=64000):
+    """Claude API 직접 호출 — 스트리밍으로 긴 입출력 안전, stop_reason 검사 포함."""
     client = _get_client()
     try:
         with client.beta.messages.stream(
