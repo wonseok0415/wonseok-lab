@@ -36,17 +36,42 @@ def transcribe(audio_path, cfg, progress=None) -> str:
         language=cfg.get("whisper_language", "ko"),
         initial_prompt=cfg.get("vocabulary_hint", ""),
         vad_filter=True,
+        # 무음·기계 소음 구간에서 같은 문장을 수십 번 반복하는 환청 루프 완화
+        # (첫 실녹음 실측: 동일 단어 40줄 연속 — 판독 리포트 §7)
+        condition_on_previous_text=cfg.get("whisper_condition_on_previous_text", False),
     )
 
-    lines = []
+    entries = []
     for seg in segments:  # 제너레이터 — 순회하면서 실제 전사가 진행됨
         text = seg.text.strip()
         if not text:
             continue
-        lines.append(f"[{_fmt_ts(seg.start)}] {text}")
-        if progress and len(lines) % 20 == 0:
-            progress(f"전사 진행 중 — {_fmt_ts(seg.end)} 지점 ({len(lines)}개 발화)")
+        entries.append((seg.start, text))
+        if progress and len(entries) % 20 == 0:
+            progress(f"전사 진행 중 — {_fmt_ts(seg.end)} 지점 ({len(entries)}개 발화)")
 
-    if not lines:
+    if not entries:
         raise RuntimeError("전사 결과가 비어 있습니다 — 무음 파일이거나 포맷 문제일 수 있습니다.")
-    return "\n".join(lines)
+    return "\n".join(_collapse_repeats(entries))
+
+
+def _collapse_repeats(entries, threshold=3):
+    """연속 동일 발화(환청 루프)를 1줄 + 반복 표기로 압축. threshold회 미만 반복은 그대로 둔다."""
+    lines = []
+    i = 0
+    while i < len(entries):
+        start, text = entries[i]
+        j = i + 1
+        while j < len(entries) and entries[j][1] == text:
+            j += 1
+        count = j - i
+        lines.append(f"[{_fmt_ts(start)}] {text}")
+        if count >= threshold:
+            lines.append(
+                f"(위 발화가 {_fmt_ts(entries[j - 1][0])}까지 {count}회 반복됨 — STT 환청 의심 구간, 내용 아님)"
+            )
+        elif count > 1:
+            for k in range(i + 1, j):
+                lines.append(f"[{_fmt_ts(entries[k][0])}] {entries[k][1]}")
+        i = j
+    return lines

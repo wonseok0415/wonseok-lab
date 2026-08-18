@@ -2,6 +2,7 @@
   "model": "claude-opus-5",
   "whisper_model": "small",
   "whisper_language": "ko",
-  "vocabulary_hint": "ThinQ, ThinQ ON, 씽큐, LG, AI홈, 다운라이트, 런드레스룸, 스타일러, 트롬, 휘센, 디오스, 마곡, 사이언스파크, 도슨트",
+  "vocabulary_hint": "ThinQ, ThinQ ON, 씽큐, 씽큐온, 하이 LG, LG, AI홈, 다운라이트, 런드레스룸, 스타일러, 트롬, 휘센, 디오스, 오브제, 로니, 바스에어, 샤워스테이션, 콜드프리, 보이스컨트롤러, 스마트플러그, 월패드, 우리단지, 하이케어솔루션, 마곡, 사이언스파크, 도슨트",
+  "whisper_condition_on_previous_text": false,
   "port": 8765
 }

@@ -79,7 +79,8 @@ export ANTHROPIC_API_KEY=발급받은키
 |---|---|---|
 | `model` | `claude-opus-5` | 분석 에이전트 모델 |
 | `whisper_model` | `small` | STT 모델 (`medium`이 더 정확, 더 느림) |
-| `vocabulary_hint` | ThinQ 등 | STT 고유명사 힌트 (FieldCheck 선례) |
+| `vocabulary_hint` | ThinQ 등 | STT 고유명사 힌트 (FieldCheck 선례 — 첫 실녹음 오인식 실측 반영) |
+| `whisper_condition_on_previous_text` | `false` | `false`면 환청 반복 루프 완화 (기본 유지 권장) |
 | `port` | `8765` | 웹 UI 포트 |
 
 ## 6. 문제 해결
@@ -89,6 +90,7 @@ export ANTHROPIC_API_KEY=발급받은키
 | "API 인증 실패" | §2 인증 미설정 — `ant auth status`로 확인 |
 | "faster-whisper가 설치되어 있지 않습니다" | §3 설치, 또는 .txt로 우회 |
 | 전사에 이상한 단어 | `config.json`의 `vocabulary_hint`에 해당 고유명사 추가 |
+| 전사에 "(위 발화가 …회 반복됨)" 표기 | 정상 — 무음·기계음 구간의 STT 환청을 자동 압축한 것 |
 | 포트 충돌 (주소가 이미 사용 중) | `config.json`에서 `port` 변경 |
 | 화자 라벨이 뒤섞임 | 1채널 한계 — 라벨 전사 탭에서 확인 후 수동 교정, 장기적으론 채널 분리 마이크 (DESIGN.md §6) |
 
