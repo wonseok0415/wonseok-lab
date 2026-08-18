@@ -38,7 +38,7 @@ def load_config():
     return cfg
 
 
-def _session_id(input_path: Path, name: str | None) -> str:
+def _session_id(input_path, name):  # macOS 기본 python3(3.9) 호환 — 3.10+ 문법 금지
     stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     label = name or input_path.stem
     label = re.sub(r"[^\w가-힣-]+", "_", label)[:40] or "session"
