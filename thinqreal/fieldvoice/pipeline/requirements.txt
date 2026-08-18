@@ -1,0 +1,6 @@
+anthropic
+flask
+
+# 오디오 전사(STT)까지 쓰려면 아래 주석을 해제하거나 별도 설치:
+#   venv/bin/pip install faster-whisper
+# faster-whisper
