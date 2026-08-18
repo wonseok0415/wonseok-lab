@@ -1,0 +1,7 @@
+{
+  "model": "claude-opus-5",
+  "whisper_model": "small",
+  "whisper_language": "ko",
+  "vocabulary_hint": "ThinQ, ThinQ ON, 씽큐, LG, AI홈, 다운라이트, 런드레스룸, 스타일러, 트롬, 휘센, 디오스, 마곡, 사이언스파크, 도슨트",
+  "port": 8765
+}

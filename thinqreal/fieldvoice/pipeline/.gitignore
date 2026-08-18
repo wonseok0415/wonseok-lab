@@ -1,0 +1,18 @@
+# 실행 환경
+venv/
+__pycache__/
+*.pyc
+
+# 개인 설정 (config.json은 커밋 금지 — config.example.json만 커밋)
+config.json
+
+# 개인정보 보호: 녹음 원본·전사·분석 결과는 절대 커밋하지 않는다 (DESIGN.md §5)
+uploads/
+output/
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.ogg
+*.webm
