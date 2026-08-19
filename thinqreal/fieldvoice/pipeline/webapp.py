@@ -3,12 +3,14 @@
 
 run.sh로 기동. 로컬 전용(127.0.0.1) — 녹음·전사가 다뤄지므로 외부 바인딩 금지.
 """
+import datetime
 import json
 import threading
 import uuid
 import webbrowser
 from pathlib import Path
 
+import requests
 from flask import Flask, jsonify, render_template_string, request, abort
 
 import pipeline
@@ -110,6 +112,61 @@ def get_file(sid, fname):
     }
 
 
+def _extract_one_liner(md):
+    """report.md의 '## 한 줄 결론' 섹션 첫 문단을 목록 표시용으로 추출."""
+    lines = md.splitlines()
+    for i, line in enumerate(lines):
+        if line.strip().startswith("## 한 줄 결론"):
+            for nxt in lines[i + 1:]:
+                t = nxt.strip()
+                if t.startswith("#"):
+                    break
+                if t:
+                    return t[:300]
+    return ""
+
+
+@app.post("/upload/<sid>")
+def upload_report(sid):
+    """1페이지 요약(report.md)을 관리자 페이지(voc_reports)로 업로드.
+    도슨트가 가명화를 확인한 뒤 버튼으로만 호출되는 수동 게이트 (DESIGN.md §8)."""
+    up = pipeline.load_config().get("upload") or {}
+    key = str(up.get("api_key") or "")
+    if not up.get("endpoint_url") or not key or "여기에" in key:
+        return jsonify({"error": "업로드 미설정 — config.json에 upload.api_key(FV_API_KEY 값)를 넣으세요 (README §6)"}), 400
+
+    if not (pipeline.OUTPUT_ROOT / sid / "session.json").exists():
+        abort(404)
+    report_path = pipeline.OUTPUT_ROOT / sid / "report.md"
+    if not report_path.exists():
+        return jsonify({"error": "report.md가 없습니다 — 분석을 먼저 완료하세요"}), 404
+    md = report_path.read_text(encoding="utf-8")
+
+    form = request.get_json(silent=True) or {}
+    payload = {
+        "type": "voc_report",
+        "apiKey": key,
+        "timestamp": datetime.datetime.now().isoformat(timespec="seconds"),
+        "session_id": sid,
+        "visit_date": form.get("visit_date") or "",
+        "purpose": form.get("purpose") or "",
+        "author": form.get("author") or "",
+        "consent": form.get("consent") or "구두",
+        "one_liner": _extract_one_liner(md),
+        "report_md": md,
+    }
+    try:
+        r = requests.post(up["endpoint_url"], json=payload, timeout=60)
+        data = r.json()
+    except requests.RequestException as e:
+        return jsonify({"error": f"전송 실패: {e}"}), 502
+    except ValueError:
+        return jsonify({"error": "서버 응답 형식 오류 — 배포 URL을 확인하세요"}), 502
+    if not data.get("success"):
+        return jsonify({"error": f"서버 거부: {data.get('error', '원인 미상')}"}), 502
+    return jsonify({"success": True, "id": data.get("id")})
+
+
 @app.get("/")
 def index():
     return render_template_string(PAGE)
@@ -185,6 +242,21 @@ PAGE = r"""<!doctype html>
 <div class="card" id="result" style="display:none">
   <div class="tabs" id="tabs"></div>
   <div id="viewer"></div>
+  <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--line)">
+    <b style="font-size:13.5px">관리자 페이지로 업로드</b>
+    <span class="detail">— 요약 리포트(report.md)만 전송. 업로드 전 가명화(이름·회사명) 확인 필수</span>
+    <div class="row" style="margin-top:10px">
+      <input type="date" id="upDate" style="min-width:130px;flex:none">
+      <select id="upPurpose">
+        <option>B2B</option><option>R&D</option><option>내부 행사</option>
+        <option>Press Tour</option><option>기타</option>
+      </select>
+      <input type="text" id="upAuthor" placeholder="작성자" style="flex:none;width:100px">
+      <select id="upConsent"><option value="구두">동의: 구두</option><option value="서면">동의: 서면</option></select>
+      <button id="upBtn" class="ghost">업로드</button>
+    </div>
+    <div class="hint" id="upMsg"></div>
+  </div>
 </div>
 
 <div class="card">
@@ -224,7 +296,10 @@ async function poll(rid) {
 function showErr(msg) { $("err").textContent = msg; $("err").style.display = "block";
   $("go").disabled = $("demo").disabled = false; }
 
+let curSid = null;
 async function openSession(sid) {
+  curSid = sid;
+  $("upMsg").textContent = "";
   $("result").style.display = "block";
   $("tabs").innerHTML = FILES.map(([f,l],i) =>
     `<button class="${i?'off':''}" onclick="openFile('${sid}','${f}',this)">${l}</button>`).join("");
@@ -254,6 +329,22 @@ $("go").onclick = () => {
   const form = new FormData(); form.append("file", f); start(form);
 };
 $("demo").onclick = () => { const form = new FormData(); form.append("sample","1"); start(form); };
+$("upBtn").onclick = async () => {
+  if (!curSid) { alert("먼저 세션을 여세요"); return; }
+  if (!$("upDate").value) { $("upMsg").textContent = "방문일을 선택하세요."; return; }
+  if (!confirm("요약 리포트에 실명·회사명이 남아 있지 않은지 확인하셨나요?\n확인 후 관리자 페이지로 업로드합니다.")) return;
+  $("upBtn").disabled = true; $("upMsg").textContent = "업로드 중…";
+  try {
+    const r = await fetch("/upload/" + curSid, { method:"POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ visit_date: $("upDate").value, purpose: $("upPurpose").value,
+                             author: $("upAuthor").value, consent: $("upConsent").value }) });
+    const j = await r.json();
+    $("upMsg").textContent = j.success ? "✓ 업로드 완료 — 관리자 페이지 🎙 현장 인사이트 탭에서 확인하세요."
+                                       : "실패: " + (j.error || "원인 미상");
+  } catch (e) { $("upMsg").textContent = "실패: " + e; }
+  $("upBtn").disabled = false;
+};
 loadSessions();
 </script></div></body></html>"""
 
