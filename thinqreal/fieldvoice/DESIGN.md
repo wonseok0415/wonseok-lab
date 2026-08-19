@@ -156,7 +156,38 @@ FieldCheck의 6초 단문과 달리 90분 대화·겹침말·쇼룸 소음이라
 FieldCheck의 교훈 그대로: **도구 사전 검증 → 현장 실측 → 자동화 편입**. 자동화 투자는
 파일럿이 가치를 증명한 뒤에만 한다.
 
-## 8. 미결정 사항
+## 8. 관리자 페이지 연동 (Phase 2 구체 설계 — 2026-08-19)
+
+리포트가 도슨트 개인 폴더에 머물지 않고 **ThinQ Real 관리자 대시보드에 회차별로 쌓이는**
+구조. FieldCheck `health_checks` 선례(순수 추가: 새 탭 + 새 type + Script Property 키)를
+그대로 따른다. 구현은 실서비스 저장소(`wonseok0415/thinqreal`) 작업이므로 별도 작업 단위.
+
+### 데이터 흐름
+```
+파이프라인 report.md (1페이지 요약 — compile 에이전트가 고정 구조로 생성)
+  → [수동 확인 게이트] 도슨트가 가명화·내용 확인 후 업로드 버튼 클릭 (자동 업로드 금지)
+  → POST type:voc_report (FV_API_KEY 인증)
+  → Sheets `voc_reports` 탭 (자동 생성 — roi_snapshots 패턴)
+  → 관리자 대시보드 🎙 현장 인사이트 탭 (분석 섹션, 🩺 탭 선례)
+```
+
+### 스키마·엔드포인트 (안)
+- `voc_reports` 컬럼: `id`, `timestamp`, `visit_date`, `session_id`, `purpose(방문 목적)`,
+  `one_liner(한 줄 결론)`, `report_md(1페이지 전문)`, `consent(구두/서면)`, `author`
+- `POST type:voc_report` — `FV_API_KEY`(Script Property, FC_API_KEY 선례) 인증, 실패 시 전부 거부
+- `GET ?type=voc_reports&days=N` — **처음부터 관리자 토큰 게이트 적용**. FieldCheck의
+  `health_checks` 무인증 GET이 백로그로 남은 교훈 + 이 데이터는 방문객 발화 인용이 포함되어
+  민감도가 더 높음
+- 탭 UI: 회차 리스트(방문일·목적·한 줄 결론) → 클릭 시 1페이지 리포트 렌더. 회차가 쌓이면
+  "반복 등장 인사이트" 집계가 다음 단계 (가설의 표본 누적 검증)
+
+### 원칙
+1. **업로드는 1페이지 요약만** — 원본 음성·전사·상세 리포트는 절대 업로드하지 않는다 (§5)
+2. **수동 게이트 필수** — LLM 출력이 가명화를 놓칠 수 있으므로 사람 확인 후 업로드
+3. **이관 정합**: 엔드포인트·키는 config 분리(FieldCheck §10 동일). 신설 시
+   `docs/migration/api-contract.md`에 존재·인증 방식을 등재해 이관 계약에 포함시킨다
+
+## 9. 미결정 사항
 
 - [ ] 시스템 명칭 확정 (가칭 FieldVoice)
 - [ ] 동의서 문안 작성 + 사내 컴플라이언스 확인 결과 기록

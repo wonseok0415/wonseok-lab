@@ -193,8 +193,9 @@ PAGE = r"""<!doctype html>
 </div>
 
 <script>
-const FILES = [["report.md","통합 리포트"],["05_insights.md","인사이트"],["04_context.md","맥락 분석"],
-               ["03_summary.md","요약"],["02_labeled.md","라벨 전사"],["01_transcript.md","원본 전사"]];
+const FILES = [["report.md","요약 리포트"],["report_full.md","전체 리포트"],["05_insights.md","인사이트"],
+               ["04_context.md","맥락 분석"],["03_summary.md","요약"],["02_labeled.md","라벨 전사"],
+               ["01_transcript.md","원본 전사"]];
 const $ = id => document.getElementById(id);
 let timer = null;
 

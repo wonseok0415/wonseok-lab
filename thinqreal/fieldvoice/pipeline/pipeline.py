@@ -26,6 +26,7 @@ STAGES = [
     ("summary", "요약"),
     ("context", "맥락 분석"),
     ("insight", "인사이트 도출"),
+    ("compile", "리포트 작성"),
     ("save", "파일 저장"),
 ]
 
@@ -96,7 +97,12 @@ def run_pipeline(input_path, name=None, progress=None, cfg=None):
     save("05_insights.md", insights)
     report("insight", "done")
 
-    # 6) 통합 리포트 + 매니페스트
+    # 6) 1페이지 요약 리포트 (관리자 페이지 적재용 포맷 — DESIGN.md §8)
+    report("compile", "running", "1페이지 요약으로 압축")
+    brief = agents.compile_report(insights, summary, context, cfg)
+    report("compile", "done")
+
+    # 7) 저장 — report.md(1페이지) + report_full.md(상세) + 매니페스트
     report("save", "running")
     engine = (
         "Claude Code CLI" + (f" ({cfg.get('claude_cli_model')})" if cfg.get("claude_cli_model") else "")
@@ -109,14 +115,15 @@ def run_pipeline(input_path, name=None, progress=None, cfg=None):
         f"- 생성: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
         f"- ⚠ 개인정보: 이 리포트와 전사는 로컬 전용 — 저장소·공유 채널에 올리기 전 가명화 확인 (DESIGN.md §5)\n\n---\n\n"
     )
-    save("report.md", head + insights + "\n\n---\n\n" + summary + "\n\n---\n\n" + context)
+    save("report.md", head + brief + "\n\n---\n\n> 상세 근거는 `report_full.md`(인사이트·요약·맥락 전체)와 단계별 파일 참조.\n")
+    save("report_full.md", head + insights + "\n\n---\n\n" + summary + "\n\n---\n\n" + context)
     manifest = {
         "id": sid,
         "source": input_path.name,
         "created": datetime.datetime.now().isoformat(timespec="seconds"),
         "model": engine,
-        "files": ["report.md", "01_transcript.md", "02_labeled.md", "03_summary.md",
-                  "04_context.md", "05_insights.md"],
+        "files": ["report.md", "report_full.md", "01_transcript.md", "02_labeled.md",
+                  "03_summary.md", "04_context.md", "05_insights.md"],
     }
     save("session.json", json.dumps(manifest, ensure_ascii=False, indent=2))
     report("save", "done", str(outdir))
