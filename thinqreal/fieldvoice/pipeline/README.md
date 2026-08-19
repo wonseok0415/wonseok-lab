@@ -13,7 +13,9 @@
   Claude API로 전송된다. 실고객 녹음을 분석하기 전에 동의서에 이 처리 방식이
   포함되어 있는지 확인할 것.
 
-## 1. 실행 (맥북)
+## 1. 실행
+
+**맥북**:
 
 ```
 cd ~/workspace/wonseok-lab/thinqreal/fieldvoice/pipeline
@@ -22,6 +24,9 @@ cd ~/workspace/wonseok-lab/thinqreal/fieldvoice/pipeline
 ```
 bash run.sh
 ```
+
+**Windows (전용 노트북)**: 탐색기에서 `pipeline` 폴더의 **`run.bat` 더블클릭**
+(Python 미설치면 python.org에서 설치 — "Add python.exe to PATH" 체크 필수).
 
 처음 실행이면 가상환경 생성과 설치로 1~2분 걸린다. 브라우저가 자동으로 열린다
 (`http://127.0.0.1:8765`). 종료는 터미널에서 `Ctrl+C`.
