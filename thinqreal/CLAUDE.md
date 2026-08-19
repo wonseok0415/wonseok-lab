@@ -283,7 +283,10 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 - FieldVoice 트랙의 `fieldvoice/OPERATIONS.md`(공용 장비·이관 리스크 7종) 검토 후, 사용자 결정 반영: 기증 PC = **Windows 확정**, FieldVoice 전사는 시연 종료 후 실행(R1 CPU 경합 자연 회피)
 - **`fieldcheck/SETUP_SHARED_LAPTOP.md` 신설** — A 보안·계정(운영 전용 계정, 디스크 암호화+복구 키, 자동 로그인+잠금 키오스크 패턴) / B 상시 가동(절전 금지·업데이트 시간 통제·볼륨 라벨·Win 마이크/카메라 권한) / C FieldCheck 이전 10단계(config·phrases USB 이전 — 메일 금지, **dBA 재보정 필수**(87.4는 맥북 마이크 값), 웹캠 ROI, install_windows.ps1=07:00 확인됨) / D 전환 게이트(익일 07:00 검증 → **맥북 launchd·pmset 해제 — 이중 점검 방지**) / E FieldVoice 공통 참조
 - 디스크 암호화 개념 설명 제공(로그인 암호=켜진 OS의 문, BitLocker=디스크 자체 암호화·도난 대비, 사용감 동일, 복구 키 별도 보관 필수)
-- **웹캠(너츠 UHD2160L) 도착** — 이전 전에 맥북에서 먼저 검증하기로(스택·권한이 이미 갖춰진 환경에서 웹캠 변수만 분리 검증). 절차는 기존 기록대로: --snapshot --device 1 → 삼각대 구도 → --pick --device 1 → config camera.device 교체 → --once. 구도 유지 시 camera_roi.json은 Windows로 복사 가능
+- **웹캠(너츠 UHD2160L) 도착 — 2단계 검증 계획 확정 (사용자 부연)**: 삼각대 구도는 신규(천장 조준 — 내장 카메라 위치 제약에서 해방), 테스트 장소는 집 → 현장 셋업 별도
+  - **① 집 (웹캠 장비 검증만)**: vision.py만 사용 — --snapshot/--pick/--watch --device 1, 집 조명 수동 개폐로 변화폭 ≥0.15 확인. **--once 금지**(ThinQ ON 없음 + 운영 시트 오염). 집 ROI는 버리는 값
+  - **② 현장 셋업 (ThinQ Real)**: 구도 확정 → --pick 재지정 → config camera.device 교체 → --once --force로 L3 검증. 확정 camera_roi.json이 최종본 — Windows 이전 시 삼각대 유지하면 USB 복사로 재사용
+  - 천장 구도 조언 전달: 참조 영역은 기구에서 먼 천장 조각(벽 상단 걸리면 더 좋음), 다운라이트 클로즈업 금지(포화·자동 노출 급개입 — 기구+주변 천장 화각 권장)
 
 **2026-08-07 (5) — 복합 명령 첫 현장 시험 판독: 실제 전부 정상 동작, 실패 3건은 판정 맹점 2종 → 수정 완료:**
 - **시험 결과 (15:57 --force 강행, 3회차 예약 취소 미기록 건)**: L1×3·L2×3 통과, 외출 L1/L2 통과("외출 모드로 틴을 실행할게요"). 실패 3건(combo L1·L3, away L3)은 전부 오보 — 사용자 육안으로 다운라이트·커튼·외출 복구 모두 정상 확인
