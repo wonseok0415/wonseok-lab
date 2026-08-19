@@ -59,8 +59,9 @@ export ANTHROPIC_API_KEY=발급받은키
 ./venv/bin/pip install faster-whisper
 ```
 
-첫 전사 때 Whisper 모델을 자동 다운로드한다(수백 MB, 이후 오프라인 동작).
-정확도가 아쉬우면 `config.json`에서 `whisper_model`을 `"small"` → `"medium"`으로.
+첫 전사 때 Whisper 모델을 자동 다운로드한다(수백 MB~1GB대, 이후 오프라인 동작).
+기본 모델은 `medium`(현장 검토 결과 채택) — 전사가 너무 오래 걸리면 `config.json`에서
+`whisper_model`을 `"small"`로 (2~3배 빠름, 고유명사 오인식은 늘어남).
 
 ## 4. 사용법
 
@@ -87,7 +88,7 @@ export ANTHROPIC_API_KEY=발급받은키
 | `llm_backend` | `auto` | `auto`(API 키 있으면 api, 아니면 claude_cli) / `api` / `claude_cli` |
 | `model` | `claude-opus-5` | 분석 모델 (api 백엔드용) |
 | `claude_cli_model` | (비움) | claude_cli 백엔드 모델 지정 (비우면 Claude Code 기본 모델) |
-| `whisper_model` | `small` | STT 모델 (`medium`이 더 정확, 더 느림) |
+| `whisper_model` | `medium` | STT 모델 — 현장 검토 결과 기본을 `medium`으로 (더 정확). 속도가 급하면 `small`(약 2~3배 빠름, 오인식 증가) |
 | `vocabulary_hint` | ThinQ 등 | STT 고유명사 힌트 (FieldCheck 선례 — 첫 실녹음 오인식 실측 반영) |
 | `whisper_condition_on_previous_text` | `false` | `false`면 환청 반복 루프 완화 (기본 유지 권장) |
 | `port` | `8765` | 웹 UI 포트 |

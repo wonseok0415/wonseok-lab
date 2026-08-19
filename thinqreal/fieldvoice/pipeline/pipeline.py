@@ -98,9 +98,14 @@ def run_pipeline(input_path, name=None, progress=None, cfg=None):
 
     # 6) 통합 리포트 + 매니페스트
     report("save", "running")
+    engine = (
+        "Claude Code CLI" + (f" ({cfg.get('claude_cli_model')})" if cfg.get("claude_cli_model") else "")
+        if agents._resolve_backend(cfg) == "claude_cli"
+        else f"Claude API ({cfg.get('model')})"
+    )
     head = (
         f"# FieldVoice 세션 리포트 — {sid}\n\n"
-        f"- 입력: `{input_path.name}` / 분석 모델: `{cfg.get('model')}`\n"
+        f"- 입력: `{input_path.name}` / 분석 엔진: {engine}\n"
         f"- 생성: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}\n"
         f"- ⚠ 개인정보: 이 리포트와 전사는 로컬 전용 — 저장소·공유 채널에 올리기 전 가명화 확인 (DESIGN.md §5)\n\n---\n\n"
     )
@@ -109,7 +114,7 @@ def run_pipeline(input_path, name=None, progress=None, cfg=None):
         "id": sid,
         "source": input_path.name,
         "created": datetime.datetime.now().isoformat(timespec="seconds"),
-        "model": cfg.get("model"),
+        "model": engine,
         "files": ["report.md", "01_transcript.md", "02_labeled.md", "03_summary.md",
                   "04_context.md", "05_insights.md"],
     }
