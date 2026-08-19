@@ -102,5 +102,22 @@
   확인(Windows면 run.bat 백로그) ③ 셋업 체크리스트(디스크 암호화 등 5종)는 FieldCheck
   이전 작업과 일괄 — **FieldCheck 트랙과 일정 조율 필요**
 - 다음 할 일: 사용자 결정 3건 회신 → 관리자 연동 구현 착수 여부 결정
+- (후속) 사용자 회신: 접근은 관리자 3인 한정(R2·R3 하향 반영), 기증 PC는 **Windows**
+  (run.bat + claude .cmd 호환 반영), 디스크 암호화 진행 결정. 8/5 리포트 1페이지 개편판
+  재출력 전달
+
+**2026-08-19 (3) — 관리자 페이지 연동 구현 완료 (양 저장소, 배포 대기):**
+- **실서비스 저장소** 브랜치 `claude/fieldvoice-voc-reports` (순수 추가, 기존 핸들러 무수정):
+  ① Apps Script — `POST type:voc_report`(FV_API_KEY, fail-closed, 20KB 초과 거부) +
+  `GET ?type=voc_reports`(관리자 토큰 필수) + `voc_reports` 탭 자동 생성
+  ② 관리자 페이지 — 분석 섹션 🎙 현장 인사이트 탭 (목록→1페이지 상세, 자체 마크다운
+  렌더러·XSS escape — 실리포트로 node 검증 통과)
+  ③ 이관 문서 등재 — api-contract GET/POST 행, data-schema 4.8 탭 + FC/FV_API_KEY Property 표
+- **이 저장소**: 파이프라인 웹 UI에 [관리자 페이지로 업로드] 버튼 — 방문일·목적·작성자·
+  동의 입력 + 가명화 확인창(수동 게이트) → report.md만 전송. config `upload` 블록
+- **배포 절차 (사용자)**: ① 양 저장소 브랜치 머지 ② Script Property `FV_API_KEY` 신규 등록
+  ③ 에디터에 .gs 최신 반영 → **기존 배포 편집(새 버전)** 재배포 — FieldCheck 트랙
+  재배포와 충돌 않게 최신 main 확인 ④ 노트북/맥 config.json에 upload.api_key 입력
+  ⑤ 검증: 샘플 분석 → 업로드 → 관리자 🎙 탭 확인
   ② API 인증 → 자동 분석 vs 수동 판독 벤치마크 ③ 질문 프레임 v2(H1~H3 가설 반영)
   ④ 판독 리포트는 8/18 세션 채팅에 전달됨(저장소 밖) — 필요 시 사용자 보관본 참조

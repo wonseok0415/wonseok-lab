@@ -13,7 +13,9 @@
   Claude API로 전송된다. 실고객 녹음을 분석하기 전에 동의서에 이 처리 방식이
   포함되어 있는지 확인할 것.
 
-## 1. 실행 (맥북)
+## 1. 실행
+
+**맥북**:
 
 ```
 cd ~/workspace/wonseok-lab/thinqreal/fieldvoice/pipeline
@@ -22,6 +24,9 @@ cd ~/workspace/wonseok-lab/thinqreal/fieldvoice/pipeline
 ```
 bash run.sh
 ```
+
+**Windows (전용 노트북)**: 탐색기에서 `pipeline` 폴더의 **`run.bat` 더블클릭**
+(Python 미설치면 python.org에서 설치 — "Add python.exe to PATH" 체크 필수).
 
 처음 실행이면 가상환경 생성과 설치로 1~2분 걸린다. 브라우저가 자동으로 열린다
 (`http://127.0.0.1:8765`). 종료는 터미널에서 `Ctrl+C`.
@@ -93,7 +98,18 @@ export ANTHROPIC_API_KEY=발급받은키
 | `whisper_condition_on_previous_text` | `false` | `false`면 환청 반복 루프 완화 (기본 유지 권장) |
 | `port` | `8765` | 웹 UI 포트 |
 
-## 6. 문제 해결
+## 6. 관리자 페이지 업로드 (최초 1회 설정)
+
+분석 완료 후 요약 리포트를 ThinQ Real 관리자 대시보드(🎙 현장 인사이트 탭)로 올릴 수 있다.
+
+1. Apps Script 스크립트 속성에 `FV_API_KEY`를 등록 (관리자 작업 — FC_API_KEY와 동일 절차)
+2. `config.json`의 `upload.api_key`에 같은 값 입력 (`config.example.json` 참조 — **커밋 금지**)
+3. 분석 결과 화면 하단에서 방문일·목적·작성자·동의 방식 입력 → **업로드**
+
+업로드되는 것은 **1페이지 요약(report.md)뿐**이다 — 원본 음성·전사·상세 리포트는 절대
+전송되지 않는다. 업로드 전 확인창에서 실명·회사명 가명화를 반드시 검수할 것 (DESIGN.md §8).
+
+## 7. 문제 해결
 
 | 증상 | 원인·조치 |
 |---|---|
@@ -106,7 +122,7 @@ export ANTHROPIC_API_KEY=발급받은키
 | 포트 충돌 (주소가 이미 사용 중) | `config.json`에서 `port` 변경 |
 | 화자 라벨이 뒤섞임 | 1채널 한계 — 라벨 전사 탭에서 확인 후 수동 교정, 장기적으론 채널 분리 마이크 (DESIGN.md §6) |
 
-## 7. 구조
+## 8. 구조
 
 ```
 pipeline.py     오케스트레이터 (단계 실행·저장·CLI)

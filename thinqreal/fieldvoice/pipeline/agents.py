@@ -92,7 +92,12 @@ def _call_claude_cli(system_blocks, user_text, cfg):
     분석 프롬프트에 섞이지 않게 한다.
     """
     prompt = "\n\n".join([b["text"] for b in system_blocks] + ["---", user_text])
-    cmd = ["claude", "-p", "--output-format", "text"]
+    exe = shutil.which("claude")
+    if not exe:
+        raise RuntimeError("claude 명령을 찾을 수 없습니다 — Claude Code CLI 설치가 필요합니다 (README §2).")
+    cmd = [exe, "-p", "--output-format", "text"]
+    if exe.lower().endswith((".cmd", ".bat")):  # Windows: 배치 셔틀은 cmd.exe 경유 필요
+        cmd = ["cmd", "/c"] + cmd
     model = cfg.get("claude_cli_model", "")
     if model:
         cmd += ["--model", model]
