@@ -279,6 +279,11 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 
 ## FieldCheck 진행 상태 (핸드오프 로그 — 세션 마무리 시 갱신)
 
+**2026-08-21 (3) — Windows 셋업 C단계 대부분 완료 (집, 채팅 실시간 지원):**
+- 진행: git clone ✓ → Python 3.14.7 설치(PATH는 새 창+Modify로 해결) ✓ → 패키지 4종 설치 ✓ → config.json·phrases USB 이전 ✓ → **--selftest 모두 통과** (Windows+Python 3.14에서 판정 로직 전체 검증 — 3.14 호환 확인)
+- 트러블슈팅 기록: ① pip 단독 명령은 Scripts 미등록으로 불인식 — **이 PC에서는 항상 `python -m pip`** ② 오타 사고(oencv-python) — 명령은 PC에서 notepad로 체크리스트 열어 복사-붙여넣기 방식 확립 ③ PATH는 설치 후 새 PowerShell 창부터 적용
+- 남은 것: (집) --mic-test·웹캠 snapshot / (현장·월요일) 웹캠 삼각대 --pick → dBA 재보정 → --once --force → 스케줄 등록(C9) → 잠금 테스트(C10) → 익일 07:00 확인(D1). **집에서 --once·C9 금지 재확인**(시트 오염·주말 오발송 방지)
+
 **2026-08-21 (2) — 기증 노트북 사양 확인 (DESKTOP-9BCK7JA):**
 - i5-4200U(4세대 Haswell, AVX2 지원 — faster-whisper 구동 가능)·8GB·Win10 64bit. **FieldCheck 용도 충분** (판정 연산 경량 + L2는 small 모델·짧은 클립)
 - **제약 ①: Win10 보안 지원 종료(2025-10) + Win11 업그레이드 불가(CPU 미달)** → 체크리스트 A(암호화·전용 계정·잠금) 중요도 상승, 용도 제한(점검·pull 전용), **사내 이관 시 장비 교체 전제**
