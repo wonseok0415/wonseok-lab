@@ -279,6 +279,12 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 
 ## FieldCheck 진행 상태 (핸드오프 로그 — 세션 마무리 시 갱신)
 
+**2026-08-20 — 근황 확인: 2주 무인 가동 실증 + 반출 기간 데이터 오염 정리:**
+- **8/8~8/20 맥북이 집에 반출된 상태로 07:00 자동 점검이 매일 정상 가동** (기상→실행→전송→메일 전 구간 무인 동작 실증). 단 ThinQ ON이 없어 결과는 전부 실패 — 판정 자체는 정확(무응답 맞음)하나 시트·🩺 탭에 오염 데이터로 누적
+- **조치 안내**: ① 맥북 스케줄 일시 해제(uninstall_macos.sh + pmset repeat cancel — 현장 복귀 또는 Windows 셋업까지) ② health_checks 탭에서 2026-08-08 이후 행 삭제 권장(8/7까지는 현장 실측 — 보존)
+- **교훈 (운영 수칙 추가)**: 시스템은 "장비가 현장에 없음"과 "ThinQ ON 장애"를 구분 못 함 → **장비 반출 시 스케줄 해제**가 수칙. Windows 상주 장비 전환으로 구조적 해소 예정
+- FieldVoice 트랙과의 접점 확인: 실서비스 저장소 PR #70(voc_reports)은 순수 추가로 health_check 무영향, run.bat 구현으로 셋업 체크리스트 E3 해소. FieldVoice의 Apps Script 재배포(FV_API_KEY) 시 에디터 최신 main 확인 원칙만 공유됨
+
 **2026-08-19 — 공용 노트북(Windows) 통합 셋업 체크리스트 작성 + 웹캠 도착:**
 - FieldVoice 트랙의 `fieldvoice/OPERATIONS.md`(공용 장비·이관 리스크 7종) 검토 후, 사용자 결정 반영: 기증 PC = **Windows 확정**, FieldVoice 전사는 시연 종료 후 실행(R1 CPU 경합 자연 회피)
 - **`fieldcheck/SETUP_SHARED_LAPTOP.md` 신설** — A 보안·계정(운영 전용 계정, 디스크 암호화+복구 키, 자동 로그인+잠금 키오스크 패턴) / B 상시 가동(절전 금지·업데이트 시간 통제·볼륨 라벨·Win 마이크/카메라 권한) / C FieldCheck 이전 10단계(config·phrases USB 이전 — 메일 금지, **dBA 재보정 필수**(87.4는 맥북 마이크 값), 웹캠 ROI, install_windows.ps1=07:00 확인됨) / D 전환 게이트(익일 07:00 검증 → **맥북 launchd·pmset 해제 — 이중 점검 방지**) / E FieldVoice 공통 참조
