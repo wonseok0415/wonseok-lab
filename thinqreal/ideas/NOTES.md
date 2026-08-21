@@ -142,3 +142,22 @@
   교체·gemma 백엔드 추가 검토
 - 다음: 질문 프레임 v2 실전 투입 → 회차별 리포트 축적 시작. Apps Script 재배포(FV_API_KEY)는
   여전히 사용자 대기 항목
+
+**2026-08-21 — FieldVoice 트랙 일시 보류 (FieldCheck 업무 우선, 상태 스냅샷):**
+- **저장소 상태**: PR #28 머지 완료 — 컨센서스 자료·질문 프레임 v2·플로우차트(mermaid,
+  main에서 렌더 확인)·동의 확정이 전부 main 반영. 이 트랙의 미커밋 작업 없음 (깨끗)
+- **산출물 소개 HTML (Artifact, 저장소 밖)**: 팀장 리뷰 피드백 반영해 **독자별 2층
+  구조로 개편** — ①-A 리더 요약 리포트(팀장·실장용: 사업 관점 발견 3건+시사점, 신뢰
+  근거, '바꿀 것'·'가설' 제외) / ①-B 실무 리포트(담당·도슨트용: 기존 1페이지 그대로).
+  링크: https://claude.ai/code/artifact/a2a7e30a-d509-4efd-a85f-2b22cab67294
+- **⏸ 보류 중 결정 대기 1건**: 파이프라인 compile 에이전트는 아직 ①-B 형태만 생성 —
+  2층 구조(리더 요약 섹션 추가)를 report.md에 실제 반영할지 팀장 반응 본 뒤 결정
+  (사용자 "반영해줘" 시 agents.py compile 프롬프트 소량 수정)
+- **기존 대기 항목 (변동 없음)**: ① Apps Script 재배포 — FV_API_KEY Script Property 등록
+  + 기존 배포 편집(새 버전), FieldCheck 재배포와 최신 main 기준 조율 ② config.json
+  upload.api_key 입력 → 샘플 업로드 → 🎙 탭 검증 ③ 예약 폼 동의 문안 '음성 녹음·분석'
+  포괄 여부 확인 ④ 팀원 실험(whisper large 계열·gemma) 결과 회신 ⑤ 질문 프레임 v2
+  실전 투입 (다음 방문 회차)
+- **다른 트랙과의 경계 재확인**: 이 트랙 산출물은 `thinqreal/fieldvoice/`·`thinqreal/ideas/`
+  에만 있음 — FieldCheck 세션(`fieldcheck/`·CLAUDE.md 핸드오프 로그)과 파일 겹침 없음.
+  공용 노트북 셋업 체크리스트는 FieldCheck 트랙 소관(`fieldcheck/SETUP_SHARED_LAPTOP.md`)
