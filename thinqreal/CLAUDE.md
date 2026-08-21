@@ -284,6 +284,7 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 - 트러블슈팅 기록: ① pip 단독 명령은 Scripts 미등록으로 불인식 — **이 PC에서는 항상 `python -m pip`** ② 오타 사고(oencv-python) — 명령은 PC에서 notepad로 체크리스트 열어 복사-붙여넣기 방식 확립 ③ PATH는 설치 후 새 PowerShell 창부터 적용
 - 남은 것: (집) --mic-test·웹캠 snapshot / (현장·월요일) 웹캠 삼각대 --pick → dBA 재보정 → --once --force → 스케줄 등록(C9) → 잠금 테스트(C10) → 익일 07:00 확인(D1). **집에서 --once·C9 금지 재확인**(시트 오염·주말 오발송 방지)
 - **(후속) 집 검증 완료: 마이크 통과, 웹캠 device 1 — 화질이 맥북보다 깨끗(Windows UVC 제어 우위, AF 정상)**. 단 **USB 재연결 반복 증상 발견**(작업표시줄 알림 연발) — 무인 운영 차단 이슈. 조치 안내: ① USB 루트 허브 전원 관리 체크 해제 + USB 선택적 절전 사용 안 함(유력) ② 포트 교체(USB 3.0 우선 — 4K 전력) ③ 최후 유전원 허브. 10~20분 방치로 해소 확인 후 snapshot 재확인. **월요일 현장 투입 전 해소 필수**
+- **(해소 확인) USB 절전 해제(①)로 재연결 반복 종결 — 20분 방치 알림 0건.** 집 셋업 전체 완료: 패키지·config·phrases·selftest·마이크·웹캠 전부 통과. 월요일 현장 잔여 작업만 남음(삼각대 --pick → config 카메라 번호(1) → dBA 재보정 → --once --force → C9 스케줄 등록 → C10 잠금 테스트 → 익일 D1). 웹캠은 현장에서도 USB 3.0 포트 사용 권장
 
 **2026-08-21 (2) — 기증 노트북 사양 확인 (DESKTOP-9BCK7JA):**
 - i5-4200U(4세대 Haswell, AVX2 지원 — faster-whisper 구동 가능)·8GB·Win10 64bit. **FieldCheck 용도 충분** (판정 연산 경량 + L2는 small 모델·짧은 클립)
