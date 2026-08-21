@@ -773,6 +773,14 @@ def cmd_mic_test(cfg, seconds=3.0):
             for i in range(0, len(samples) - frame + 1, frame)]
     print(f'  음성 대역 : 최고 {max(dbas):.1f} dBA / 평균 {float(np.mean(dbas)):.1f} dBA'
           + ('' if cal else ' (상대값)'))
+
+    # 녹음을 파일로 남겨 귀로도 확인할 수 있게 한다 (마이크 음질·거리 진단)
+    os.makedirs(REC_DIR, exist_ok=True)
+    test_path = os.path.join(REC_DIR, 'mic_test.wav')
+    write_wav(test_path, samples, sr)
+    print(f'  녹음 저장 : {test_path}')
+    print('             (파일을 더블클릭해 재생하면 마이크가 들은 소리를 직접 들을 수 있습니다)')
+
     if peak_raw < 100:
         print('\n  △ 소리가 매우 작습니다. 마이크 입력 볼륨을 올리거나 ThinQ ON에 더 가까이 두세요.')
         return 0
