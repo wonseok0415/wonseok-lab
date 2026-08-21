@@ -115,4 +115,4 @@
 
 - [ ] E1. 전사는 **그날 시연 종료 후** 실행 (2026-08-19 사용자 확정 — 07:00 점검 창과 자연 회피)
 - [ ] E2. 분석은 개인 맥북에서 (공용 장비에 개인 Claude 계정 로그인 금지 — A4와 동일 원칙)
-- [ ] E3. `run.bat`(Windows용 실행 스크립트)은 FieldVoice 트랙 백로그 — 이 문서 범위 밖
+- [x] E3. `run.bat`(Windows용 실행 스크립트) — FieldVoice 트랙에서 구현 완료 (2026-08-20 확인, `../fieldvoice/pipeline/run.bat`)
