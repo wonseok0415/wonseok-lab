@@ -123,6 +123,8 @@ def list_recordings(limit=30):
     items = []
     for root, _dirs, files in os.walk(REC_DIR):
         for name in files:
+            if name.startswith('.'):
+                continue
             if not name.lower().endswith(('.wav', '.jpg', '.jpeg', '.png')):
                 continue
             full = os.path.join(root, name)
@@ -166,6 +168,10 @@ def list_phrases():
     if os.path.isdir(PHRASE_DIR):
         for name in sorted(os.listdir(PHRASE_DIR)):
             full = os.path.join(PHRASE_DIR, name)
+            # 맥에서 USB로 복사할 때 생기는 메타데이터 파일(._이름.wav 등 숨김
+            # 파일)은 오디오가 아니므로 목록에서 제외
+            if name.startswith('.'):
+                continue
             if not (os.path.isfile(full) and name.lower().endswith('.wav')):
                 continue
             st = os.stat(full)
