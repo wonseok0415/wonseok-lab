@@ -60,6 +60,53 @@ def load_config():
         return json.load(f)
 
 
+def resolve_audio_devices(cfg):
+    """config의 input_device/output_device가 이름 문자열이면 장치 번호로 변환.
+
+    Windows는 같은 물리 장치를 호스트 API(MME/DirectSound/WASAPI/WDM-KS)별로
+    중복 노출해서 이름 부분 일치가 여러 개에 걸리고, 이때 sounddevice는
+    "Multiple devices found" 오류를 낸다 (2026-08-21 실측: 'UHD2160L' 4건).
+    이름이 걸린 후보 중 호환성이 가장 좋은 API 순서(MME → DirectSound →
+    WASAPI → WDM-KS)로 하나를 골라 번호로 바꾼다.
+
+    이름 지정 방식 자체는 유지한다 — 장치 번호는 연결 순서·재부팅에 따라
+    바뀌지만 이름은 남고, 이 변환은 실행 때마다 다시 하므로 안전하다.
+    """
+    try:
+        import sounddevice as sd
+    except ImportError:
+        return
+    try:
+        devices = sd.query_devices()
+        apis = sd.query_hostapis()
+    except Exception:
+        return
+    api_order = ['mme', 'directsound', 'wasapi', 'wdm-ks']
+
+    def api_rank(dev_idx):
+        name = apis[devices[dev_idx]['hostapi']]['name'].lower()
+        for rank, key in enumerate(api_order):
+            if key in name:
+                return rank
+        return len(api_order)
+
+    for key, chan_key, label in (('input_device', 'max_input_channels', '마이크'),
+                                 ('output_device', 'max_output_channels', '스피커')):
+        spec = cfg.get(key)
+        if not isinstance(spec, str) or not spec.strip():
+            continue
+        matches = [i for i, d in enumerate(devices)
+                   if spec.lower() in d['name'].lower() and d[chan_key] > 0]
+        if not matches:
+            print(f'[주의] 이름 "{spec}"에 맞는 {label} 장치를 찾지 못했습니다 — 기본 장치를 사용합니다.')
+            print('       장치가 연결되어 있는지 확인하세요 (목록: python fieldcheck.py --list-devices)')
+            cfg[key] = None
+            continue
+        chosen = sorted(matches, key=api_rank)[0]
+        cfg[key] = chosen
+        print(f'{label} 장치: "{spec}" → {chosen}번 ({devices[chosen]["name"]})')
+
+
 def load_state():
     if os.path.exists(STATE_PATH):
         try:
@@ -1003,6 +1050,7 @@ def main():
         return
 
     cfg = load_config()
+    resolve_audio_devices(cfg)
 
     if args.mic_test:
         sys.exit(cmd_mic_test(cfg))
