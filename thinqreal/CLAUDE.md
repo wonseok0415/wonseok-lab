@@ -283,7 +283,7 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 - i5-4200U(4세대 Haswell, AVX2 지원 — faster-whisper 구동 가능)·8GB·Win10 64bit. **FieldCheck 용도 충분** (판정 연산 경량 + L2는 small 모델·짧은 클립)
 - **제약 ①: Win10 보안 지원 종료(2025-10) + Win11 업그레이드 불가(CPU 미달)** → 체크리스트 A(암호화·전용 계정·잠금) 중요도 상승, 용도 제한(점검·pull 전용), **사내 이관 시 장비 교체 전제**
 - **제약 ②: FieldVoice medium 전사는 이 CPU에서 밤샘 수준** — FieldVoice 트랙에 사양 공유 필요(small 하향 or 감수 결정은 그쪽 몫)
-- 확인 대기 2건: Windows 에디션(Home/Pro — A2 암호화 경로 분기), 저장 장치 SSD/HDD·용량
+- **(후속 확인) Windows Home + 231GB(NTFS)** — Home+2013 기종이라 **디스크 암호화 불가 확정** → A2를 대체 방안으로 갱신: FieldVoice 원본 당일 파기(30일 보관 불가 장비 규정) + 켄싱턴 락 물리 고정(구매 목록 추가) + FC_API_KEY는 로테이션 가능 저위험으로 감수. SSD 여부는 `Get-PhysicalDisk`로 확인 예정(HDD여도 모델 로딩 지연 정도 — 무지장)
 - 스피커는 **크리에이티브 Pebble V2**로 특정(USB 전원+3.5mm·무모드·무자동절전·물리 볼륨 — V3는 블루투스 탑재라 제외)
 
 **2026-08-21 — 노트북 은닉 배치 대비: 외장 스피커 + 웹캠 마이크 활용 방침:**
