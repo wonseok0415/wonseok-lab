@@ -228,6 +228,50 @@ def fetch_reports(days=7):
     return {'days': out, 'fetched': datetime.datetime.now().strftime('%H:%M:%S')}
 
 
+def command_groups():
+    """자주 쓰는 PowerShell 명령 목록 (명령어 탭) — 복사해서 쓰는 용도."""
+    return [
+        {'title': '기본', 'items': [
+            {'desc': 'rig 폴더로 이동 (PowerShell을 직접 열었을 때 가장 먼저)', 'cmd': f'cd {BASE_DIR}'},
+            {'desc': '최신 코드 받기', 'cmd': 'git pull'},
+            {'desc': '제어판 실행', 'cmd': 'python webui.py'},
+        ]},
+        {'title': '진단', 'items': [
+            {'desc': '마이크 테스트 (3초 녹음 + mic_test.wav 저장)', 'cmd': 'python fieldcheck.py --mic-test'},
+            {'desc': '판정 로직 자체 검증 (장치 불필요)', 'cmd': 'python fieldcheck.py --selftest'},
+            {'desc': '오디오 장치 목록', 'cmd': 'python fieldcheck.py --list-devices'},
+            {'desc': '장치 설정 현재 값 확인', 'cmd': 'python set_devices.py --show'},
+            {'desc': '웹캠 스냅샷 (구도 확인)', 'cmd': 'python vision.py --snapshot --device 1'},
+        ]},
+        {'title': '현장 셋업', 'items': [
+            {'desc': '판정 영역 지정 (마우스로 대상·참조 드래그)', 'cmd': 'python vision.py --pick --device 1'},
+            {'desc': '장치 지정 — 카메라 1번 + 웹캠 마이크', 'cmd': 'python set_devices.py --camera 1 --mic UHD2160L'},
+            {'desc': '주변 소음 측정 (임계값 추천)', 'cmd': 'python fieldcheck.py --calibrate'},
+            {'desc': '전체 점검 강행 — 결과가 운영 시트로 전송, ThinQ Real 현장 전용',
+             'cmd': 'python fieldcheck.py --once --force', 'warn': True},
+            {'desc': '매일 07:00 자동 실행 등록', 'cmd': 'powershell -ExecutionPolicy Bypass -File schedule\\install_windows.ps1'},
+            {'desc': '자동 실행 즉시 1회 시험 (잠금 상태 테스트에 사용)', 'cmd': 'Start-ScheduledTask -TaskName "ThinQReal FieldCheck"'},
+            {'desc': '자동 실행 로그 보기 (마지막 30줄)', 'cmd': 'Get-Content logs\\schedule.log -Tail 30'},
+        ]},
+    ]
+
+
+def open_local(what):
+    """PowerShell/탐색기를 rig 폴더에서 연다 (Windows 전용 — 브라우저에서 버튼으로)."""
+    if os.name != 'nt':
+        return False, '이 기능은 Windows에서만 동작합니다'
+    try:
+        if what == 'shell':
+            subprocess.Popen('start powershell -NoExit', shell=True, cwd=BASE_DIR)
+            return True, 'PowerShell 창을 열었습니다 (rig 폴더에서 시작)'
+        if what == 'folder':
+            subprocess.Popen(f'explorer "{BASE_DIR}"', shell=True)
+            return True, '탐색기를 열었습니다'
+    except Exception as e:
+        return False, f'열기 실패: {e}'
+    return False, '알 수 없는 요청입니다'
+
+
 def start_action(label, argv):
     """조작을 하위 프로세스로 실행 (한 번에 하나). argv는 rig 폴더 기준."""
     with ACTION['lock']:
@@ -336,6 +380,7 @@ img.thumb { max-width:220px; border-radius:6px; display:block; }
   <button id="tabbtn-main" class="on" onclick="showTab('main')">현황</button>
   <button id="tabbtn-tts" onclick="showTab('tts')">점검 음성</button>
   <button id="tabbtn-report" onclick="showTab('report')">결과서</button>
+  <button id="tabbtn-cmd" onclick="showTab('cmd')">명령어</button>
 </div>
 
 <div id="tab-main">
@@ -390,17 +435,63 @@ img.thumb { max-width:220px; border-radius:6px; display:block; }
   </div>
 </div>
 
+<div id="tab-cmd" style="display:none">
+  <div class="card">
+    <h2>바로 열기</h2>
+    <button onclick="openLocal('shell')">PowerShell 열기 (rig 폴더에서 시작)</button>
+    <button onclick="openLocal('folder')">rig 폴더 열기 (탐색기)</button>
+    <div class="muted" style="margin-top:6px">PowerShell 열기 버튼을 쓰면 <b>cd로 이동할 필요 없이</b> 바로 명령을 붙여넣을 수 있습니다.
+    작업 폴더: <code id="basedir"></code></div>
+  </div>
+  <div class="card">
+    <h2>자주 쓰는 명령어</h2>
+    <div class="muted" style="margin-bottom:6px">[복사]를 누른 뒤 PowerShell 창에서 <b>마우스 우클릭</b>하면 붙여넣기 됩니다.</div>
+    <div id="cmds">불러오는 중...</div>
+  </div>
+</div>
+
 <pre id="out" style="display:none"></pre>
 <div class="muted">새로고침(F5)하면 상태·목록이 갱신됩니다 · 종료는 검은 서버 창을 닫으면 됩니다</div>
 
 <script>
 function esc(s){ return String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function showTab(t){
-  for (const x of ['main','tts','report']){
+  for (const x of ['main','tts','report','cmd']){
     document.getElementById('tab-'+x).style.display = (x===t)?'':'none';
     document.getElementById('tabbtn-'+x).classList.toggle('on', x===t);
   }
   if (t==='tts' && !window._ttsLoaded){ loadPhrases(); window._ttsLoaded=true; }
+  if (t==='cmd' && !window._cmdLoaded){ loadCommands(); window._cmdLoaded=true; }
+}
+async function loadCommands(){
+  const r = await fetch('/api/commands'); const d = await r.json();
+  document.getElementById('basedir').textContent = d.base_dir;
+  document.getElementById('cmds').innerHTML = d.groups.map(g=>
+    `<div style="margin:12px 0 4px"><b style="color:var(--olive)">${esc(g.title)}</b></div>` +
+    g.items.map(x=>
+      `<div style="display:flex; align-items:center; gap:8px; padding:6px 0; border-bottom:1px dashed var(--line)">
+        <div style="flex:1; min-width:0">
+          <div class="${x.warn?'bad':''}" style="font-size:13px">${x.warn?'⚠ ':''}${esc(x.desc)}</div>
+          <code style="font-size:12.5px; color:var(--muted); word-break:break-all">${esc(x.cmd)}</code>
+        </div>
+        <button class="mini" onclick="copyCmd(this, ${JSON.stringify(x.cmd).replace(/"/g,'&quot;')})">복사</button>
+      </div>`).join('')
+  ).join('');
+}
+async function copyCmd(btn, text){
+  try { await navigator.clipboard.writeText(text); }
+  catch(e){
+    const ta = document.createElement('textarea'); ta.value = text;
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
+  }
+  const old = btn.textContent; btn.textContent = '복사됨!';
+  setTimeout(()=>{ btn.textContent = old; }, 1200);
+}
+async function openLocal(what){
+  const r = await fetch('/api/open', {method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({what})});
+  const d = await r.json();
+  if(!d.ok) alert(d.msg);
 }
 async function status(){
   const r = await fetch('/api/status'); const d = await r.json();
@@ -551,6 +642,8 @@ class Handler(BaseHTTPRequestHandler):
             self._send(200, list_recordings())
         elif self.path == '/api/phrases':
             self._send(200, list_phrases())
+        elif self.path == '/api/commands':
+            self._send(200, {'base_dir': BASE_DIR, 'groups': command_groups()})
         elif self.path == '/api/reports':
             self._send(200, fetch_reports())
         elif self.path == '/api/output':
@@ -564,16 +657,19 @@ class Handler(BaseHTTPRequestHandler):
             self._send(404, {'error': 'not found'})
 
     def do_POST(self):
-        if self.path != '/api/action':
-            self._send(404, {'error': 'not found'})
-            return
         try:
             length = int(self.headers.get('Content-Length', 0))
             req = json.loads(self.rfile.read(length) or b'{}')
         except (ValueError, json.JSONDecodeError):
             req = {}
-        ok, msg = handle_action(req)
-        self._send(200, {'ok': ok, 'msg': msg})
+        if self.path == '/api/action':
+            ok, msg = handle_action(req)
+            self._send(200, {'ok': ok, 'msg': msg})
+        elif self.path == '/api/open':
+            ok, msg = open_local(str(req.get('what', '')))
+            self._send(200, {'ok': ok, 'msg': msg})
+        else:
+            self._send(404, {'error': 'not found'})
 
 
 def main():
