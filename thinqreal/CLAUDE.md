@@ -279,6 +279,14 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 
 ## FieldCheck 진행 상태 (핸드오프 로그 — 세션 마무리 시 갱신)
 
+**2026-08-21 (4) — 조작판(로컬 웹 UI) 신설 + 장치 지정 도구·마이크 청취 기능:**
+- **집 셋업 완전 종료**: 웹캠 마이크 이름 지정 정상화(--mic-test에서 UHD2160L 자동 해석·정상), mic_test.wav 청취로 음질 "또렷" 확인
+- **Windows 다중 호스트 API 대응** (`resolve_audio_devices`): 같은 물리 장치가 MME/DirectSound/WASAPI/WDM-KS 4중 노출되어 이름 매칭이 오류 나던 것 → 실행 시마다 이름→번호 해석(MME 우선), 미연결 시 기본 장치 폴백. 모의 시험 통과
+- **`set_devices.py` 신설** — 긴 한 줄 명령의 수기 오타 사고(open( 누락 실측) 방지: `python set_devices.py --camera 1 --mic UHD2160L`
+- **`webui.py` 조작판 신설 (사용자 요청)** — 표준 라이브러리만 사용(의존성 0 추가), 127.0.0.1 전용. 상태(장치 연결·설정 요약·자동 실행 로그)/조작 버튼(마이크 테스트·스냅샷·전체 점검+force, 한 번에 하나 잠금, 하위 프로세스로 CLI와 동일 실행)/최근 판정 표(표기 정책 적용: 응답·내용·동작 점검)/기록 열람(wav 재생·jpg 보기). 전체 점검 버튼에 "현장 전용·시트 전송" 경고+확인창. 샌드박스에서 전 엔드포인트 검증
+- 바탕화면 바로가기: `schedule\install_webui_shortcut.ps1` 1회 실행 → "FieldCheck 조작판" 더블클릭. README §조작판 추가
+- **소통 방식 Q&A**: 랩탑 git push 채널은 비권장(공용 장비 쓰기 자격 증명 상주 + 공개 저장소에 운영 로그 부적절) — 사진 기본, 필요 시 브라우저 임시 로그인, 근본 해결은 사내 Claude Code(#8)
+
 **2026-08-21 (3) — Windows 셋업 C단계 대부분 완료 (집, 채팅 실시간 지원):**
 - 진행: git clone ✓ → Python 3.14.7 설치(PATH는 새 창+Modify로 해결) ✓ → 패키지 4종 설치 ✓ → config.json·phrases USB 이전 ✓ → **--selftest 모두 통과** (Windows+Python 3.14에서 판정 로직 전체 검증 — 3.14 호환 확인)
 - 트러블슈팅 기록: ① pip 단독 명령은 Scripts 미등록으로 불인식 — **이 PC에서는 항상 `python -m pip`** ② 오타 사고(oencv-python) — 명령은 PC에서 notepad로 체크리스트 열어 복사-붙여넣기 방식 확립 ③ PATH는 설치 후 새 PowerShell 창부터 적용
