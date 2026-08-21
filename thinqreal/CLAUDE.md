@@ -279,6 +279,11 @@ PDF `ThinQ Real_User Guide_260507_v3.pdf`(21p, 1.87MB)의 슬라이드 5~7, 16~1
 
 ## FieldCheck 진행 상태 (핸드오프 로그 — 세션 마무리 시 갱신)
 
+**2026-08-21 (5) — 조작판 실기기 검증 완료 (금요일 마감):**
+- ps1 한글 인코딩 오류("문자열에 종결자가 없습니다") = **UTF-8 BOM 누락** — install_windows.ps1·install_webui_shortcut.ps1 둘 다 BOM 추가로 해결 (월요일 C9에서 만날 사고 선제 제거)
+- **사용자 실기기 확인: 바탕화면 바로가기 생성 ✓ 조작판 열림 ✓ 마이크(UHD2160L) 초록 표시 ✓** — Windows 장비의 집 셋업 최종 완료
+- 월요일 현장 절차(확정): 웹캠+삼각대 천장 구도 → snapshot(번호 확인) → --pick → set_devices.py로 번호 반영 → dBA 재보정 → --once --force(조작판 버튼 가능) → install_windows.ps1(C9) → 잠금 테스트(C10) → 화요일 D1. 스피커(Pebble V2)·3.5mm 연장은 배송 오는 대로 은닉 배치 시 연결
+
 **2026-08-21 (4) — 조작판(로컬 웹 UI) 신설 + 장치 지정 도구·마이크 청취 기능:**
 - **집 셋업 완전 종료**: 웹캠 마이크 이름 지정 정상화(--mic-test에서 UHD2160L 자동 해석·정상), mic_test.wav 청취로 음질 "또렷" 확인
 - **Windows 다중 호스트 API 대응** (`resolve_audio_devices`): 같은 물리 장치가 MME/DirectSound/WASAPI/WDM-KS 4중 노출되어 이름 매칭이 오류 나던 것 → 실행 시마다 이름→번호 해석(MME 우선), 미연결 시 기본 장치 폴백. 모의 시험 통과
