@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 # ============================================================
-#  FieldCheck 조작판 — 로컬 웹 UI (순수 추가 기능)
+#  ThinQ ON 자동 점검 제어판 — 로컬 웹 UI (순수 추가 기능)
 #
 #  코드·명령줄을 건드리지 않고 브라우저에서 점검 장비를 조작·확인한다:
 #    · 상태: 마이크/스피커/카메라 설정과 실제 연결(이름 해석) 확인
@@ -173,32 +173,38 @@ def start_action(kind, force=False):
 
 PAGE = """<!DOCTYPE html><html lang="ko"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>FieldCheck 조작판</title>
+<title>ThinQ ON 자동 점검 제어판</title>
 <style>
-:root { --olive:#3a5035; --bg:#f4f3ef; --card:#fff; --muted:#6b6b66; --line:#e2e0d8; }
+:root { --olive:#3a5035; --olive-soft:#eff3ec; --bg:#f4f3ef; --card:#fff; --muted:#63635e; --line:#e2e0d8; }
 * { box-sizing:border-box; margin:0; }
-body { font-family:'Malgun Gothic','Apple SD Gothic Neo',sans-serif; background:var(--bg); color:#22221f; padding:18px; }
-h1 { font-size:20px; color:var(--olive); margin-bottom:2px; }
-.sub { color:var(--muted); font-size:12px; margin-bottom:14px; }
-.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:12px; margin-bottom:12px; }
+body { font-family:'Pretendard','Noto Sans KR','Malgun Gothic','Apple SD Gothic Neo',sans-serif;
+       background:var(--bg); color:#1e1e1b; padding:18px; font-size:14px;
+       -webkit-font-smoothing:antialiased; }
+h1 { font-size:22px; color:var(--olive); margin-bottom:3px; letter-spacing:-0.3px; }
+.sub { color:var(--muted); font-size:13px; margin-bottom:14px; }
+.grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:12px; margin-bottom:12px; }
 .card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px; }
-.card h2 { font-size:13px; color:var(--olive); margin-bottom:8px; }
-.row { display:flex; justify-content:space-between; font-size:13px; padding:3px 0; border-bottom:1px dashed var(--line); }
+.card h2 { font-size:14px; color:var(--olive); margin:-4px -4px 10px -4px;
+           background:var(--olive-soft); border-left:4px solid var(--olive);
+           padding:7px 10px; border-radius:6px; font-weight:700; }
+.row { display:flex; justify-content:space-between; font-size:14px; padding:4px 0; border-bottom:1px dashed var(--line); }
 .row:last-child { border-bottom:none; }
-.ok { color:var(--olive); font-weight:bold; } .bad { color:#9c4a40; font-weight:bold; }
-button { background:var(--olive); color:#fff; border:none; border-radius:8px; padding:10px 14px; font-size:13px; cursor:pointer; margin:3px 4px 3px 0; }
+.ok { color:var(--olive); font-weight:700; } .bad { color:#9c4a40; font-weight:700; }
+button { background:var(--olive); color:#fff; border:none; border-radius:8px; padding:11px 15px; font-size:14px; font-weight:600; cursor:pointer; margin:3px 4px 3px 0; font-family:inherit; }
 button:disabled { background:#b6b3a8; cursor:not-allowed; }
 button.warn { background:#a8803a; }
-label { font-size:12px; color:var(--muted); }
-pre { background:#23241f; color:#e8e6da; border-radius:8px; padding:12px; font-size:12px; line-height:1.5; max-height:320px; overflow:auto; white-space:pre-wrap; }
-table { width:100%; border-collapse:collapse; font-size:12.5px; }
-td,th { padding:5px 6px; border-bottom:1px solid var(--line); text-align:left; }
+label { font-size:13px; color:var(--muted); }
+pre { background:#23241f; color:#e8e6da; border-radius:8px; padding:12px; font-size:12.5px; line-height:1.55; max-height:320px; overflow:auto; white-space:pre-wrap; }
+table { width:100%; border-collapse:collapse; font-size:13.5px; }
+td,th { padding:6px 7px; border-bottom:1px solid var(--line); text-align:left; }
+th { position:sticky; top:0; background:var(--card); color:var(--muted); font-weight:600; }
 audio { width:220px; height:30px; }
 img.thumb { max-width:220px; border-radius:6px; display:block; }
-.muted { color:var(--muted); font-size:12px; }
+.muted { color:var(--muted); font-size:13px; }
+#results, #recs { max-height:380px; overflow-y:auto; }
 </style></head><body>
-<h1>FieldCheck 조작판</h1>
-<div class="sub">ThinQ ON 자동 점검 장비 — 이 창은 이 컴퓨터에서만 접속됩니다</div>
+<h1>ThinQ ON 자동 점검 제어판</h1>
+<div class="sub">FieldCheck 점검 장비 — 이 창은 이 컴퓨터에서만 접속됩니다</div>
 
 <div class="grid">
   <div class="card"><h2>장비 상태</h2><div id="devs">불러오는 중...</div></div>
@@ -352,17 +358,17 @@ def main():
     try:
         server = ThreadingHTTPServer(addr, Handler)
     except OSError:
-        print(f'조작판이 이미 실행 중입니다 — 브라우저를 엽니다: {url}')
+        print(f'제어판이 이미 실행 중입니다 — 브라우저를 엽니다: {url}')
         webbrowser.open(url)
         return
-    print('FieldCheck 조작판을 시작합니다.')
+    print('ThinQ ON 자동 점검 제어판을 시작합니다.')
     print(f'  주소: {url}  (이 컴퓨터에서만 접속 가능)')
     print('  종료: 이 창을 닫거나 Ctrl+C')
     threading.Timer(0.8, lambda: webbrowser.open(url)).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print('\n조작판을 종료합니다.')
+        print('\n제어판을 종료합니다.')
 
 
 if __name__ == '__main__':

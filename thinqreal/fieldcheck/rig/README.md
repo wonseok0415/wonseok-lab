@@ -394,7 +394,7 @@ config.json의 `scenarios` 배열에 복사하면 됩니다 (켜기→외출 순
   구분됩니다 (마이크 무음 감지와 같은 구조).
 - 수동 측정 기록: `logs/camera_test.csv`, 판정 스냅샷: `recordings/camera/`
 
-## 조작판 (로컬 웹 UI)
+## 제어판 (로컬 웹 UI)
 
 코드·명령줄 없이 브라우저에서 장비를 조작·확인할 수 있습니다:
 
@@ -412,7 +412,7 @@ Windows 바탕화면 바로가기 만들기 (1회):
 powershell -ExecutionPolicy Bypass -File schedule\install_webui_shortcut.ps1
 ```
 
-이후 바탕화면의 "FieldCheck 조작판"을 더블클릭하면 열립니다 (검은 서버 창을
+이후 바탕화면의 "ThinQ ON 자동 점검 제어판"을 더블클릭하면 열립니다 (검은 서버 창을
 닫으면 종료). ⚠ "전체 점검 실행" 버튼은 결과가 운영 시트로 전송되므로
 ThinQ Real 현장에서만 사용하세요.
 
