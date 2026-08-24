@@ -462,7 +462,9 @@ def run_scenario(cfg, scenario):
             l3_series = [list(s) for s in shot['series']]
             l3_judge = vision.judge_light(before_ratio, shot['series'],
                                           float(cam.get('min_delta', 0.15)),
-                                          cam.get('expect', 'on'), int(cam.get('sustain', 3)))
+                                          cam.get('expect', 'on'), int(cam.get('sustain', 3)),
+                                          before_target=(before_bright[0] if before_bright else None),
+                                          min_bright_change=float(cam.get('min_bright_change', 0.25)))
             ratios_only = [s[3] for s in shot['series']]
             targets_only = [s[1] for s in shot['series']]
             print(f'  측정 요약: 상대값 최소 {min(ratios_only)} / 최대 {max(ratios_only)}'
@@ -563,7 +565,10 @@ def run_scenario(cfg, scenario):
                     'before_bright': before_bright,
                     'after_ratio': l3_judge['after_ratio'] if l3_judge else None,
                     'peak_delta': l3_judge.get('peak_delta') if l3_judge else None,
+                    'peak_bright': l3_judge.get('peak_bright') if l3_judge else None,
+                    'criterion': l3_judge.get('criterion') if l3_judge else '',
                     'min_delta': cam.get('min_delta', 0.15),
+                    'min_bright_change': cam.get('min_bright_change', 0.25),
                     'expect': cam.get('expect', 'on'),
                     'direction_match': l3_judge.get('direction_match') if l3_judge else None,
                     'reason': l3_judge['reason'] if l3_judge else '',
@@ -575,6 +580,7 @@ def run_scenario(cfg, scenario):
                 }, ensure_ascii=False),
                 'stt_text': '',
                 'expected': f'촬영 구간 내 물리 변화 |Δ|≥{cam.get("min_delta", 0.15)} '
+                            f'또는 대상 밝기 {float(cam.get("min_bright_change", 0.25)):.0%} 변화, '
                             f'{int(cam.get("sustain", 3))}표본 지속 '
                             f'(기대 방향: {"밝아짐" if want_on else "어두워짐"} — 참고용)',
                 'note': '되물음 발생 → 확답으로 진행' if reask else '',
@@ -1026,6 +1032,10 @@ def cmd_selftest():
     cancel_s = [(1.0, 0, 0, 0.76), (2.0, 0, 0, 0.77), (3.0, 0, 0, 0.95), (4.0, 0, 0, 0.96),
                 (5.0, 0, 0, 0.95), (6.0, 0, 0, 0.80), (7.0, 0, 0, 0.76)]
     short_s = [(1.0, 0, 0, 0.95), (2.0, 0, 0, 0.95), (3.0, 0, 0, 0.76), (4.0, 0, 0, 0.75), (5.0, 0, 0, 0.76)]
+    # 조명이 참조 영역까지 밝히는 방(2026-08-24 실측): 대상 88.2→138.5(+57%)인데
+    # 참조도 106.5→147.5로 따라 올라 상대값은 0.826→0.938(Δ0.112)로 눌린다
+    bright_s = ([(float(i), 88.2, 106.5, 0.826) for i in range(3)]
+                + [(float(3 + i), 138.5, 147.5, 0.938) for i in range(5)])
     l3_cases = [
         ('켜짐 전환 감지', 0.75, on_s, 'on', True, 3000),
         ('변화 없음 → 실패', 0.75, flat_s, 'on', False, None),
@@ -1037,10 +1047,15 @@ def cmd_selftest():
         ('2표본 변위는 지속 미달 → 실패', 0.75, short_s, 'on', False, None),
         ('촬영 전 이미 변화 완료 → 통과·반응 시간 미측정', 0.75,
          [(0.0, 0, 0, 0.95), (1.0, 0, 0, 0.96), (2.0, 0, 0, 0.95), (3.0, 0, 0, 0.96)], 'on', True, None),
+        # 7번째 항목 = 사전 대상 밝기 (있으면 '대상 밝기 변화' 보조 기준도 적용)
+        ('참조까지 밝아져 상대값 눌림 → 밝기 기준으로 감지', 0.826, bright_s, 'on', True, 3000, 88.2),
+        ('밝기 기준 있어도 무변화면 실패', 0.826,
+         [(float(i), 88.2, 106.5, 0.826) for i in range(6)], 'on', False, None, 88.2),
     ]
-    for i, (name, before, series, expect, want_pass, want_lat) in enumerate(
-            l3_cases, start=10 + len(l2_cases) + len(slot_cases)):
-        v = vision.judge_light(before, series, thr, expect)
+    for i, case in enumerate(l3_cases, start=10 + len(l2_cases) + len(slot_cases)):
+        name, before, series, expect, want_pass, want_lat = case[:6]
+        before_target = case[6] if len(case) > 6 else None
+        v = vision.judge_light(before, series, thr, expect, before_target=before_target)
         good = v['passed'] == want_pass and (want_lat is None or v['action_latency_ms'] == want_lat)
         print(f'  [{i}] L3 {name:<20} → passed={v["passed"]} ({v["reason"]}) '
               + ('OK' if good else 'FAIL'))

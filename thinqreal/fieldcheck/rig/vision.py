@@ -172,7 +172,8 @@ def capture_series(device, roi, seconds, interval=1.0, prefix='l3'):
     return {'ok': True, 'problem': '', 'series': series, 'snapshot': snap}
 
 
-def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
+def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3,
+                before_target=None, min_bright_change=0.25):
     """조명 판정 — '변화량(Δ)' 기준, 순수 계산 (opencv 불필요, selftest 가능).
 
     before_ratio: 발화 전 상대값. series: capture_series의 series.
@@ -197,6 +198,13 @@ def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
     #    작용한다 — 조명은 대상을 밝히고(↑), 커튼 채광은 참조 벽을 밝힌다(↓).
     #    실제로 둘 다 동작했는데 순변화가 Δ-0.1에 그쳐 실패로 오판된 사례.
     #    구간 중 어느 시점이든 |Δ|≥min_delta가 sustain표본 연속이면 물리 변화다.
+    # ③ 대상 밝기 자체의 변화도 함께 본다 (2026-08-24 현장): 이 쇼룸의 다운라이트는
+    #    화면 전체를 거의 균일하게 밝혀 참조 영역도 같이 오른다(대상 +50 / 참조 +41).
+    #    그러면 비율이 눌려 실제 동작이 Δ0.11로 기준 미달이 된다 — 어느 곳을 참조로
+    #    잡아도 같은 결과. 반면 대상 절대 밝기는 88.2↔138.5로 소수점까지 재현되며
+    #    갈렸다(웹캠 노출이 고정적임을 3사이클로 확인). 그래서 **상대값 변화 또는
+    #    대상 밝기 변화(min_bright_change 비율)** 중 하나만 지속돼도 물리 변화로 본다.
+    #    상대값 기준은 그대로 두므로 기존 통과 사례는 영향 없다(판정 추가만).
     want_on = (expect != 'off')
 
     ratios = [s[3] for s in series]
@@ -208,27 +216,46 @@ def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
     after = round(sum(tail) / len(tail), 3)
     final_delta = round(after - before_ratio, 3)
 
+    # 대상 밝기 기준은 사전 밝기를 알 때만 — 없으면 기존(상대값 단독) 판정 그대로
+    use_bright = bool(before_target) and before_target > 1.0 and len(series[0]) >= 2
+
     peak_delta = 0.0
+    peak_bright = 0.0
     run = 0
     hit_idx = None
-    for i, r in enumerate(ratios):
-        d = r - before_ratio
+    hit_by = ''
+    for i, s in enumerate(series):
+        d = s[3] - before_ratio
         if abs(d) > abs(peak_delta):
             peak_delta = d
-        if abs(d) >= min_delta:
+        by_ratio = abs(d) >= min_delta
+
+        by_bright = False
+        if use_bright:
+            b = s[1] / before_target - 1.0
+            if abs(b) > abs(peak_bright):
+                peak_bright = b
+            by_bright = abs(b) >= min_bright_change
+
+        if by_ratio or by_bright:
             run += 1
             if run >= sustain and hit_idx is None:
                 hit_idx = i - run + 1
+                hit_by = '상대값' if by_ratio else '대상 밝기'
         else:
             run = 0
     peak_delta = round(peak_delta, 3)
+    peak_bright = round(peak_bright, 3)
 
     if hit_idx is not None:
-        direction_match = (peak_delta > 0) == want_on
+        by_bright_hit = (hit_by == '대상 밝기')
+        direction_match = ((peak_bright if by_bright_hit else peak_delta) > 0) == want_on
         notes = []
         if not direction_match:
             notes.append('※ 변화 방향이 기대와 반대 — 태양 각도에 따라 방향은 뒤집힐 수 있어 참고만')
-        if abs(final_delta) < min_delta:
+        if by_bright_hit:
+            notes.append('※ 대상 밝기 기준으로 감지 — 조명이 참조 영역까지 밝혀 상대값이 눌린 조건(정상)')
+        elif abs(final_delta) < min_delta:
             notes.append('※ 종료 시점엔 변화가 상쇄됨 — 조명·커튼 동시 동작의 상반 효과(정상)')
         # 첫 표본부터 이미 기준을 넘겼다면 변화는 촬영 시작 전(발화·확답 구간)에
         # 끝난 것 — 0ms로 기록하면 반응 시간 통계가 오염되므로 미측정으로 남긴다
@@ -238,19 +265,26 @@ def judge_light(before_ratio, series, min_delta=0.15, expect='on', sustain=3):
         else:
             latency = int(series[hit_idx][0] * 1000)
         note = (' ' + ' '.join(notes)) if notes else ''
+        bright_txt = f' / 대상 밝기 {peak_bright:+.0%}' if use_bright else ''
         return {'passed': True,
-                'reason': f'물리 변화 감지 — 상대값 {before_ratio} 기준 최대 변위 Δ{peak_delta:+} '
-                          f'(기준 |Δ|≥{min_delta} {sustain}표본 지속, 종료 시 {after}){note}',
+                'reason': f'물리 변화 감지({hit_by}) — 상대값 {before_ratio} 기준 최대 변위 '
+                          f'Δ{peak_delta:+}{bright_txt} '
+                          f'(기준 |Δ|≥{min_delta} 또는 밝기 {min_bright_change:.0%}, '
+                          f'{sustain}표본 지속, 종료 시 {after}){note}',
                 'action_latency_ms': latency,
                 'before_ratio': before_ratio, 'after_ratio': after,
-                'peak_delta': peak_delta, 'direction_match': direction_match}
+                'peak_delta': peak_delta, 'peak_bright': peak_bright if use_bright else None,
+                'criterion': hit_by, 'direction_match': direction_match}
 
+    bright_txt = f', 대상 밝기 {peak_bright:+.0%}' if use_bright else ''
     return {'passed': False,
             'reason': f'물리 변화 미감지 — 상대값 {before_ratio}→{after} '
-                      f'(최대 변위 Δ{peak_delta:+}, 기준 |Δ|≥{min_delta} {sustain}표본 지속). '
-                      '명령 미동작 또는 점검 전 이미 목표 상태',
+                      f'(최대 변위 Δ{peak_delta:+}{bright_txt}, '
+                      f'기준 |Δ|≥{min_delta} 또는 밝기 {min_bright_change:.0%}, '
+                      f'{sustain}표본 지속). 명령 미동작 또는 점검 전 이미 목표 상태',
             'action_latency_ms': None, 'before_ratio': before_ratio, 'after_ratio': after,
-            'peak_delta': peak_delta, 'direction_match': None}
+            'peak_delta': peak_delta, 'peak_bright': peak_bright if use_bright else None,
+            'criterion': '', 'direction_match': None}
 
 
 # ── 독립 도구 (수동 측정) ───────────────────────────────────
