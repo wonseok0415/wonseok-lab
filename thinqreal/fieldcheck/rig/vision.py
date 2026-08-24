@@ -106,28 +106,32 @@ def load_roi():
 def capture_ratio_once(device, roi, frames=3, interval=0.3):
     """현재 상태의 상대값 1점 측정 (L3 사전 상태 확인용).
 
-    반환: (ok, ratio, problem)
+    반환: (ok, ratio, problem, bright)
+      bright = (대상 절대 밝기, 참조 절대 밝기) — 상대값만으로는 "제3의 광원이
+      켜져 있어 방이 이미 밝다"를 구분할 수 없어 함께 남긴다
+      (2026-08-24 현장: 조명 다 껐는데 상대값 1.036 — 절대 밝기가 있어야 판독 가능).
       ok=False면 problem에 원인 문자열 — '점검 장비 문제'로 분류해야 함.
     """
     cap = _open_camera(device)
     if cap is None:
-        return False, None, '카메라를 열 수 없음 (연결/다른 앱 점유/권한)'
-    ratios = []
+        return False, None, '카메라를 열 수 없음 (연결/다른 앱 점유/권한)', None
+    samples = []
     try:
         for _ in range(frames):
             _, gray = _grab_gray(cap)
             if gray is None:
                 continue
             if _is_black(gray):
-                return False, None, '검은 화면만 수신 (카메라 권한/렌즈 가림)'
-            ratios.append(_ratio(gray, roi)[2])
+                return False, None, '검은 화면만 수신 (카메라 권한/렌즈 가림)', None
+            samples.append(_ratio(gray, roi))
             time.sleep(interval)
     finally:
         cap.release()
-    if not ratios:
-        return False, None, '프레임을 읽지 못함'
-    ratios.sort()
-    return True, round(ratios[len(ratios) // 2], 3), ''
+    if not samples:
+        return False, None, '프레임을 읽지 못함', None
+    samples.sort(key=lambda s: s[2])
+    mid = samples[len(samples) // 2]
+    return True, round(mid[2], 3), '', (round(mid[0], 1), round(mid[1], 1))
 
 
 def capture_series(device, roi, seconds, interval=1.0, prefix='l3'):

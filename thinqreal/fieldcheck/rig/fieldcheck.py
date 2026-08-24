@@ -336,6 +336,7 @@ def run_scenario(cfg, scenario):
     cam_roi = None
     cam_problem = ''
     before_ratio = None
+    before_bright = None
     if cam:
         if not vision.available():
             print('  [주의] opencv-python 미설치 — L3(카메라 판정)를 건너뜁니다: python3 -m pip install --user opencv-python')
@@ -346,10 +347,13 @@ def run_scenario(cfg, scenario):
                 print('  [주의] 카메라 영역 미지정 — python3 vision.py --pick 실행 후 L3 판정 가능. 이번엔 건너뜁니다')
                 cam = None
             else:
-                ok, before_ratio, cam_problem = vision.capture_ratio_once(
+                ok, before_ratio, cam_problem, before_bright = vision.capture_ratio_once(
                     int(cam.get('device', cam_roi.get('device', 0))), cam_roi)
                 if ok:
-                    print(f'  사전 상태 촬영: 상대값 {before_ratio}')
+                    # 절대 밝기를 함께 보여준다 — 상대값 하나로는 "다른 광원이 켜져
+                    # 방이 이미 밝은 상태"(판정 무력화 조건)를 구분할 수 없다
+                    print(f'  사전 상태 촬영: 상대값 {before_ratio}'
+                          f' (대상 밝기 {before_bright[0]} / 참조 {before_bright[1]})')
                 else:
                     print(f'  [경고] 카메라 사전 촬영 실패: {cam_problem} — 점검 장비 문제로 기록됩니다')
 
@@ -453,14 +457,16 @@ def run_scenario(cfg, scenario):
         write_wav(os.path.join(REC_DIR, rec_name.replace('.wav', '_post.wav')), post_samples, sr)
         if shot['ok']:
             l3_snapshot = shot['snapshot']
-            # 시계열은 (경과초, 상대값)만 추려 판정 근거로 함께 전송한다 —
-            # 실패 원인 판독(상쇄·임계값 미달·무변화 구분)은 이 데이터가 전부다
-            l3_series = [[s[0], s[3]] for s in shot['series']]
+            # 시계열은 (경과초, 대상, 참조, 상대값) 전체를 판정 근거로 함께 전송한다 —
+            # 실패 원인 판독(상쇄·주변 광원·임계값 미달·무변화 구분)은 이 데이터가 전부다
+            l3_series = [list(s) for s in shot['series']]
             l3_judge = vision.judge_light(before_ratio, shot['series'],
                                           float(cam.get('min_delta', 0.15)),
                                           cam.get('expect', 'on'), int(cam.get('sustain', 3)))
             ratios_only = [s[3] for s in shot['series']]
-            print(f'  측정 요약: 상대값 최소 {min(ratios_only)} / 최대 {max(ratios_only)} ({len(ratios_only)}표본)')
+            targets_only = [s[1] for s in shot['series']]
+            print(f'  측정 요약: 상대값 최소 {min(ratios_only)} / 최대 {max(ratios_only)}'
+                  f' | 대상 밝기 {min(targets_only)}~{max(targets_only)} ({len(ratios_only)}표본)')
             print(f'  L3 판정: {"통과" if l3_judge["passed"] else "실패"} — {l3_judge["reason"]}')
         else:
             cam_problem = shot['problem']
@@ -554,6 +560,7 @@ def run_scenario(cfg, scenario):
                 'latency_ms': l3_judge['action_latency_ms'] if l3_judge else None,
                 'detail': json.dumps({
                     'before_ratio': l3_judge['before_ratio'] if l3_judge else before_ratio,
+                    'before_bright': before_bright,
                     'after_ratio': l3_judge['after_ratio'] if l3_judge else None,
                     'peak_delta': l3_judge.get('peak_delta') if l3_judge else None,
                     'min_delta': cam.get('min_delta', 0.15),
