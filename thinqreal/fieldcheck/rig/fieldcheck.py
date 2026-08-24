@@ -307,6 +307,19 @@ def wait_for_quiet(cfg, sd, post_silence=None, max_wait=None, collect=False):
     return waited
 
 
+def pad_tail(samples, samplerate, seconds=0.5):
+    """재생 꼬리 끊김 방지: 소리 뒤에 무음을 붙여서 재생한다.
+
+    Windows 오디오 장치는 재생 스트림이 닫힐 때 드라이버 버퍼에 남은
+    마지막 수백 ms를 소리 내지 않고 버릴 수 있다. 그러면 "하이 엘지"의
+    '지'처럼 문장 끝이 잘려 ThinQ ON이 기동어를 못 알아듣는다
+    (2026-08-24 현장 실측 — 맥북에는 없던 Windows 고유 증상).
+    뒤에 무음을 붙이면 잘리는 부분이 무음이라 문장은 온전히 나간다.
+    """
+    pad = np.zeros(int(samplerate * seconds), dtype=samples.dtype)
+    return np.concatenate([samples, pad])
+
+
 def run_scenario(cfg, scenario):
     sd = audio()
     sr = int(cfg.get('samplerate', 16000))
@@ -345,7 +358,7 @@ def run_scenario(cfg, scenario):
     # 전부 ThinQ ON 탓으로 오보된다 — 마이크 무음 함정의 스피커판. 자기 스피커
     # 소리가 자기 마이크에 충분히 들리는지로 출력 상태를 물리적으로 확인한다.
     print(f"  발화 재생 중... ({scenario['label']})")
-    echo = sd.playrec(wake, wake_sr, channels=1, dtype='int16',
+    echo = sd.playrec(pad_tail(wake, wake_sr), wake_sr, channels=1, dtype='int16',
                       device=(in_dev, out_dev))
     sd.wait()
     n = max(1, int(wake_sr * FRAME_MS / 1000))
@@ -358,7 +371,7 @@ def run_scenario(cfg, scenario):
         print('         노트북 음량이 꺼져 있거나 매우 낮으면 ThinQ ON이 명령을 들을 수 없습니다.')
         print('         이번 실패는 점검 장비 문제로 기록됩니다 (ThinQ ON 장애 아님).')
     time.sleep(gap)
-    sd.play(phrase, phrase_sr, device=out_dev)
+    sd.play(pad_tail(phrase, phrase_sr), phrase_sr, device=out_dev)
     sd.wait()
 
     print(f'  응답 대기/녹음 중... ({listen:.0f}초)')
@@ -409,7 +422,7 @@ def run_scenario(cfg, scenario):
         confirm, confirm_sr = read_wav(os.path.join(BASE_DIR, scenario['confirm_file']))
         confirm_ms = int(len(confirm) / confirm_sr * 1000)
         print('  확답 재생 — 되물음이면 접수되고, 이미 실행 중이면 무시됩니다')
-        sd.play(confirm, confirm_sr, device=out_dev)
+        sd.play(pad_tail(confirm, confirm_sr), confirm_sr, device=out_dev)
         sd.wait()
     else:
         print('  주변이 조용해질 때까지 대기...')
