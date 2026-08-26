@@ -39,6 +39,17 @@ import booking
 import stt
 import vision
 
+# 콘솔 출력이 인코딩 문제로 점검을 중단시키지 않게 한다 (2026-08-24 현장):
+# Windows 작업 스케줄러 경로는 출력이 cp949 파이프로 리디렉션되는데, 시나리오
+# 라벨의 '—'(U+2014)를 만나 UnicodeEncodeError로 즉사했다 (수동 실행은 정상 —
+# 경로에 따라 콘솔 인코딩이 다름). 표현 못 하는 글자는 '?'로 바꾸고 계속 간다.
+for _stream in (sys.stdout, sys.stderr):
+    if _stream is not None and hasattr(_stream, 'reconfigure'):
+        try:
+            _stream.reconfigure(errors='replace')
+        except Exception:
+            pass
+
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_PATH = os.path.join(BASE_DIR, 'config.json')
 EXAMPLE_PATH = os.path.join(BASE_DIR, 'config.example.json')

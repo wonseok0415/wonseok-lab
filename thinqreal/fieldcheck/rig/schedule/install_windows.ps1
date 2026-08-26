@@ -36,6 +36,8 @@ $Runner = Join-Path $PSScriptRoot "run_once.bat"
 @"
 @echo off
 cd /d "$RigDir"
+rem 리디렉션된 출력은 cp949로 잡혀 한글 라벨의 특수문자에서 점검이 죽는다 - UTF-8 강제
+set PYTHONIOENCODING=utf-8
 echo ---------- %DATE% %TIME% ---------- >> "$LogDir\schedule.log"
 "$Python" fieldcheck.py --once >> "$LogDir\schedule.log" 2>&1
 "@ | Set-Content -Path $Runner -Encoding OEM
