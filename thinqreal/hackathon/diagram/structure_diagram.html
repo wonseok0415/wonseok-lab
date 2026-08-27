@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html,body { width:860px; }
+  body {
+    font-family:'Noto Sans CJK KR','Noto Sans KR',sans-serif;
+    background:#ffffff; color:#1c1c1e; word-break:keep-all;
+    padding:18px 16px 14px;
+  }
+  /* ---------- header ---------- */
+  .hd { display:flex; align-items:baseline; gap:10px; margin-bottom:4px; }
+  .hd h1 { font-size:21px; font-weight:700; letter-spacing:-0.3px; }
+  .hd .tag { font-size:12px; font-weight:700; color:#3a5035; border:1px solid #3a5035; border-radius:4px; padding:1px 6px; position:relative; top:-2px; }
+  .sub { font-size:12.5px; color:#666; margin-bottom:12px; letter-spacing:-0.2px; }
+  .sub b { color:#3a5035; font-weight:700; }
+
+  /* ---------- flow ---------- */
+  .flow { display:flex; height:640px; align-items:stretch; }
+  .col { display:flex; flex-direction:column; }
+  .arrow { display:flex; align-items:center; justify-content:center; width:20px; flex:none; }
+
+  .col-label { display:flex; align-items:center; gap:6px; margin-bottom:8px; height:19px; }
+  .col-label .no { width:18px; height:18px; border-radius:50%; background:#1c1c1e; color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; flex:none; }
+  .col-label .tx { font-size:13.5px; font-weight:700; letter-spacing:-0.3px; white-space:nowrap; }
+
+  .stack { display:flex; flex-direction:column; gap:7px; flex:1; }
+
+  .box {
+    background:#fafafa; border:1px solid #d9d9de; border-radius:7px;
+    padding:7px 9px; flex:1; display:flex; flex-direction:column; justify-content:center;
+  }
+  .box .t { font-size:13px; font-weight:700; letter-spacing:-0.3px; line-height:1.3; }
+  .box .d { font-size:11px; color:#777; letter-spacing:-0.2px; line-height:1.35; margin-top:2px; }
+
+  /* column widths */
+  .c-in   { width:142px; flex:none; }
+  .c-pre  { width:142px; flex:none; }
+  .c-core { flex:1; }
+  .c-hitl { width:124px; flex:none; }
+  .c-out  { width:162px; flex:none; }
+
+  /* ---------- core ---------- */
+  .core-wrap {
+    flex:1; border:1.5px solid #3a5035; border-radius:10px; background:#f4f6f3;
+    padding:8px; display:flex; flex-direction:column; gap:7px;
+  }
+  .core-title { font-size:12px; font-weight:700; color:#3a5035; text-align:center; letter-spacing:0.2px; margin-bottom:-1px; }
+  .agent {
+    background:#fff; border:1px solid #d9d9de; border-left-width:4px; border-radius:7px;
+    padding:6px 9px; flex:1; display:flex; flex-direction:column; justify-content:center;
+  }
+  .agent .t { font-size:13.5px; font-weight:700; letter-spacing:-0.3px; }
+  .agent .d { font-size:11px; color:#666; letter-spacing:-0.3px; line-height:1.35; margin-top:2px; }
+  .a-red  { border-left-color:#c5473f; }  .a-red .t  { color:#c5473f; }
+  .a-blue { border-left-color:#3563a8; }  .a-blue .t { color:#3563a8; }
+  .a-teal { border-left-color:#22766e; }  .a-teal .t { color:#22766e; }
+  .a-org  { border-left-color:#c07a2c; }  .a-org .t  { color:#c07a2c; }
+
+  .c-hitl .col-label .tx { font-size:11.5px; letter-spacing:-0.5px; }
+  /* ---------- HITL ---------- */
+  .hitl-wrap {
+    flex:1; border:1.5px dashed #8a8a92; border-radius:10px; background:#fcfcfd;
+    padding:8px; display:flex; flex-direction:column; gap:7px;
+  }
+  .hitl-wrap .box { background:#fff; }
+  .hitl-note { font-size:10.5px; color:#888; text-align:center; letter-spacing:-0.2px; line-height:1.3; }
+
+  /* ---------- outputs ---------- */
+  .out { border-left-width:4px; background:#fff; }
+  .o-red  { border-left-color:#c5473f; }
+  .o-blue { border-left-color:#3563a8; }
+  .o-teal { border-left-color:#22766e; }
+  .o-org  { border-left-color:#c07a2c; }
+
+  /* ---------- footer ---------- */
+  .ft { margin-top:11px; border-top:1px solid #e4e4e8; padding-top:7px; display:flex; justify-content:space-between; align-items:center; }
+  .ft .key { font-size:11.5px; color:#555; letter-spacing:-0.2px; }
+  .ft .key b { color:#3a5035; }
+  .legend { display:flex; gap:9px; font-size:10.5px; color:#666; align-items:center; }
+  .legend i { width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:3px; position:relative; top:1px; }
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>ThinQ Real AI Field Ops</h1>
+  <span class="tag">AI 서비스 구조도</span>
+</div>
+<div class="sub">모든 방문 데이터를 <b>예약 건(ID) 단위</b>로 연결 — 방문 준비 · 현장 인사이트 · ThinQ ON 품질 · 운영 리포트를 하나의 흐름으로 처리하는 4-Agent 구조</div>
+
+<div class="flow">
+
+  <!-- 1. inputs -->
+  <div class="col c-in">
+    <div class="col-label"><span class="no">1</span><span class="tx">입력 데이터</span></div>
+    <div class="stack">
+      <div class="box"><div class="t">ThinQ Real 예약 정보</div><div class="d">목적·일정·참석자</div></div>
+      <div class="box"><div class="t">현장 대화 녹음</div><div class="d">시연 중 고객 대화</div></div>
+      <div class="box"><div class="t">방문 후기 설문</div><div class="d">만족도·의견</div></div>
+      <div class="box"><div class="t">ThinQ ON 응답 기록</div><div class="d">응답 녹음·응답시간</div></div>
+      <div class="box"><div class="t">가전 동작 결과</div><div class="d">웹캠 기반 판독</div></div>
+    </div>
+  </div>
+
+  <div class="arrow"><svg width="14" height="14"><path d="M2 2 L11 7 L2 12 Z" fill="#b0b0b8"/></svg></div>
+
+  <!-- 2. preprocessing -->
+  <div class="col c-pre">
+    <div class="col-label"><span class="no">2</span><span class="tx">수집·전처리 계층</span></div>
+    <div class="stack">
+      <div class="box"><div class="t">예약 ID 기반 연결</div><div class="d">전 데이터 방문 건 매핑</div></div>
+      <div class="box"><div class="t">개인정보·권한 처리</div><div class="d">비식별화·접근 통제</div></div>
+      <div class="box"><div class="t">음성 품질 확인</div><div class="d">노이즈·구간 검수</div></div>
+      <div class="box"><div class="t">STT 변환</div><div class="d">음성 → 텍스트</div></div>
+    </div>
+  </div>
+
+  <div class="arrow"><svg width="14" height="14"><path d="M2 2 L11 7 L2 12 Z" fill="#b0b0b8"/></svg></div>
+
+  <!-- 3. agent core -->
+  <div class="col c-core">
+    <div class="col-label"><span class="no">3</span><span class="tx">AI Agent Core</span></div>
+    <div class="core-wrap">
+      <div class="core-title">ThinQ Real AI Field Ops</div>
+      <div class="agent a-red"><div class="t">방문 준비 Agent</div><div class="d">방문 목적 분석 → 브리핑·체크리스트 생성</div></div>
+      <div class="agent a-blue"><div class="t">현장 인사이트 Agent</div><div class="d">질문·관심 기능·불편·후속 요청 추출·분류</div></div>
+      <div class="agent a-teal"><div class="t">품질 판정 Agent</div><div class="d">응답 유무·지연시간·내용 적합성·동작 판정</div></div>
+      <div class="agent a-org"><div class="t">운영 리포트 Agent</div><div class="d">방문·품질·성과 통합 요약 및 리포트 구성</div></div>
+    </div>
+  </div>
+
+  <div class="arrow"><svg width="14" height="14"><path d="M2 2 L11 7 L2 12 Z" fill="#b0b0b8"/></svg></div>
+
+  <!-- 4. HITL -->
+  <div class="col c-hitl">
+    <div class="col-label"><span class="no">4</span><span class="tx">Human-in-the-Loop</span></div>
+    <div class="hitl-wrap">
+      <div class="box"><div class="t">근거 확인</div><div class="d">원문·출처 대조</div></div>
+      <div class="box"><div class="t">불확실 결과 검토</div><div class="d">저신뢰 건 수동 판단</div></div>
+      <div class="box"><div class="t">리포트 승인</div><div class="d">발송 전 최종 확정</div></div>
+      <div class="hitl-note">운영 담당자가<br>검토·승인 후 확정</div>
+    </div>
+  </div>
+
+  <div class="arrow"><svg width="14" height="14"><path d="M2 2 L11 7 L2 12 Z" fill="#b0b0b8"/></svg></div>
+
+  <!-- 5. outputs -->
+  <div class="col c-out">
+    <div class="col-label"><span class="no">5</span><span class="tx">출력</span></div>
+    <div class="stack">
+      <div class="box out o-red"><div class="t">방문 전 브리핑</div><div class="d">시연 시나리오·준비사항</div></div>
+      <div class="box out o-blue"><div class="t">고객 인사이트</div><div class="d">질문·관심·불편 축적</div></div>
+      <div class="box out o-teal"><div class="t">ThinQ ON 이상 알림</div><div class="d">장애 징후 조기 감지</div></div>
+      <div class="box out o-org"><div class="t">후속 액션 아이템</div><div class="d">기술 검증·영업 기회</div></div>
+      <div class="box out o-org"><div class="t">월간 운영·ROI 리포트</div><div class="d">방문 성과 데이터 검증</div></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="ft">
+  <div class="key">데이터 키: <b>예약 ID</b> · 개인정보는 전처리 계층에서 처리 후 Agent에 전달</div>
+  <div class="legend">
+    <span><i style="background:#c5473f"></i>방문 준비</span>
+    <span><i style="background:#3563a8"></i>현장 인사이트</span>
+    <span><i style="background:#22766e"></i>품질 판정</span>
+    <span><i style="background:#c07a2c"></i>운영 리포트</span>
+    <span style="color:#999">(출력 색상 = 담당 Agent)</span>
+  </div>
+</div>
+
+</body>
+</html>
