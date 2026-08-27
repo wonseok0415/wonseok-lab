@@ -30,16 +30,27 @@
 
   .box {
     background:#fafafa; border:1px solid #d9d9de; border-radius:7px;
-    padding:7px 9px; flex:1; display:flex; flex-direction:column; justify-content:center;
+    padding:6px 9px 7px; flex:1; display:flex; flex-direction:column; justify-content:center;
   }
   .box .t { font-size:13px; font-weight:700; letter-spacing:-0.3px; line-height:1.3; }
   .box .d { font-size:11px; color:#777; letter-spacing:-0.2px; line-height:1.35; margin-top:2px; }
+
+  /* ---------- status badges ---------- */
+  .bdg {
+    align-self:flex-end; font-size:9px; font-weight:700; letter-spacing:-0.3px;
+    border-radius:3px; padding:1px 5px; margin-bottom:3px; white-space:nowrap;
+  }
+  .b-run { background:#3a5035; color:#fff; }                       /* 기존 활용 */
+  .b-pil { background:#eef2ec; color:#3a5035; border:1px solid #3a5035; } /* 시범 운영 */
+  .b-hak { background:#1c1c1e; color:#fff; }                       /* 해커톤 구현 */
+  .b-fut { background:#fff; color:#77777f; border:1px dashed #9a9aa2; } /* 향후 확대 */
 
   /* column widths */
   .c-in   { width:142px; flex:none; }
   .c-pre  { width:142px; flex:none; }
   .c-core { flex:1; }
   .c-hitl { width:124px; flex:none; }
+  .c-hitl .col-label .tx { font-size:11.5px; letter-spacing:-0.5px; }
   .c-out  { width:162px; flex:none; }
 
   /* ---------- core ---------- */
@@ -47,10 +58,11 @@
     flex:1; border:1.5px solid #3a5035; border-radius:10px; background:#f4f6f3;
     padding:8px; display:flex; flex-direction:column; gap:7px;
   }
-  .core-title { font-size:12px; font-weight:700; color:#3a5035; text-align:center; letter-spacing:0.2px; margin-bottom:-1px; }
+  .core-title { font-size:12px; font-weight:700; color:#3a5035; text-align:center; letter-spacing:0.2px; margin-bottom:-1px; display:flex; flex-direction:column; align-items:center; gap:3px; }
+  .core-title .bdg-inline { font-size:9px; font-weight:700; background:#1c1c1e; color:#fff; border-radius:3px; padding:1px 6px; }
   .agent {
     background:#fff; border:1px solid #d9d9de; border-left-width:4px; border-radius:7px;
-    padding:6px 9px; flex:1; display:flex; flex-direction:column; justify-content:center;
+    padding:5px 9px 6px; flex:1; display:flex; flex-direction:column; justify-content:center;
   }
   .agent .t { font-size:13.5px; font-weight:700; letter-spacing:-0.3px; }
   .agent .d { font-size:11px; color:#666; letter-spacing:-0.3px; line-height:1.35; margin-top:2px; }
@@ -59,7 +71,6 @@
   .a-teal { border-left-color:#22766e; }  .a-teal .t { color:#22766e; }
   .a-org  { border-left-color:#c07a2c; }  .a-org .t  { color:#c07a2c; }
 
-  .c-hitl .col-label .tx { font-size:11.5px; letter-spacing:-0.5px; }
   /* ---------- HITL ---------- */
   .hitl-wrap {
     flex:1; border:1.5px dashed #8a8a92; border-radius:10px; background:#fcfcfd;
@@ -75,9 +86,25 @@
   .o-teal { border-left-color:#22766e; }
   .o-org  { border-left-color:#c07a2c; }
 
-  /* ---------- footer ---------- */
-  .ft { margin-top:11px; border-top:1px solid #e4e4e8; padding-top:7px; display:flex; justify-content:space-between; align-items:center; }
-  .ft .key { font-size:11.5px; color:#555; letter-spacing:-0.2px; }
+  /* ---------- rules band ---------- */
+  .rules {
+    margin-top:11px; background:#f4f6f3; border:1px solid #dde4da; border-radius:8px;
+    padding:8px 12px; display:grid; grid-template-columns:auto 1fr 1fr; column-gap:14px; row-gap:4px; align-items:center;
+  }
+  .rules .rt { grid-row:span 2; font-size:12px; font-weight:700; color:#3a5035; white-space:nowrap; border-right:1px solid #dde4da; padding-right:12px; }
+  .rules .ri { font-size:11px; color:#444; letter-spacing:-0.3px; line-height:1.4; }
+  .rules .ri b { color:#1c1c1e; }
+
+  /* ---------- legends ---------- */
+  .status-legend {
+    margin-top:8px; display:flex; gap:8px; align-items:stretch;
+  }
+  .sl-item { flex:1; display:flex; align-items:center; gap:6px; border:1px solid #e4e4e8; border-radius:6px; padding:5px 8px; }
+  .sl-item .bdg { align-self:center; margin:0; flex:none; }
+  .sl-item .sd { font-size:10px; color:#555; letter-spacing:-0.4px; line-height:1.3; }
+
+  .ft { margin-top:8px; border-top:1px solid #e4e4e8; padding-top:6px; display:flex; justify-content:space-between; align-items:center; }
+  .ft .key { font-size:11px; color:#555; letter-spacing:-0.2px; }
   .ft .key b { color:#3a5035; }
   .legend { display:flex; gap:9px; font-size:10.5px; color:#666; align-items:center; }
   .legend i { width:9px; height:9px; border-radius:2px; display:inline-block; margin-right:3px; position:relative; top:1px; }
@@ -89,7 +116,7 @@
   <h1>ThinQ Real AI Field Ops</h1>
   <span class="tag">AI 서비스 구조도</span>
 </div>
-<div class="sub">모든 방문 데이터를 <b>예약 건(ID) 단위</b>로 연결 — 방문 준비 · 현장 인사이트 · ThinQ ON 품질 · 운영 리포트를 하나의 흐름으로 처리하는 4-Agent 구조</div>
+<div class="sub">모든 방문 데이터를 <b>예약 건(ID) 단위</b>로 연결하는 4-Agent 구조 — 각 요소의 <b>구현 상태</b>(기존 활용·시범 운영·해커톤 구현·향후 확대)를 박스 우측 상단에 표기</div>
 
 <div class="flow">
 
@@ -97,11 +124,11 @@
   <div class="col c-in">
     <div class="col-label"><span class="no">1</span><span class="tx">입력 데이터</span></div>
     <div class="stack">
-      <div class="box"><div class="t">ThinQ Real 예약 정보</div><div class="d">목적·일정·참석자</div></div>
-      <div class="box"><div class="t">현장 대화 녹음</div><div class="d">시연 중 고객 대화</div></div>
-      <div class="box"><div class="t">방문 후기 설문</div><div class="d">만족도·의견</div></div>
-      <div class="box"><div class="t">ThinQ ON 응답 기록</div><div class="d">응답 녹음·응답시간</div></div>
-      <div class="box"><div class="t">가전 동작 결과</div><div class="d">웹캠 기반 판독</div></div>
+      <div class="box"><span class="bdg b-run">기존 활용</span><div class="t">ThinQ Real 예약 정보</div><div class="d">목적·일정·참석자</div></div>
+      <div class="box"><span class="bdg b-hak">해커톤 구현</span><div class="t">현장 대화 녹음</div><div class="d">시연 중 고객 대화</div></div>
+      <div class="box"><span class="bdg b-run">기존 활용</span><div class="t">방문 후기 설문</div><div class="d">만족도·의견</div></div>
+      <div class="box"><span class="bdg b-pil">시범 운영</span><div class="t">ThinQ ON 응답 기록</div><div class="d">응답 녹음·응답시간</div></div>
+      <div class="box"><span class="bdg b-pil">시범 운영</span><div class="t">가전 동작 결과</div><div class="d">웹캠 기반 판독</div></div>
     </div>
   </div>
 
@@ -111,10 +138,10 @@
   <div class="col c-pre">
     <div class="col-label"><span class="no">2</span><span class="tx">수집·전처리 계층</span></div>
     <div class="stack">
-      <div class="box"><div class="t">예약 ID 기반 연결</div><div class="d">전 데이터 방문 건 매핑</div></div>
-      <div class="box"><div class="t">개인정보·권한 처리</div><div class="d">비식별화·접근 통제</div></div>
-      <div class="box"><div class="t">음성 품질 확인</div><div class="d">노이즈·구간 검수</div></div>
-      <div class="box"><div class="t">STT 변환</div><div class="d">음성 → 텍스트</div></div>
+      <div class="box"><span class="bdg b-hak">해커톤 구현</span><div class="t">예약 ID 기반 연결</div><div class="d">전 데이터 방문 건 매핑</div></div>
+      <div class="box"><span class="bdg b-hak">해커톤 구현</span><div class="t">개인정보·권한 처리</div><div class="d">비식별화·접근 통제</div></div>
+      <div class="box"><span class="bdg b-hak">해커톤 구현</span><div class="t">음성 품질 확인</div><div class="d">노이즈·구간 검수</div></div>
+      <div class="box"><span class="bdg b-hak">해커톤 구현</span><div class="t">STT 변환</div><div class="d">음성 → 텍스트</div></div>
     </div>
   </div>
 
@@ -124,11 +151,11 @@
   <div class="col c-core">
     <div class="col-label"><span class="no">3</span><span class="tx">AI Agent Core</span></div>
     <div class="core-wrap">
-      <div class="core-title">ThinQ Real AI Field Ops</div>
-      <div class="agent a-red"><div class="t">방문 준비 Agent</div><div class="d">방문 목적 분석 → 브리핑·체크리스트 생성</div></div>
-      <div class="agent a-blue"><div class="t">현장 인사이트 Agent</div><div class="d">질문·관심 기능·불편·후속 요청 추출·분류</div></div>
-      <div class="agent a-teal"><div class="t">품질 판정 Agent</div><div class="d">응답 유무·지연시간·내용 적합성·동작 판정</div></div>
-      <div class="agent a-org"><div class="t">운영 리포트 Agent</div><div class="d">방문·품질·성과 통합 요약 및 리포트 구성</div></div>
+      <div class="core-title"><span>ThinQ Real AI Field Ops</span><span class="bdg-inline">4-Agent 오케스트레이션 = 해커톤 구현</span></div>
+      <div class="agent a-red"><span class="bdg b-hak">해커톤 구현</span><div class="t">방문 준비 Agent</div><div class="d">방문 목적 분석 → 브리핑·체크리스트 생성</div></div>
+      <div class="agent a-blue"><span class="bdg b-hak">해커톤 구현</span><div class="t">현장 인사이트 Agent</div><div class="d">질문·관심 기능·불편·후속 요청 추출·분류</div></div>
+      <div class="agent a-teal"><span class="bdg b-pil">시범 운영</span><div class="t">품질 판정 Agent</div><div class="d">FieldCheck 자동 점검 기반 — 응답 유무·지연·내용 적합성·동작 판정</div></div>
+      <div class="agent a-org"><span class="bdg b-run">기존 활용</span><div class="t">운영 리포트 Agent</div><div class="d">월간 리포트 운영 중 — 방문·품질·성과 통합 요약으로 고도화</div></div>
     </div>
   </div>
 
@@ -151,14 +178,29 @@
   <div class="col c-out">
     <div class="col-label"><span class="no">5</span><span class="tx">출력</span></div>
     <div class="stack">
-      <div class="box out o-red"><div class="t">방문 전 브리핑</div><div class="d">시연 시나리오·준비사항</div></div>
-      <div class="box out o-blue"><div class="t">고객 인사이트</div><div class="d">질문·관심·불편 축적</div></div>
-      <div class="box out o-teal"><div class="t">ThinQ ON 이상 알림</div><div class="d">장애 징후 조기 감지</div></div>
-      <div class="box out o-org"><div class="t">후속 액션 아이템</div><div class="d">기술 검증·영업 기회</div></div>
-      <div class="box out o-org"><div class="t">월간 운영·ROI 리포트</div><div class="d">방문 성과 데이터 검증</div></div>
+      <div class="box out o-red"><span class="bdg b-hak">해커톤 구현</span><div class="t">방문 전 브리핑</div><div class="d">시연 시나리오·준비사항</div></div>
+      <div class="box out o-blue"><span class="bdg b-hak">해커톤 구현</span><div class="t">고객 인사이트</div><div class="d">질문·관심·불편 축적</div></div>
+      <div class="box out o-teal"><span class="bdg b-pil">시범 운영</span><div class="t">ThinQ ON 이상 알림</div><div class="d">장애 징후 조기 감지</div></div>
+      <div class="box out o-org"><span class="bdg b-hak">해커톤 구현</span><div class="t">후속 액션 아이템</div><div class="d">기술 검증·영업 기회</div></div>
+      <div class="box out o-org"><span class="bdg b-run">기존 활용</span><div class="t">월간 운영·ROI 리포트</div><div class="d">방문 성과 데이터 검증</div></div>
     </div>
   </div>
 
+</div>
+
+<div class="rules">
+  <div class="rt">운영 규칙</div>
+  <div class="ri">① 모든 Agent 결과는 <b>원문·발생 시점·예약 ID</b>로 근거 연결</div>
+  <div class="ri">② 신뢰도 낮은 결과는 자동 확정하지 않고 <b>검토 대상으로 표시</b></div>
+  <div class="ri">③ 품질 이상은 AI 단독 판정이 아니라 <b>응답 기록·가전 동작 결과 교차 확인</b></div>
+  <div class="ri">④ 운영 리포트는 <b>담당자 승인 후 최종 발행</b></div>
+</div>
+
+<div class="status-legend">
+  <div class="sl-item"><span class="bdg b-run">기존 활용</span><span class="sd">예약·설문·ROI·월간 리포트 — 운영 중 기반</span></div>
+  <div class="sl-item"><span class="bdg b-pil">시범 운영</span><span class="sd">ThinQ ON FieldCheck 자동 점검</span></div>
+  <div class="sl-item"><span class="bdg b-hak">해커톤 구현</span><span class="sd">STT·현장 인사이트·4-Agent 오케스트레이션</span></div>
+  <div class="sl-item"><span class="bdg b-fut">향후 확대</span><span class="sd">가전 실제 동작 검증 고도화·타 쇼룸 적용</span></div>
 </div>
 
 <div class="ft">
