@@ -70,6 +70,54 @@ def _open_camera(device):
     return cap
 
 
+def _probe_max_width(device):
+    """장치에 4K를 요청했을 때 실제로 받는 프레임 폭을 잰다 (장치 식별용)."""
+    cap = cv2.VideoCapture(device)
+    if not cap.isOpened():
+        return None
+    try:
+        cap.set(cv2.CAP_PROP_FRAME_WIDTH, 3840)
+        cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 2160)
+        ok, frame = cap.read()
+        return frame.shape[1] if ok and frame is not None else None
+    finally:
+        cap.release()
+
+
+_FOUND_CAMERA = {}  # 실행당 1회만 탐색 (탐색은 장치를 여닫느라 수 초 걸림)
+
+
+def find_camera(preferred, min_width=2000, max_scan=4):
+    """웹캠 번호 자동 확정 — 번호 유동성 대응 (2026-08-26 현장 실측).
+
+    카메라 번호는 USB 재열거로 예고 없이 밀린다(웹캠 1→0 실측). 마이크는
+    이름으로 지정해 회피했지만 OpenCV는 이름 조회가 안 되므로, 대신
+    "4K를 요청했을 때 min_width 이상을 주는 장치 = 점검 웹캠(UHD2160L,
+    3840px)"으로 식별한다. 내장 카메라는 1280px 이하라 겹치지 않는다.
+
+    설정된 번호가 웹캠이면 그대로 쓰고, 아니면 0..max_scan을 훑어
+    웹캠을 찾아 쓴다(콘솔 안내). 못 찾으면 설정값 그대로 반환(기존 동작).
+    """
+    if preferred in _FOUND_CAMERA:
+        return _FOUND_CAMERA[preferred]
+    w = _probe_max_width(preferred)
+    if w is not None and w >= min_width:
+        _FOUND_CAMERA[preferred] = preferred
+        return preferred
+    for dev in range(max_scan + 1):
+        if dev == preferred:
+            continue
+        w = _probe_max_width(dev)
+        if w is not None and w >= min_width:
+            print(f'  [안내] 설정된 카메라 {preferred}번은 점검 웹캠이 아니어서'
+                  f' {dev}번(프레임 폭 {w})을 대신 사용합니다 — USB 번호 밀림 자동 보정')
+            _FOUND_CAMERA[preferred] = dev
+            return dev
+    print(f'  [주의] 4K 웹캠을 찾지 못해 설정된 카메라 {preferred}번을 그대로 사용합니다')
+    _FOUND_CAMERA[preferred] = preferred
+    return preferred
+
+
 def _grab_gray(cap):
     ok, frame = cap.read()
     if not ok or frame is None:

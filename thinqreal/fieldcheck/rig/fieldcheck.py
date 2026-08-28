@@ -358,8 +358,10 @@ def run_scenario(cfg, scenario):
                 print('  [주의] 카메라 영역 미지정 — python3 vision.py --pick 실행 후 L3 판정 가능. 이번엔 건너뜁니다')
                 cam = None
             else:
+                # 번호 유동성 대응: 설정 번호가 점검 웹캠(4K)이 아니면 자동 탐색
+                cam_dev = vision.find_camera(int(cam.get('device', cam_roi.get('device', 0))))
                 ok, before_ratio, cam_problem, before_bright = vision.capture_ratio_once(
-                    int(cam.get('device', cam_roi.get('device', 0))), cam_roi)
+                    cam_dev, cam_roi)
                 if ok:
                     # 절대 밝기를 함께 보여준다 — 상대값 하나로는 "다른 광원이 켜져
                     # 방이 이미 밝은 상태"(판정 무력화 조건)를 구분할 수 없다
@@ -457,8 +459,8 @@ def run_scenario(cfg, scenario):
         interval_s = float(cam.get('interval_seconds', 1.0))
         print(f'  가전 동작 촬영 중... ({watch_s:.0f}초, {interval_s:.0f}초 간격, 오디오 동시 녹음)')
         rec2 = sd.rec(int(watch_s * sr), samplerate=sr, channels=1, dtype='int16', device=in_dev)
-        shot = vision.capture_series(int(cam.get('device', cam_roi.get('device', 0))), cam_roi,
-                                     watch_s, interval_s, prefix=scenario['id'])
+        shot = vision.capture_series(vision.find_camera(int(cam.get('device', cam_roi.get('device', 0)))),
+                                     cam_roi, watch_s, interval_s, prefix=scenario['id'])
         sd.wait()
         post_samples = rec2[:, 0]
         # 확답 대기 구간 녹음을 앞에 이어붙인다 — 실행 선언이 대기 중에 나온
